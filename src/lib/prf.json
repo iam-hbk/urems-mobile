@@ -1,0 +1,857 @@
+{
+  "patientDetails": {
+    "name": "",
+    "age": "",
+    "gender": "",
+    "id": "",
+    "surname": "",
+    "passport": "",
+    "nextOfKin": {
+      "name": "",
+      "relationToPatient": "",
+      "email": "",
+      "physicalAddress": "",
+      "phoneNo": "",
+      "alternatePhoneNo": "",
+      "otherNOKPhoneNo": ""
+    },
+    "medicalAid": {
+      "name": "",
+      "number": "",
+      "principalMember": "",
+      "authNo": ""
+    },
+    "employer": {
+      "name": "",
+      "workPhoneNo": "",
+      "workAddress": ""
+    }
+  },
+  "transportation": {
+    "fromSuburbTown": "",
+    "by": "",
+    "to": "",
+    "crewDetails": [
+      {
+        "initialAndSurname": "",
+        "HPCSANo": ""
+      }
+    ]
+  },
+  "incidentInformation": {
+    "sceneAddress": "",
+    "dispatchInfo": "",
+    "onArrival": "",
+    "chiefComplaint": "",
+    "pastHistory": {
+      "allergies": "",
+      "medication": "",
+      "medicalHx": "",
+      "lastMeal": "",
+      "cva": false,
+      "epilepsy": false,
+      "cardiac": false,
+      "byPass": false,
+      "dmOneOrTwo": false,
+      "HPT": false,
+      "asthma": false,
+      "copd": false
+    }
+  },
+  "primarySurvey": {
+    "airway": {
+      "clear": false,
+      "maintained": false,
+      "lateral": false,
+      "intubated": false,
+      "surgical": false,
+      "blood": false,
+      "vomit": false,
+      "saliva": false,
+      "FBAO": false
+    },
+    "breathing": {
+      "trachea": {
+        "midline": false,
+        "deviated": false
+      },
+      "airEntry": {
+        "clear": false,
+        "diminished": false,
+        "absent": false,
+        "left": "",
+        "right": ""
+      },
+      "extraSounds": {
+        "none": false,
+        "soft": false,
+        "loud": false,
+        "wheezes": false,
+        "crackles": false,
+        "stridor": false,
+        "frictionRub": false
+      },
+      "mechanics": {
+        "accessoryMuscleUse": false,
+        "apnea": false,
+        "asymmetrical": false,
+        "fatigue": false,
+        "guarding": false,
+        "normal": false,
+        "hypoventilation": false,
+        "ventilated": false
+      },
+      "neckVeins": {
+        "normal": false,
+        "distended": false
+      }
+    },
+    "circulation": {
+      "haemorrhage": {
+        "none": false,
+        "arterial": false,
+        "venous": false,
+        "capillary": false,
+        "mild": false,
+        "moderate": false,
+        "severe": false,
+        "internal": false
+      },
+      "assessmentOfPulses": {
+        "palpableCentral": false,
+        "palpablePeripherals": false,
+        "weak": false,
+        "absent": false,
+        "strong": false
+      },
+      "perfusion": {
+        "good": false,
+        "poor": false,
+        "none": false,
+        "mucosa": {
+          "pink": false,
+          "pale": false,
+          "cyanosed": false
+        },
+        "CRT": {
+          "lessThan2Sec": false,
+          "moreThan2Sec": false
+        }
+      }
+    },
+    "disability": {
+      "initialGCS": {
+        "total": "",
+        "motor": "",
+        "verbal": "",
+        "eyes": ""
+      },
+      "AVPU": {
+        "A": false,
+        "V": false,
+        "P": false,
+        "U": false
+      },
+      "combative": false,
+      "spinal": {
+        "motorFunction": {
+          "normal": false,
+          "guarding": false,
+          "loss": false
+        },
+        "sensation": {
+          "intact": false,
+          "pinsAndNeedles": false,
+          "numbness": false,
+          "none": false,
+          "fromNeck": false,
+          "nippleLine": false,
+          "abd": false
+        }
+      }
+    },
+    "patientValuables": {
+      "cash": "",
+      "laptop": false,
+      "wallet": false,
+      "idDocument": false,
+      "phone": false,
+      "bag": false,
+      "none": false,
+      "clothing": false,
+      "toiletries": false,
+      "meds": false,
+      "handedTo": "",
+      "signature": ""
+    }
+  },
+  "secondarySurvey": {
+    "scalp": {
+      "abrasion": false,
+      "avulsion": false,
+      "bruising": false,
+      "burns": false,
+      "deepWound": false,
+      "GSW": false,
+      "oedema": false,
+      "laceration": false,
+      "largeWound": false,
+      "normal": false
+    },
+    "cranium": {
+      "BOSFracture": false,
+      "crepitus": false,
+      "deformity": false,
+      "fracture": false,
+      "GSW": false,
+      "frontal": false,
+      "occipital": false,
+      "parietal": false,
+      "temporal": false,
+      "normal": false
+    },
+    "face": {
+      "abrasion": false,
+      "anxious": false,
+      "bloodInAirway": false,
+      "bittenTongue": false,
+      "bruising": false,
+      "blind": false,
+      "burns": false,
+      "crepitus": false,
+      "crying": false,
+      "deformity": false,
+      "deepWound": false,
+      "epistaxis": false,
+      "guarding": false,
+      "GSW": false,
+      "laceration": false,
+      "largeWound": false,
+      "orbitalInjury": false,
+      "oedema": false,
+      "normal": false
+    },
+    "neck": {
+      "bruising": false,
+      "burns": false,
+      "crepitus": false,
+      "deformity": false,
+      "guarding": false,
+      "laceration": false,
+      "oedema": false,
+      "penetratingWound": false,
+      "normal": false
+    },
+    "spine": {
+      "bruising": false,
+      "crepitus": false,
+      "deformity": false,
+      "guarding": false,
+      "GSW": false,
+      "oedema": false,
+      "penetratingWound": false,
+      "sciaticPain": false,
+      "normal": false
+    },
+    "chest": {
+      "abrasion": false,
+      "asymmetricalRiseAndFall": false,
+      "bruising": false,
+      "burns": false,
+      "crepitus": false,
+      "deformity": false,
+      "dyspnoea": false,
+      "flailSegment": false,
+      "guardingPalpation": false,
+      "guardingDepthOfBreathing": false,
+      "GSW": false,
+      "laceration": false,
+      "oedema": false,
+      "stabWound": false,
+      "suckingWound": false,
+      "normal": false
+    },
+    "abdomen": {
+      "abrasion": false,
+      "bruisingEcchymosis": false,
+      "burns": false,
+      "distended": false,
+      "evisceration": false,
+      "GSW": false,
+      "guarding": false,
+      "hernia": false,
+      "laceration": false,
+      "reboundTenderness": false,
+      "rupturedMembranes": false,
+      "severePain": false,
+      "stabWound": false,
+      "uterineContractions": false,
+      "normalSoftOnPalpation": false
+    },
+    "pelvis": {
+      "crepitus": false,
+      "deformity": false,
+      "guarding": false,
+      "GSW": false,
+      "incontinence": false,
+      "openWound": false,
+      "openBook": false,
+      "severePain": false,
+      "stable": false
+    },
+    "leftArm": {
+      "abrasion": false,
+      "amputation": false,
+      "crepitus": false,
+      "bruising": false,
+      "deformity": false,
+      "GSW": false,
+      "guarding": false,
+      "laceration": false,
+      "oedema": false,
+      "pulse": false
+    },
+    "rightArm": {
+      "abrasion": false,
+      "amputation": false,
+      "crepitus": false,
+      "bruising": false,
+      "deformity": false,
+      "GSW": false,
+      "guarding": false,
+      "laceration": false,
+      "oedema": false,
+      "pulse": false
+    },
+    "leftLeg": {
+      "abrasion": false,
+      "amputation": false,
+      "crepitus": false,
+      "bruising": false,
+      "deformity": false,
+      "GSW": false,
+      "guarding": false,
+      "laceration": false,
+      "oedema": false,
+      "pulse": false
+    },
+    "rightLeg": {
+      "abrasion": false,
+      "amputation": false,
+      "crepitus": false,
+      "bruising": false,
+      "deformity": false,
+      "GSW": false,
+      "guarding": false,
+      "laceration": false,
+      "oedema": false,
+      "pulse": false
+    },
+    "additionalFindings": ""
+  },
+  "diagnosis": "",
+  "priority": "",
+  "treatment": "",
+  "patientHandedOverTo": {
+    "initial": "",
+    "surname": "",
+    "qualification": "",
+    "signature": ""
+  },
+  "yellowCopyOfPRF": false,
+  "mechanismOfInjury": {
+    "MVA": false,
+    "MBA": false,
+    "PVA": false,
+    "bus": false,
+    "cyclist": false,
+    "taxi": false,
+    "train": false,
+    "truck": false,
+    "frontalImpact": false,
+    "rearImpact": false,
+    "rollover": false,
+    "tBoned": false,
+    "vehicleSpun": false,
+    "speed": {
+      "lessThan60kmh": false,
+      "between60And100kmh": false,
+      "greaterThan120kmh": false
+    },
+    "occupant": {
+      "driver": false,
+      "passenger": false,
+      "unknown": false
+    },
+    "restraint": {
+      "airbags": false,
+      "restrained": false,
+      "questionableLOC": false
+    },
+    "multiplePatients": {
+      "p1": false,
+      "p4": false
+    },
+    "onScene": false,
+    "ejection": {
+      "ejected": false,
+      "removedByBystander": false,
+      "extricatedByEMS": false,
+      "selfExtricated": false
+    },
+    "helmet": {
+      "removedByEMS": false,
+      "removedBySelf": false,
+      "removedByBystander": false,
+      "noHelmet": false
+    },
+    "assault": false,
+    "stabbing": false,
+    "rape": false,
+    "strangulation": false,
+    "armedRobbery": false,
+    "industrialAccident": false,
+    "sportsInjury": false,
+    "limitedPatientAccess": false,
+    "selfInflictedWounds": false,
+    "suicidalTendencies": false,
+    "falls": {
+      "bed": false,
+      "sameLevel": false,
+      "greaterThan3m": false,
+      "greaterThan10m": false
+    },
+    "GSW": {
+      "handgun": false,
+      "rifle": false,
+      "assaultRifle": false
+    },
+    "entrapment": {
+      "lessThan30Minutes": false,
+      "between30MinutesAnd1Hour": false,
+      "between1And2Hours": false,
+      "greaterThan2Hours": false,
+      "unknownDuration": false
+    },
+    "crushInjury": false,
+    "drowningOrSubmersion": {
+      "lessThan5Minutes": false,
+      "between5And10Minutes": false,
+      "greaterThan10Minutes": false,
+      "unknownDuration": false,
+      "coldWater": false,
+      "riverOrDam": false,
+      "flood": false,
+      "pool": false,
+      "bystanderCPR": false
+    },
+    "burns": {
+      "bsaLessThan15Percent": false,
+      "bsaGreaterThan15Percent": false,
+      "confinedSpace": false,
+      "duration": ""
+    },
+    "chemicalExposure": false,
+    "electricalInjury": false,
+    "flashBurn": false,
+    "lightningStrike": false,
+    "steamInhalation": false,
+    "smokeInhalation": false,
+    "thermalInjury": false,
+    "IGEStimulation": {
+      "allergy": false,
+      "anaphylaxisGreaterThan2SystemsInvolved": false,
+      "stridor": false,
+      "wheezes": false,
+      "erythema": false,
+      "pruritus": false,
+      "urticaria": false
+    },
+    "IGEStimulationBodyParts": {
+      "abdomen": false,
+      "head": false,
+      "limbs": false,
+      "torso": false
+    },
+    "poisoning": {
+      "abdominalPain": false,
+      "alteredLOC": false,
+      "bradycardia": false,
+      "secretions": false,
+      "diaphoresis": false,
+      "hypotension": false,
+      "incontinence": false,
+      "miosis": false,
+      "seizures": false,
+      "vomiting": false
+    }
+  },
+  "vitalSigns": {
+    "entries": [
+      {
+        "airEntry": {
+          "left": "",
+          "right": ""
+        },
+        "etco2": "",
+        "fio2": "",
+        "ratePerMin": "",
+        "rhythm": "",
+        "spo2": "",
+        "bloodPressure": "",
+        "ecgAnalysis": "",
+        "heartRatePerMin": "",
+        "perfusion": "",
+        "gcsAvpu": "",
+        "glucoseMmolL": "",
+        "painScore": "",
+        "pupilReaction": {
+          "left": "",
+          "right": ""
+        },
+        "pupilSize": {
+          "left": "",
+          "right": ""
+        },
+        "temperatureC": "",
+        "time": ""
+      }
+    ]
+  },
+  "intravenousTherapy": {
+    "entries": [
+      {
+        "Fluid": "",
+        "Volume": "",
+        "Admin": "",
+        "Rate": "",
+        "Time": "",
+        "Jelco": "",
+        "Site": "",
+        "VolumeAdministered_ml": ""
+      }
+    ],
+    "MotivationForIV": "",
+    "DrugRoute": false,
+    "FluidBolus": false,
+    "P1_Unstable": false,
+    "Weight": "",
+    "WeightUnit": "kg",
+    "PawperTape": false,
+    "BroselowTape": false,
+    "TotalVolumeAdministered_ml": ""
+  },
+  "MedicationAdministered": {
+    "entries": [
+      {
+        "Medicine": "",
+        "Dose": "",
+        "Route": "",
+        "Time": "",
+        "HPCSA": "",
+        "Name": "",
+        "Signature": ""
+      }
+    ],
+    "Consulted": false,
+    "Practitioner": "",
+    "HPCSA_Practitioner": "",
+    "SummaryOfConsult": ""
+  },
+  "proceduresAndTreatments": {
+    "Airway": {
+      "ETT": false,
+      "ETT_Size_mm": "",
+      "Depth_cmt": "",
+      "ETT_Cuff_Pressure_20_30_cmH2O": false,
+      "Cuff_Not_Inflated": false,
+      "Cuff_Not_Measured": false,
+      "Gastric_Tube": false,
+      "Igel": false,
+      "LMA": false,
+      "LTA": false,
+      "Lateral": false,
+      "Needle_Airway": false,
+      "OPA": false,
+      "RSI": false,
+      "Suction": false,
+      "Surgical_Cric": false
+    },
+    "Alignment": {
+      "Extrication": false,
+      "Headblocks": false,
+      "KED": false,
+      "Logroll": false,
+      "MILS": false,
+      "Scoop": false,
+      "Spider_Harness": false,
+      "Spineboard": false,
+      "Splint": false,
+      "Trac_III": false
+    },
+    "Breathing": {
+      "BVM": false,
+      "Chest_Decompression": false,
+      "CPAP": false,
+      "ETCO2": false,
+      "ICD": {
+        "L": false,
+        "R": false,
+        "Date": ""
+      },
+      "Oxygen": false,
+      "SpO2": "",
+      "Ventilation": false,
+      "Ventilator": {
+        "name": "",
+        "Mode": "",
+        "PEEP_cmH2O": "",
+        "PIP_cmH2O": "",
+        "FiO2": "",
+        "I:E": "",
+        "TV": "",
+        "Rate": ""
+      }
+    },
+    "Circulation": {
+      "Blood": false,
+      "Bolus": false,
+      "Buretrol": false,
+      "CPR": false,
+      "Cardioversion": false,
+      "Central_IV": false,
+      "Defib": false,
+      "DialAFlow": false,
+      "ECG": false,
+      "12_Lead": false,
+      "Fluid_Warmer": false,
+      "HI_Line": false,
+      "Infusion_Pump": false,
+      "Infusion_IO": false,
+      "Pacing": false,
+      "Peripheral_IV": false,
+      "Plasma": false,
+      "Syringe_Driver": false
+    }
+  },
+  "NeuroAssessment": {
+    "CincinnatiScale": {
+      "ArmDrift": false,
+      "FacialDroop": false,
+      "SlurredSpeech": false
+    },
+    "Seizure": false,
+    "TonicClonic": false,
+    "Petite": false,
+    "AcuteDelirium": false,
+    "Aphasia": false,
+    "Incontinence": false,
+    "Urine": false,
+    "Stool": false,
+    "Stupor": false,
+    "SyncopeEvents": false
+  },
+  "NeuroConditions": {
+    "BrainTumour": false,
+    "Bipolar": false,
+    "Dementia": false,
+    "Depression": false,
+    "Epilepsy": false,
+    "Hydrocephalus": false,
+    "MultipleSclerosis": false,
+    "Parkinsons": false,
+    "Previous": {
+      "TBI": false,
+      "TIA": false,
+      "Stroke": false
+    },
+    "Quadriplegia": false,
+    "Paraplegia": false,
+    "Schizophrenia": false,
+    "Syndrome": false
+  },
+  "AbdominalAssessment": {
+    "UrineOutput": {
+      "Burning": false,
+      "DarkYellow": false,
+      "Normal": false,
+      "Blood": false,
+      "Poly": false,
+      "NoOutput": false,
+      "IHT_FoleyCath": false,
+      "UO_ml_hr": ""
+    },
+    "HX": {
+      "Diverticulitis": false,
+      "LiverOrRenalFailure": false,
+      "Stones": false,
+      "UTIs": false
+    },
+    "GIT": {
+      "Ascites": false,
+      "Bloated": false,
+      "Constipation": false,
+      "Diaphoresis": false,
+      "Gastroenteritis": false,
+      "Haematemesis": false,
+      "MelaenaStools": false,
+      "PegTube": false,
+      "Diarrhoea": false,
+      "Emesis": {
+        "amount": "",
+        "timesForNumberOfDays": ""
+      }
+    },
+    "Pain": {
+      "Burning": false,
+      "Cramping": false,
+      "Dull": false,
+      "Sharp": false,
+      "Tearing": false,
+      "Reflux": false
+    },
+    "Contractions": {
+      "Mild": false,
+      "Mod": false,
+      "Severe": false,
+      "amount_per_10min": ""
+    },
+    "Pregnancy": {
+      "Pregnant": false,
+      "TwinPregnancy": false,
+      "Para": "",
+      "Gravida": "",
+      "Discharge": false,
+      "PVBleeding": false,
+      "LastDrVisit": "",
+      "Gestation": ""
+    }
+  },
+  "SignsOfDehydration": {
+    "ColdPeripheries": false,
+    "Confused": false,
+    "Cramping": false,
+    "Dysphagia": false,
+    "Dizziness": false,
+    "DryMucosa": false,
+    "Hypotension": false,
+    "PoorSkinTurgor": false,
+    "SunkenEyes": false,
+    "SunkenFontanelles": false,
+    "Syncope": false,
+    "Tachycardia": false,
+    "Weak": false
+  },
+  "PainAssessment_PQRST": {
+    "Provocation": {
+      "OnsetDuringExertion": false,
+      "DuringRest": false,
+      "WokenByPain": false,
+      "OnsetDuringMildActivity": false,
+      "Mod": false,
+      "Activity": false
+    },
+    "Quality": {
+      "Burning": false,
+      "Crushing_Weight": false,
+      "Intermittent": false,
+      "Constant": false,
+      "Dull": false,
+      "Sharp": false,
+      "Tearing": false,
+      "CannotDescribe": false
+    },
+    "Radiating": {
+      "Yes": false,
+      "LArm": false,
+      "RArm": false,
+      "Face": false,
+      "Back": false,
+      "Leg": false
+    },
+    "Severity": {
+      "AtOnset": "",
+      "Current": ""
+    },
+    "TimeOfOnset": "",
+    "NegativeMurphysSign": false
+  },
+  "CardiacRiskFactors": {
+    "Age": false,
+    "HighBMI": false,
+    "Diabetes": false,
+    "FamilyCardiacHx": false,
+    "Hypertension": false,
+    "HighCholesterol": false,
+    "PreviousCardiacEvent": false,
+    "Smoker": false,
+    "Stress": false
+  },
+  "SignsOfAcuteCoronarySyndrome": {
+    "ChestPainNotIncreasedByDeepBreathing": false,
+    "CrushingPain": false,
+    "Diaphoresis": false,
+    "RadiatingPain": false,
+    "Nausea": false,
+    "Pale": false,
+    "ECGChanges": false,
+    "STElevation": false
+  },
+  "RespiratoryDistressAssessment": {
+    "HX": {
+      "Asthma": false,
+      "COPD": false,
+      "Emphysema": false,
+      "HxOfPulmonaryEmboli": false,
+      "LungCancer": false,
+      "ProneToChestInfections_Pneumonia": false,
+      "PulmonaryTB": false,
+      "COVID_plus": false
+    },
+    "RiskFactorsForPulmEmbolus": {
+      "TakingContraceptives": false,
+      "HxOfDVTs": false,
+      "Recent_LongDistanceTravel": false,
+      "Fracture": false,
+      "RecentlyGivenBirth": false
+    },
+    "InAdditionToAEFindings": {
+      "AccessoryMusclesUse": false,
+      "AudibleWheezes": false,
+      "AudibleStridor": false,
+      "Apnea": false,
+      "OnHomeO2": false,
+      "Coughing_Wet": false,
+      "Coughing_Dry": false,
+      "DyspnoeaNotRelievedByPrescribedMedication": false,
+      "GuardsDepthOfBreathing": false,
+      "Hyperventilation": false,
+      "InabilityToTalk": false,
+      "Kussmaul": false,
+      "RecentFlu": false,
+      "SevereDrooling": false,
+      "SignsOfRespiratoryFatigue": false,
+      "SootInMouth": false,
+      "Tachypnoea": false,
+      "TripodPosition": false,
+      "TalksInPhrases": false,
+      "UsesSingleWordsOnly": false
+    },
+    "Infant": {
+      "ChestRecession": false,
+      "Grunting": false,
+      "Irritable": false,
+      "PremBaby_RespiratoryDistressSyndrome": false,
+      "CongenitalAbnormality": false,
+      "HyalineMembraneDisease": false
+    }
+  },
+  "AdditionalRSINotes": {
+    "IndicationForRSI": {
+      "NeuroProtection": false,
+      "AirwayProtection": false,
+      "OptimiseOxygenationVentilation": false
+    },
+    "PreMedicationsGivenAndMotivation": ""
+  }
+}

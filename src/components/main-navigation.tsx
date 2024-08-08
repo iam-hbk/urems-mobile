@@ -21,30 +21,24 @@ export function NavigationBar({
   const links = [
     {
       label: "Dashboard",
-      href: "#",
-      icon: (
-        <LayoutDashboard/>
-      ),
+      href: "/",
+      icon: <LayoutDashboard className="text-primary-foreground h-5 w-5 flex-shrink-0" />,
     },
     {
       label: "Profile",
       href: "#",
-      icon: (
-        <User2/>
-      ),
+      icon: <User2 className="text-primary-foreground h-5 w-5 flex-shrink-0" />,
     },
     {
       label: "Settings",
       href: "#",
-      icon: (
-        <Settings/>
-      ),
+      icon: <Settings className="text-primary-foreground h-5 w-5 flex-shrink-0" />,
     },
     {
       label: "Logout",
       href: "#",
       icon: (
-        <LogOut className="transform scale-x-[-1]"/>
+        <LogOut className="transform scale-x-[-1] text-primary-foreground h-5 w-5 flex-shrink-0" />
       ),
     },
   ];
@@ -56,7 +50,7 @@ export function NavigationBar({
         "h-screen"
       )}
     >
-      <Sidebar  open={open} setOpen={setOpen}>
+      <Sidebar open={open} setOpen={setOpen}>
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
             {open ? <Logo /> : <LogoIcon />}
@@ -69,7 +63,7 @@ export function NavigationBar({
           <div>
             <SidebarLink
               link={{
-                label: "Manu Arora",
+                label: "Heritier Kaumbu",
                 href: "#",
                 icon: (
                   <span>
@@ -89,7 +83,7 @@ export const Logo = () => {
   return (
     <Link
       href="#"
-      className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
+      className="font-normal flex space-x-2 items-center text-sm text-primary py-1 relative z-20"
     >
       <div className="h-5 w-6 bg-secondary rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
       <motion.span

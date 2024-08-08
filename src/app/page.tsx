@@ -11,7 +11,7 @@ export default function Home() {
         <CardAction
           action="Create"
           description="Create a new Patient Report Form from Scratch"
-          route="/create"
+          route="/create-prf"
         />
         <CardAction
           action="Edit"
