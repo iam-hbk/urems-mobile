@@ -2,7 +2,7 @@ import { FormTaskDetailsTable } from "@/components/form-task-details-table";
 import FormFillProgress from "@/components/progress-ring";
 import { Stepper } from "@/components/stepper";
 import StepperView from "@/components/stepper-view";
-import ThePrfForm from "@/components/the-prf-form";
+import ThePrfForm from "@/components/the-prf-form/the-prf-form";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import React from "react";
@@ -27,7 +27,7 @@ const PRF = (props: Props) => {
       {/* Form Summary */}
       <section className="p-2 gap-2 flex flex-col">
         <div className="flex justify-between items-center">
-          <h3 className="scroll-m-20 text-xl text-muted-foreground  font-semibold tracking-tight">
+          <h3 className="scroll-m-20 text-2xl text-muted-foreground  font-semibold tracking-tight">
             Form Summary
           </h3>
           <Button variant={"outline"}>Edit </Button>
@@ -79,7 +79,7 @@ const PRF = (props: Props) => {
       {/* Task Details Table */}
       <section className="p-2 gap-2 flex flex-col">
         <div>
-          <h3 className="scroll-m-20 text-xl text-muted-foreground font-semibold tracking-tight">
+          <h3 className="scroll-m-20 text-2xl text-muted-foreground font-semibold tracking-tight">
             Task Details
           </h3>
         </div>
@@ -88,8 +88,8 @@ const PRF = (props: Props) => {
         </div>
       </section>
       {/* Form */}
-      <section>
-        <h3 className="scroll-m-20 text-xl text-muted-foreground font-semibold tracking-tight">
+      <section className="p-2 gap-2 flex flex-col">
+        <h3 className="scroll-m-20 text-2xl text-muted-foreground font-semibold tracking-tight">
           Patient Report Form
         </h3>
         <div>

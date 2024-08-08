@@ -58,31 +58,31 @@ const formSections = [
     description: "Patient Information",
     isRequired: true,
     isCompleted: true,
-    route: "/create-prf/patient-details",
+    route: "/create-prf/#patient-details-form-section",
   },
   {
     description: "Primary Survey",
     isRequired: true,
     isCompleted: true,
-    route: "/create-prf/primary-survey",
+    route: "/create-prf/#primary-survey-form-section",
   },
   {
     description: "Vital Signs",
     isRequired: true,
     isCompleted: false,
-    route: "/create-prf/vital-signs",
+    route: "/create-prf/#vital-signs-form-section",
   },
   {
     description: "Notes",
     isRequired: false,
     isCompleted: false,
-    route: "/create-prf/notes",
+    route: "/create-prf/#notes-form-section",
   },
   {
     description: "Patient Handover",
     isRequired: true,
     isCompleted: false,
-    route: "/create-prf/patient-handover",
+    route: "/create-prf/#patient-handover-form-section",
   },
 ];
 
@@ -252,7 +252,10 @@ export function FormTaskDetailsTable() {
                               "Optional"
                             )
                           ) : column.accessor === "description" ? (
-                            <Link className="hover:underline" href={section.route}>
+                            <Link
+                              className="hover:underline"
+                              href={section.route}
+                            >
                               {section.description}
                             </Link>
                           ) : null}
@@ -286,7 +289,10 @@ export function FormTaskDetailsTable() {
                               "Optional"
                             )
                           ) : column.accessor === "description" ? (
-                            <Link className="hover:underline" href={section.route}>
+                            <Link
+                              className="hover:underline"
+                              href={section.route}
+                            >
                               {section.description}
                             </Link>
                           ) : null}
