@@ -26,7 +26,7 @@ import { Badge } from "./ui/badge";
 
 export function Prf_Info() {
   return (
-    <Card className="w-full hover:bg-primary/5 max-w-lg hover:border-primary/15 hover:shadow-xl transition-all duration-500 ">
+    <Card className="w-full hover:bg-primary/5 xl:max-w-lg hover:border-primary/15 hover:shadow-xl transition-all duration-500 ">
       <CardHeader className="flex items-center gap-4 pb-4">
         <Badge className="self-end rounded-md bg-green-700 dark:bg-green-400">
           Submitted

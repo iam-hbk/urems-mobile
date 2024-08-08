@@ -16,13 +16,13 @@ export default function Home() {
         <CardAction
           action="Edit"
           description="Edit an existing Patient Report Form that has not been submitted yet"
-          route="/edit"
+          route="/edit-prf"
         />
       </section>
       <h3 className="scroll-m-20 text-2xl text-muted-foreground  font-semibold tracking-tight">
         Recent PRFs
       </h3>
-      <section className=" p-2 flex flex-row items-center flex-wrap justify-center gap-4 w-full">
+      <section className=" p-2 flex flex-col lg:flex-row items-center flex-wrap justify-center gap-4 w-full">
         {Array(7)
           .fill(0)
           .map((_, i) => (
