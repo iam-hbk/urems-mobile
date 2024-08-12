@@ -1,17 +1,28 @@
+import { cn } from "@/lib/utils";
 import React from "react";
 
 interface ProgressRingProps {
   progress: number;
   max: number;
+  className?: string;
 }
 
-const FormFillProgress: React.FC<ProgressRingProps> = ({ progress, max }) => {
+const FormFillProgress: React.FC<ProgressRingProps> = ({
+  progress,
+  max,
+  className,
+}) => {
   const radius = 100; // Adjust the radius to make the circle smaller
   const circumference = 2 * Math.PI * radius;
   const progressPercentage = (progress / max) * 100;
 
   return (
-    <div className=" relative flex items-center justify-center w-full max-w-xs mx-auto">
+    <div
+      className={cn(
+        "relative flex items-center justify-center w-full max-w-xs mx-auto",
+        className
+      )}
+    >
       <svg className="transform -rotate-90 w-56 h-56 ">
         <circle
           cx="50%"

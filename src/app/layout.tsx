@@ -3,6 +3,7 @@ import { Urbanist as FontSans } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { NavigationBar } from "@/components/main-navigation";
+import { Toaster } from "@/components/ui/sonner";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -27,6 +28,7 @@ export default function RootLayout({
         )}
       >
         <NavigationBar>{children}</NavigationBar>
+        <Toaster richColors />
       </body>
     </html>
   );
