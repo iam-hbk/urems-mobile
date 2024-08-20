@@ -1,3 +1,4 @@
+import { PRF_FORM } from "@/interfaces/prf-form";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import React from "react";
@@ -89,79 +90,18 @@ function Steps({ steps }: { steps: any[] }) {
   );
 }
 
-const form = {
-  patient_details: {
-    section_name: "Patient Details",
-    data: {
-      name: "",
-      age: "",
-      gender: "",
-      id: "",
-      surname: "",
-      passport: "",
-      nextOfKin: {
-        name: "",
-        relationToPatient: "",
-        email: "",
-        physicalAddress: "",
-        phoneNo: "",
-        alternatePhoneNo: "",
-        otherNOKPhoneNo: "",
-      },
-      medicalAid: {
-        name: "",
-        number: "",
-        principalMember: "",
-        authNo: "",
-      },
-      employer: {
-        name: "",
-        workPhoneNo: "",
-        workAddress: "",
-      },
-    },
-    status: "incomplete", // completing, complete
-    isOptional: false, // true
-    sectionUrl: "edit-prf/patient-details",
-  },
-  transportation: {
-    section_name: "Transportation",
-    data: {
-      fromSuburbTown: "",
-      by: "",
-      to: "",
-      crewDetails: [
-        {
-          initialAndSurname: "",
-          HPCSANo: "",
-        },
-      ],
-    },
-    status: "completing", // completing, complete
-    isOptional: false, // true
-    sectionUrl: "edit-prf/transportation",
-  },
-  medical_history: {
-    section_name: "Medical History",
-    data: {
-      conditions: "",
-      medications: "",
-      allergies: "",
-    },
-    status: "complete", // completing, complete
-    isOptional: true, // true
-    sectionUrl: "edit-prf/medical-history",
-  },
-} as any;
-
-export function Stepper() {
-  // Transform the form data into steps
-  const stepsData = Object.keys(form).map((key, index) => ({
-    title: form[key].section_name,
-    isOptional: form[key].isOptional,
-    status: form[key].status,
-    sectionUrl: form[key].sectionUrl,
-  }));
+type StepperProps = {
+  prf: PRF_FORM;
+};
+export function Stepper({ prf }: StepperProps) {
+  const stepsData = Object.entries(prf.prfData).map(
+    ([section, sectionData]) => ({
+      title: section.replace("_", " "),
+      isOptional: sectionData.isOptional,
+      status: sectionData.isCompleted ? "complete" : "completing",
+      sectionUrl: `/edit-prf/${prf.prfFormId}/${section.replace("_", "-")}`,
+    })
+  );
 
   return (
     <div className="p-4">

@@ -1,6 +1,5 @@
 "use client";
 import React, { useState } from "react";
-import { FormTaskDetailsTable } from "@/components/form-task-details-table";
 import FormFillProgress from "@/components/progress-ring";
 import PRFEditSummary from "@/components/the-prf-form/case-details-section";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,8 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useStore } from "@/lib/store";
 import { usePrfForms } from "@/hooks/prf/usePrfForms";
+import PRF_DATA_TASKS from "@/components/form-task-details-table";
+import { PRFFormDataSchema } from "@/interfaces/prf-schema";
 
 type Props = {
   params: {
@@ -68,7 +69,7 @@ const PRF = (props: Props) => {
           />
         </div>
         <div className="flex flex-col gap-1">
-          <Card className="w-full text-sm lg:text-base shadow-none flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-x-6 lg:space-y-0 p-2">
+          <Card className="w-full capitalize text-sm lg:text-base shadow-none flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-x-6 lg:space-y-0 p-2">
             <div className="space-y-4 w-full">
               <div className="flex items-center justify-between">
                 <div className=" font-medium">Region/District </div>
@@ -128,7 +129,7 @@ const PRF = (props: Props) => {
               </div>
             </div>
             <FormFillProgress
-              max={21}
+              max={Object.keys(PRFFormDataSchema.shape).length}
               progress={
                 Object.keys(prf.prfData).filter(
                   (key) =>
@@ -148,18 +149,9 @@ const PRF = (props: Props) => {
           </h3>
         </div>
         <div className="lg:px-16 flex flex-col items-center">
-          <FormTaskDetailsTable prfID={props.params.prfID} />
+          <PRF_DATA_TASKS data={prf} />
         </div>
       </section>
-      {/* Form */}
-      {/* <section className="p-2 gap-2 flex flex-col">
-        <h3 className="scroll-m-20 text-2xl text-muted-foreground font-semibold tracking-tight">
-          Patient Report Form
-        </h3>
-        <div>
-          <ThePrfForm formData={null} collectData={collectData} />
-        </div>
-      </section> */}
     </main>
   );
 };

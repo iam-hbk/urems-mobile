@@ -29,39 +29,9 @@ import {
   AccordionTrigger,
 } from "../ui/accordion";
 import { cn } from "@/lib/utils";
+import { PatientDetailsSchema } from "@/interfaces/prf-schema";
 
-const patientDetailsSchema = z.object({
-  patientName: z.string().min(2).max(50),
-  patientSurname: z.string().min(2).max(50),
-  age: z.number().int().positive().min(1).max(200),
-  gender: z.enum(["male", "female"], {
-    required_error: "You need to select a gender.",
-  }),
-  id: z.string().min(1).max(50),
-  passport: z.string().optional(),
-  nextOfKin: z.object({
-    name: z.string().min(2).max(50),
-    relationToPatient: z.string().min(2).max(50),
-    email: z.string().email(),
-    physicalAddress: z.string().min(2).max(100),
-    phoneNo: z.string().min(2).max(15),
-    alternatePhoneNo: z.string().optional(),
-    otherNOKPhoneNo: z.string().optional(),
-  }),
-  medicalAid: z.object({
-    name: z.string().min(2).max(50),
-    number: z.string().min(1).max(50),
-    principalMember: z.string().min(2).max(50),
-    authNo: z.string().optional(),
-  }),
-  employer: z.object({
-    name: z.string().min(2).max(50),
-    workPhoneNo: z.string().min(2).max(15),
-    workAddress: z.string().min(2).max(100),
-  }),
-});
-
-export type PatientDetailsType = z.infer<typeof patientDetailsSchema>;
+export type PatientDetailsType = z.infer<typeof PatientDetailsSchema>;
 
 type PatientDetailsFormProps = {
   initialData?: PRF_FORM;
@@ -75,8 +45,8 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
 
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
-  const form = useForm<z.infer<typeof patientDetailsSchema>>({
-    resolver: zodResolver(patientDetailsSchema),
+  const form = useForm<z.infer<typeof PatientDetailsSchema>>({
+    resolver: zodResolver(PatientDetailsSchema),
     defaultValues: {
       patientName:
         prf_from_store?.prfData.patient_details?.data.patientName || "",
@@ -127,7 +97,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
     },
   });
 
-  function onSubmit(values: z.infer<typeof patientDetailsSchema>) {
+  function onSubmit(values: z.infer<typeof PatientDetailsSchema>) {
     const prfUpdateValue: PRF_FORM = {
       prfFormId: prfId,
       prfData: {

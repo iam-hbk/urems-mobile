@@ -37,20 +37,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { cn } from "@/lib/utils";
 import { Calendar } from "../ui/calendar";
 import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
+import { CaseDetailsSchema } from "@/interfaces/prf-schema";
 
-const prfSummarySchema = z.object({
-  regionDistrict: z.string().min(2, "Region/District is required").max(50),
-  base: z.string().min(2, "Base is required").max(50),
-  province: z.string().min(2, "Province is required").max(50),
-  rescueUnit: z.string().min(2, "Rescue Unit is required").max(50),
-  rv: z.string().min(2, "RV is required").max(50),
-  dateOfCase: z.date({
-    required_error: "A date of birth is required.",
-  }),
-  dodNumber: z.string().optional(),
-  ambulance: z.string().min(2, "Ambulance is required").max(50),
-});
-export type CaseDetailsType = z.infer<typeof prfSummarySchema>;
+export type CaseDetailsType = z.infer<typeof CaseDetailsSchema>;
 
 type CaseDetailsFormProps = {
   buttonTitle: string;
@@ -66,8 +55,8 @@ const PRFEditSummary = ({
   const router = useRouter();
   const createPrfQuery = useCreatePrf();
   const updatePrfQuery = useUpdatePrf();
-  const form = useForm<z.infer<typeof prfSummarySchema>>({
-    resolver: zodResolver(prfSummarySchema),
+  const form = useForm<z.infer<typeof CaseDetailsSchema>>({
+    resolver: zodResolver(CaseDetailsSchema),
     defaultValues: {
       regionDistrict:
         initialData?.prfData.case_details?.data.regionDistrict || "",
@@ -83,7 +72,7 @@ const PRFEditSummary = ({
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof prfSummarySchema>) => {
+  const onSubmit = async (values: z.infer<typeof CaseDetailsSchema>) => {
     const prf: PRF_FORM = {
       prfFormId: initialData?.prfFormId,
       prfData: {

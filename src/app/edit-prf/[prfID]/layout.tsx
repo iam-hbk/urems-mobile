@@ -14,14 +14,17 @@ function Layout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const form = useStore((state) => state.prfForms);
   const pathname = usePathname();
-  const path_blocks =pathname.split("/");
+  const path_blocks = pathname.split("/");
+  const prf = useStore((state) => state.prfForms).find(
+    (prf) => prf.prfFormId == path_blocks[2]
+  );
+  console.log(path_blocks[2], prf);
+
   // Put join index 1 and 2
   path_blocks[1] = path_blocks[1] + "/" + path_blocks[2];
   //Remove index 2
   path_blocks.splice(2, 1);
-
 
   return (
     <div className="flex flex-col overflow-auto w-full items-center ">
@@ -36,7 +39,7 @@ function Layout({
               );
             }
             return (
-              <Link key={index} href={index == 1 ? `/${block}` :`${block}`}>
+              <Link key={index} href={index == 1 ? `/${block}` : `${block}`}>
                 <Badge className="bg-slate-500 rounded-md capitalize">
                   / {block}
                 </Badge>
@@ -44,9 +47,11 @@ function Layout({
             );
           })}
         </div>
-        <StepperView triggerTitle="View Progress">
-          <Stepper />
-        </StepperView>
+        {!!prf && (
+          <StepperView triggerTitle="View Progress">
+            <Stepper prf={prf} />
+          </StepperView>
+        )}
       </div>
       {/* Body */}
       <div className="w-11/12 flex-grow grid grid-cols-1 justify-items-center">
