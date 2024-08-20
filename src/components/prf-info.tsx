@@ -33,7 +33,7 @@ export function Prf_Info() {
         </Badge>
         <div className="flex flex-row gap-2 ">
           <Avatar className="border-2 border-primary">
-            <AvatarImage src="/placeholder-user.jpg" alt="Patient Avatar" />
+            {/* <AvatarImage src="/placeholder-user.jpg" alt="Patient Avatar" /> */}
             <AvatarFallback>
               <User2 />
             </AvatarFallback>

@@ -122,7 +122,7 @@ const form = {
     },
     status: "incomplete", // completing, complete
     isOptional: false, // true
-    sectionUrl: "create-prf/patient-details",
+    sectionUrl: "edit-prf/patient-details",
   },
   transportation: {
     section_name: "Transportation",
@@ -139,7 +139,7 @@ const form = {
     },
     status: "completing", // completing, complete
     isOptional: false, // true
-    sectionUrl: "create-prf/transportation",
+    sectionUrl: "edit-prf/transportation",
   },
   medical_history: {
     section_name: "Medical History",
@@ -150,7 +150,7 @@ const form = {
     },
     status: "complete", // completing, complete
     isOptional: true, // true
-    sectionUrl: "create-prf/medical-history",
+    sectionUrl: "edit-prf/medical-history",
   },
 } as any;
 

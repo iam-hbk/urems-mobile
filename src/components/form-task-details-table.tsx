@@ -58,35 +58,39 @@ const formSections = [
     description: "Patient Information",
     isRequired: true,
     isCompleted: true,
-    route: "/create-prf/#patient-details-form-section",
+    route: "patient-details",
   },
   {
     description: "Primary Survey",
     isRequired: true,
     isCompleted: true,
-    route: "/create-prf/#primary-survey-form-section",
+    route: "primary-survey",
   },
   {
     description: "Vital Signs",
     isRequired: true,
     isCompleted: false,
-    route: "/create-prf/#vital-signs-form-section",
+    route: "vital-signs",
   },
   {
     description: "Notes",
     isRequired: false,
     isCompleted: false,
-    route: "/create-prf/#notes-form-section",
+    route: "notes",
   },
   {
     description: "Patient Handover",
     isRequired: true,
     isCompleted: false,
-    route: "/create-prf/#patient-handover-form-section",
+    route: "patient-handover-form-section",
   },
 ];
 
-export function FormTaskDetailsTable() {
+type Props = {
+  prfID: string;
+};
+
+export function FormTaskDetailsTable({ prfID }: Props) {
   const [formSectionsColumns, setFormSectionsColumns] = useState([
     {
       Header: "Section Description",
@@ -254,7 +258,7 @@ export function FormTaskDetailsTable() {
                           ) : column.accessor === "description" ? (
                             <Link
                               className="hover:underline"
-                              href={section.route}
+                              href={`${prfID}/${section.route}`}
                             >
                               {section.description}
                             </Link>
@@ -291,7 +295,7 @@ export function FormTaskDetailsTable() {
                           ) : column.accessor === "description" ? (
                             <Link
                               className="hover:underline"
-                              href={section.route}
+                              href={`${prfID}/${section.route}`}
                             >
                               {section.description}
                             </Link>

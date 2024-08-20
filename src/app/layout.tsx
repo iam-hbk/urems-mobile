@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { NavigationBar } from "@/components/main-navigation";
 import { Toaster } from "@/components/ui/sonner";
+import QueryClientWrapper from "@/lib/react-query-client";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -27,7 +28,9 @@ export default function RootLayout({
           fontSans.variable
         )}
       >
-        <NavigationBar>{children}</NavigationBar>
+        <QueryClientWrapper>
+          <NavigationBar>{children}</NavigationBar>
+        </QueryClientWrapper>
         <Toaster richColors />
       </body>
     </html>

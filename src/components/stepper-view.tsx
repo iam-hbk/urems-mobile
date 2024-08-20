@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "./ui/button";
 import { PropsWithChildren } from "react";
+import { TrendingUp } from "lucide-react";
 
 interface Props extends PropsWithChildren {
   triggerTitle: string;
@@ -19,7 +20,10 @@ const StepperView: React.FC<Props> = (props) => {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline">{props.triggerTitle}</Button>
+        <Button variant="outline">
+          <TrendingUp className="mr-2 h-4 w-4" />
+          {props.triggerTitle}
+        </Button>
       </SheetTrigger>
       <SheetContent>
         <SheetHeader>
