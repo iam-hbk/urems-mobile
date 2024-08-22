@@ -163,7 +163,7 @@ const PRFEditSummary = ({
           {buttonTitle}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl ">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Patient Report Form Case Details</DialogTitle>
           <DialogDescription>
@@ -175,7 +175,7 @@ const PRFEditSummary = ({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-8 flex flex-col"
+            className="flex flex-col space-y-8"
           >
             <div className="grid grid-cols-2 gap-6">
               <FormField
@@ -231,7 +231,7 @@ const PRFEditSummary = ({
                               variant={"outline"}
                               className={cn(
                                 "w-[240px] pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
+                                !field.value && "text-muted-foreground",
                               )}
                             >
                               {field.value ? (
@@ -315,7 +315,7 @@ const PRFEditSummary = ({
             </div>
 
             <DialogFooter>
-              <Button type="submit">
+              <Button disabled={form.formState.isDirty === false} type="submit">
                 {createPrfQuery.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving

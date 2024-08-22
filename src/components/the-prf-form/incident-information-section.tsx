@@ -39,7 +39,7 @@ type IncidentInformationFormProps = {
 const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
   const prfId = usePathname().split("/")[2];
   const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId
+    (prf) => prf.prfFormId == prfId,
   );
 
   const updatePrfQuery = useUpdatePrf();
@@ -110,22 +110,22 @@ const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
     };
     console.log(prfUpdateValue);
 
-    // updatePrfQuery.mutate(prfUpdateValue, {
-    //   onSuccess: (data) => {
-    //     toast.success("Incident Information Updated", {
-    //       duration: 3000,
-    //       position: "top-right",
-    //     });
+    updatePrfQuery.mutate(prfUpdateValue, {
+      onSuccess: (data) => {
+        toast.success("Incident Information Updated", {
+          duration: 3000,
+          position: "top-right",
+        });
+        router.push(`/edit-prf/${data?.prfFormId}`);
 
-    //     router.back();
-    //   },
-    //   onError: (error) => {
-    //     toast.error("An error occurred", {
-    //       duration: 3000,
-    //       position: "top-right",
-    //     });
-    //   },
-    // });
+      },
+      onError: (error) => {
+        toast.error("An error occurred", {
+          duration: 3000,
+          position: "top-right",
+        });
+      },
+    });
   }
 
   return (
@@ -138,7 +138,7 @@ const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-8 flex flex-col"
+          className="flex flex-col space-y-8"
         >
           <AccordionItem value="location-information">
             <AccordionTrigger
@@ -149,17 +149,17 @@ const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
             >
               <h4
                 className={cn(
-                  "scroll-m-20 col-span-full font-semibold text-lg tracking-tight",
+                  "col-span-full scroll-m-20 text-lg font-semibold tracking-tight",
                   {
                     "text-destructive":
                       Object.keys(form.formState.errors).length > 0,
-                  }
+                  },
                 )}
               >
                 Location Information
               </h4>
             </AccordionTrigger>
-            <AccordionContent className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 px-4">
+            <AccordionContent className="grid gap-3 px-4 sm:grid-cols-2 lg:grid-cols-3">
               <SceneAddressInput
                 name="sceneAddress"
                 label="Scene Address"
@@ -214,13 +214,13 @@ const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
             >
               <h4
                 className={cn(
-                  "scroll-m-20 col-span-full font-semibold text-lg tracking-tight"
+                  "col-span-full scroll-m-20 text-lg font-semibold tracking-tight",
                 )}
               >
                 Past History
               </h4>
             </AccordionTrigger>
-            <AccordionContent className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 px-4">
+            <AccordionContent className="grid gap-3 px-4 sm:grid-cols-2 lg:grid-cols-3">
               <FormField
                 control={form.control}
                 name="pastHistory.allergies"
@@ -404,28 +404,15 @@ const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
             </AccordionContent>
           </AccordionItem>
           {/* Submit form */}
-          <Button type="submit" className="self-end">
+          <Button
+            disabled={form.formState.isDirty === false}
+            type="submit"
+            className="self-end"
+          >
             Save
           </Button>
         </form>
       </Form>
-      {/* <Button
-        onClick={() => {
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              const { latitude, longitude } = position.coords;
-              //   reverseGeocode(geocoder, latitude, longitude);
-              console.log("Latitude: ", latitude);
-              console.log("Longitude: ", longitude);
-            },
-            (error) => {
-              console.error("Error getting location: ", error);
-            }
-          );
-        }}
-      >
-        Get location
-      </Button> */}
     </Accordion>
   );
 };

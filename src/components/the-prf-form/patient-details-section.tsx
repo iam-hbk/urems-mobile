@@ -40,7 +40,7 @@ type PatientDetailsFormProps = {
 const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
   const prfId = usePathname().split("/")[2];
   const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId
+    (prf) => prf.prfFormId == prfId,
   );
 
   const updatePrfQuery = useUpdatePrf();
@@ -48,6 +48,9 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
   const form = useForm<z.infer<typeof PatientDetailsSchema>>({
     resolver: zodResolver(PatientDetailsSchema),
     defaultValues: {
+      age:
+        Number(prf_from_store?.prfData.patient_details?.data.age) || undefined,
+      gender: prf_from_store?.prfData.patient_details?.data.gender || undefined,
       patientName:
         prf_from_store?.prfData.patient_details?.data.patientName || "",
       id: prf_from_store?.prfData.patient_details?.data.id || "",
@@ -120,8 +123,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
         });
 
         console.log("Updated PRF ------>>>>>>>", data);
-        // router.push(`/edit-prf/${data?.prfFormId}`);
-        router.back();
+        router.push(`/edit-prf/${data?.prfFormId}`);
       },
       onError: (error) => {
         toast.error("An error occurred", {
@@ -142,7 +144,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-8 flex flex-col"
+          className="flex flex-col space-y-8"
         >
           {/* Patient Details */}
           <AccordionItem value="patient-details">
@@ -159,7 +161,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
             >
               <h4
                 className={cn({
-                  "scroll-m-20 col-span-full font-semibold text-lg tracking-tight":
+                  "col-span-full scroll-m-20 text-lg font-semibold tracking-tight":
                     true,
                   "text-destructive":
                     form.formState.errors.age ||
@@ -173,7 +175,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                 Patient Information
               </h4>
             </AccordionTrigger>
-            <AccordionContent className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 px-4">
+            <AccordionContent className="grid gap-3 px-4 sm:grid-cols-2 lg:grid-cols-3">
               <FormField
                 control={form.control}
                 name="patientName"
@@ -207,7 +209,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                   <FormItem>
                     <FormLabel>Age</FormLabel>
                     <FormControl>
-                      <div className="flex flex-row relative ">
+                      <div className="relative flex flex-row">
                         <Input
                           type="number"
                           placeholder="Age"
@@ -227,7 +229,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                             }}
                             variant={"ghost"}
                             size={"icon"}
-                            className="z-10 absolute right-0"
+                            className="absolute right-0 z-10"
                           >
                             <X className="h-4 w-4" />
                           </Button>
@@ -248,7 +250,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                       <RadioGroup
                         onValueChange={field.onChange}
                         defaultValue={field.value}
-                        className="flex flex-row  h-10 space-x-1"
+                        className="flex h-10 flex-row space-x-1"
                       >
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
@@ -307,7 +309,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
             >
               <h4
                 className={cn({
-                  "scroll-m-20 col-span-full font-semibold text-lg tracking-tight":
+                  "col-span-full scroll-m-20 text-lg font-semibold tracking-tight":
                     true,
                   "text-destructive": form.formState.errors.nextOfKin,
                 })}
@@ -315,7 +317,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                 Next of Kin Information
               </h4>
             </AccordionTrigger>
-            <AccordionContent className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 px-4">
+            <AccordionContent className="grid gap-3 px-4 sm:grid-cols-2 lg:grid-cols-3">
               <FormField
                 control={form.control}
                 name="nextOfKin.name"
@@ -419,7 +421,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
             >
               <h4
                 className={cn({
-                  "scroll-m-20 col-span-full font-semibold text-lg tracking-tight":
+                  "col-span-full scroll-m-20 text-lg font-semibold tracking-tight":
                     true,
                   "text-destructive": form.formState.errors.medicalAid,
                 })}
@@ -427,7 +429,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                 Medical Aid Information
               </h4>
             </AccordionTrigger>
-            <AccordionContent className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 px-4">
+            <AccordionContent className="grid gap-3 px-4 sm:grid-cols-2 lg:grid-cols-3">
               <FormField
                 control={form.control}
                 name="medicalAid.name"
@@ -492,7 +494,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
             >
               <h4
                 className={cn({
-                  "scroll-m-20 col-span-full font-semibold text-lg tracking-tight":
+                  "col-span-full scroll-m-20 text-lg font-semibold tracking-tight":
                     true,
                   "text-destructive": form.formState.errors.employer,
                 })}
@@ -500,7 +502,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                 Employer Information
               </h4>
             </AccordionTrigger>
-            <AccordionContent className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 px-4">
+            <AccordionContent className="grid gap-3 px-4 sm:grid-cols-2 lg:grid-cols-3">
               <FormField
                 control={form.control}
                 name="employer.name"
@@ -543,7 +545,11 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
             </AccordionContent>
           </AccordionItem>
           {/* Submit form */}
-          <Button type="submit" className="self-end">
+          <Button
+            disabled={form.formState.isDirty === false}
+            type="submit"
+            className="self-end"
+          >
             Save
           </Button>
         </form>

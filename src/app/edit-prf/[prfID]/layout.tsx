@@ -1,5 +1,4 @@
 "use client";
-import { Stepper } from "@/components/stepper";
 import StepperView from "@/components/stepper-view";
 import { useStore } from "@/lib/store";
 import Link from "next/link";
@@ -29,7 +28,7 @@ function Layout({
   return (
     <div className="flex w-full flex-col items-center overflow-auto">
       <div className="sticky top-2 z-10 m-2 flex w-11/12 flex-col items-center justify-between space-y-2 rounded-lg p-2 shadow shadow-slate-200 backdrop-blur">
-        {prf?.prfFormId && <QuickLinks prfID={prf.prfFormId} />}
+        {prf && <QuickLinks prf={prf} />}
 
         <div className="flex w-full flex-row items-center justify-between">
           <div className="flex flex-row gap-1">

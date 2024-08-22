@@ -42,16 +42,19 @@ export const CaseDetailsSchema = z.object({
   dodNumber: z.string().optional(),
   ambulance: z.string().min(2, "Ambulance is required").max(50),
 });
+
 export const TransportationSchema = z.object({
-  fromSuburbTown: z.string(),
-  by: z.string(),
-  to: z.string(),
-  crewDetails: z.array(
-    z.object({
-      initialAndSurname: z.string(),
-      HPCSANo: z.string(),
-    })
-  ),
+  fromSuburbTown: z.string().min(1, "From Suburb/Town is required"),
+  by: z.string().min(2, "By (Transport Mode) is required"),
+  to: z.string().min(2, "To (Destination) is required"),
+  crewDetails: z
+    .array(
+      z.object({
+        initialAndSurname: z.string().min(2, "Initial and Surname is required"),
+        HPCSANo: z.string().min(2, "This is required"),
+      }),
+    )
+    .nonempty("At least one crew member is required"),
 });
 export const IncidentInformationSchema = z.object({
   sceneAddress: z.string().min(5),

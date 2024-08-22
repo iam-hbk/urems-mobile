@@ -1,13 +1,13 @@
-import type { Config } from "tailwindcss"
-const { fontFamily } = require("tailwindcss/defaultTheme")
+import type { Config } from "tailwindcss";
+const { fontFamily } = require("tailwindcss/defaultTheme");
 const config = {
   darkMode: ["class"],
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
-	],
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
   prefix: "",
   theme: {
     container: {
@@ -67,20 +67,38 @@ const config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        shake1: {
+          '0%, 100%': { transform: 'translate(0, 0)' },
+          '10%, 30%, 50%, 70%, 90%': { transform: 'translate(-2px, -1px)' },
+          '20%, 40%, 60%, 80%': { transform: 'translate(2px, 1px)' },
+        },
+        shake2: {
+          '0%, 100%': { transform: 'translate(0, 0)' },
+          '10%, 30%, 50%, 70%, 90%': { transform: 'translate(-1.5px, 1px)' },
+          '20%, 40%, 60%, 80%': { transform: 'translate(1.5px, -1px)' },
+        },
+        shake3: {
+          '0%, 100%': { transform: 'translate(0, 0)' },
+          '10%, 30%, 50%, 70%, 90%': { transform: 'translate(-2px, 0.5px)' },
+          '20%, 40%, 60%, 80%': { transform: 'translate(2px, -0.5px)' },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        shake1: "shake1 1.5s ease-in-out infinite",
+        shake2: "shake2 1.2s ease-in-out infinite",
+        shake3: "shake3 1.9s ease-in-out infinite",
       },
       fontFamily: {
         sans: ["var(--font-sans)", ...fontFamily.sans],
       },
       scale: {
-        '-1': '-1',
+        "-1": "-1",
       },
     },
   },
   plugins: [require("tailwindcss-animate")],
-} satisfies Config
+} satisfies Config;
 
-export default config
+export default config;

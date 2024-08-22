@@ -14,7 +14,7 @@ export default function PRF_DATA_TASKS({
   data,
 }: PRF_DATA_TASKS_COMPONENT_PROPS) {
   const prf_data: PRF_TABLE_SECTION_DATA[] = Object.entries(
-    PRFFormDataSchema.shape
+    PRFFormDataSchema.shape,
   ).map(([sectionKey]) => {
     const sectionSchema =
       PRFFormDataSchema.shape[sectionKey as keyof PRF_FORM_DATA];
@@ -36,8 +36,8 @@ export default function PRF_DATA_TASKS({
         ? "optional"
         : "required"
       : isOptional
-      ? "required"
-      : "optional";
+        ? "required"
+        : "optional";
     const route =
       sectionKey === "case_details"
         ? "#"

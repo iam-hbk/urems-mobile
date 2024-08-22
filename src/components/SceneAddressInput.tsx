@@ -57,7 +57,10 @@ const SceneAddressInput: React.FC<SceneAddressInputProps> = ({
         autocompleteRef.current =
           new window.google.maps.places.AutocompleteService();
         setIsGoogleMapsLoaded(true);
-        handleUseCurrentLocation(true);
+        // handle Current Location call only if the default value is empty
+        if (!currentValue) {
+          handleUseCurrentLocation(true);
+        }
       } else {
         setIsGoogleMapsLoaded(false);
       }
@@ -105,7 +108,6 @@ const SceneAddressInput: React.FC<SceneAddressInputProps> = ({
 
   const handleUseCurrentLocation = (doItAnyway?: boolean) => {
     if ("geolocation" in navigator) {
-      console.log("Getting location...", navigator.geolocation);
       setIsLoadingLocation(true);
       navigator.geolocation.getCurrentPosition(
         (position) => {
