@@ -165,11 +165,11 @@ const PRFEditSummary = ({
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl ">
         <DialogHeader>
-          <DialogTitle>Patient Report Form Summary</DialogTitle>
+          <DialogTitle>Patient Report Form Case Details</DialogTitle>
           <DialogDescription>
             {action == "edit"
-              ? "Edit the Patient Report Form Summary"
-              : "Create a new Patient Report Form Summary"}
+              ? "Edit the Patient Report Form Case Details"
+              : "Create a new Patient Report Form Case Details"}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>

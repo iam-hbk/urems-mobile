@@ -4,7 +4,7 @@ import FormFillProgress from "@/components/progress-ring";
 import PRFEditSummary from "@/components/the-prf-form/case-details-section";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, UploadCloudIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useStore } from "@/lib/store";
 import { usePrfForms } from "@/hooks/prf/usePrfForms";
@@ -46,24 +46,27 @@ const PRF = (props: Props) => {
             {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving Progress
+                Submitting the PRF
               </>
             ) : (
-              "Save Progress"
+              <>
+                <UploadCloudIcon className="mr-2 h-4 w-4" />
+                Submit PRF
+              </>
             )}
           </Button>
         </div>
       </section>
-      {/* Form Summary */}
+      {/* Case Details */}
       <section className="p-2 gap-2 flex flex-col">
         <div className="flex justify-between items-center">
           <h3 className="scroll-m-20 text-2xl text-muted-foreground  font-semibold tracking-tight">
-            Form Summary
+            Case Details
           </h3>
           <PRFEditSummary
             initialData={prf}
             action="edit"
-            buttonTitle="Edit Form Summary"
+            buttonTitle="Edit Case Details"
 
             // collectData={(data: any) => console.log("Summary Data", data)}
           />

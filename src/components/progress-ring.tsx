@@ -19,11 +19,11 @@ const FormFillProgress: React.FC<ProgressRingProps> = ({
   return (
     <div
       className={cn(
-        "relative flex items-center justify-center w-full max-w-xs mx-auto",
-        className
+        "relative mx-auto flex w-full max-w-xs items-center justify-center",
+        className,
       )}
     >
-      <svg className="transform -rotate-90 w-56 h-56 ">
+      <svg className="h-56 w-56 -rotate-90 transform">
         <circle
           cx="50%"
           cy="50%"
@@ -48,7 +48,7 @@ const FormFillProgress: React.FC<ProgressRingProps> = ({
           className="text-primary"
         />
       </svg>
-      <div className="absolute text-2xl sm:text-3xl  lg:text-5xl w-full flex justify-center items-center flex-col">
+      <div className="absolute flex w-full flex-col items-center justify-center text-2xl sm:text-3xl lg:text-5xl">
         <span>{`${progressPercentage.toFixed(0)}%`}</span>
         <span className="text-lg text-primary/50">{`${progress} of ${max} completed`}</span>
       </div>

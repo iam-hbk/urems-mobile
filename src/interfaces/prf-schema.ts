@@ -54,8 +54,8 @@ export const TransportationSchema = z.object({
   ),
 });
 export const IncidentInformationSchema = z.object({
-  sceneAddress: z.string(),
-  dispatchInfo: z.string(),
+  sceneAddress: z.string().min(5),
+  dispatchInfo: z.string().min(5),
   onArrival: z.string(),
   chiefComplaint: z.string(),
   pastHistory: z.object({

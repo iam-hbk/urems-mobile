@@ -39,8 +39,9 @@ export default function PRF_DATA_TASKS({
       ? "required"
       : "optional";
     const route =
-      sectionKey === "case_details" ? "#" : `${data.prfFormId}/${sectionKey.replace("_", "-")}`;
-    console.log("sectionRoute:", route);
+      sectionKey === "case_details"
+        ? "#"
+        : `${data.prfFormId}/${sectionKey.replace("_", "-")}`;
 
     return {
       sectionDescription:

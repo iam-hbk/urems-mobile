@@ -6,6 +6,8 @@ import Link from "next/link";
 import React from "react";
 import { usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import Script from "next/script";
+import QuickLinks from "@/components/quick-links";
 
 type Props = {};
 
@@ -17,46 +19,51 @@ function Layout({
   const pathname = usePathname();
   const path_blocks = pathname.split("/");
   const prf = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == path_blocks[2]
+    (prf) => prf.prfFormId == path_blocks[2],
   );
-  console.log(path_blocks[2], prf);
-
   // Put join index 1 and 2
   path_blocks[1] = path_blocks[1] + "/" + path_blocks[2];
   //Remove index 2
   path_blocks.splice(2, 1);
 
   return (
-    <div className="flex flex-col overflow-auto w-full items-center ">
-      <div className="sticky top-2 flex-row flex  p-2 w-11/12 m-2 rounded-lg items-center justify-between backdrop-blur z-10 shadow shadow-slate-200">
-        <div className="flex flex-row gap-1">
-          {path_blocks.map((block, index) => {
-            if (index == 0) {
+    <div className="flex w-full flex-col items-center overflow-auto">
+      <div className="sticky top-2 z-10 m-2 flex w-11/12 flex-col items-center justify-between space-y-2 rounded-lg p-2 shadow shadow-slate-200 backdrop-blur">
+        {prf?.prfFormId && <QuickLinks prfID={prf.prfFormId} />}
+
+        <div className="flex w-full flex-row items-center justify-between">
+          <div className="flex flex-row gap-1">
+            {path_blocks.map((block, index) => {
+              if (index == 0) {
+                return (
+                  <Link key={index} href={`/`}>
+                    <Badge className="rounded-md bg-slate-500">Home</Badge>
+                  </Link>
+                );
+              }
               return (
-                <Link key={index} href={`/`}>
-                  <Badge className="bg-slate-500 rounded-md">Home</Badge>
+                <Link key={index} href={index == 1 ? `/${block}` : `${block}`}>
+                  <Badge className="rounded-md bg-slate-500 capitalize">
+                    / {block}
+                  </Badge>
                 </Link>
               );
-            }
-            return (
-              <Link key={index} href={index == 1 ? `/${block}` : `${block}`}>
-                <Badge className="bg-slate-500 rounded-md capitalize">
-                  / {block}
-                </Badge>
-              </Link>
-            );
-          })}
+            })}
+          </div>
+          {!!prf && (
+            <StepperView prf={prf} triggerTitle="View Progress"></StepperView>
+          )}
         </div>
-        {!!prf && (
-          <StepperView triggerTitle="View Progress">
-            <Stepper prf={prf} />
-          </StepperView>
-        )}
       </div>
       {/* Body */}
-      <div className="w-11/12 flex-grow grid grid-cols-1 justify-items-center">
+      <div className="grid w-11/12 flex-grow grid-cols-1 justify-items-center">
         {children}
       </div>
+      <Script
+        src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`}
+        strategy="afterInteractive"
+        async
+      />
     </div>
   );
 }
