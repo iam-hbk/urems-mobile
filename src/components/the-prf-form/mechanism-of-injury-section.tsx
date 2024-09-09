@@ -110,7 +110,7 @@ export default function MechanismOfInjuryForm() {
                         .replace("-", "")
                         .toLowerCase()
                         .trim()}
-                      className="flex max-w-32 items-center space-x-3 space-y-0 rounded-md bg-slate-200 p-1 px-2"
+                      className="flex max-w-32 items-center space-x-3 space-y-0 "
                     >
                       <FormControl>
                         <RadioGroupItem value={vehicle} />
@@ -225,7 +225,7 @@ export default function MechanismOfInjuryForm() {
                   {["Driver", "Passenger", "Unknown"].map((person) => (
                     <FormItem
                       key={person}
-                      className="flex items-center space-x-3 space-y-0 rounded-md bg-slate-200 p-1 px-2"
+                      className="flex items-center space-x-3 space-y-0 "
                     >
                       <FormControl>
                         <RadioGroupItem value={person} />
