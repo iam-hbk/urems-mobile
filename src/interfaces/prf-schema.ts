@@ -1,5 +1,6 @@
 import { z } from "zod";
-
+import { PrimarySurveySchema } from "./prf-primary-survey-schema";
+import { VitalSignsSchema } from "./prf-vital-signs-schema";
 export const PatientDetailsSchema = z.object({
   patientName: z.string().min(2).max(50),
   patientSurname: z.string().min(2).max(50),
@@ -59,7 +60,7 @@ export const TransportationSchema = z.object({
 export const IncidentInformationSchema = z.object({
   sceneAddress: z.string().min(5),
   dispatchInfo: z.string().min(5),
-  onArrival: z.string(),
+  onArrival: z.string().min(5),
   chiefComplaint: z.string(),
   pastHistory: z.object({
     allergies: z.string(),
@@ -74,133 +75,6 @@ export const IncidentInformationSchema = z.object({
     HPT: z.boolean(),
     asthma: z.boolean(),
     copd: z.boolean(),
-  }),
-});
-export const PrimarySurveySchema = z.object({
-  airway: z.object({
-    clear: z.boolean(),
-    maintained: z.boolean(),
-    lateral: z.boolean(),
-    intubated: z.boolean(),
-    surgical: z.boolean(),
-    blood: z.boolean(),
-    vomit: z.boolean(),
-    saliva: z.boolean(),
-    FBAO: z.boolean(),
-  }),
-  breathing: z.object({
-    trachea: z.object({
-      midline: z.boolean(),
-      deviated: z.boolean(),
-    }),
-    airEntry: z.object({
-      clear: z.boolean(),
-      diminished: z.boolean(),
-      absent: z.boolean(),
-      left: z.string(),
-      right: z.string(),
-    }),
-    extraSounds: z.object({
-      none: z.boolean(),
-      soft: z.boolean(),
-      loud: z.boolean(),
-      wheezes: z.boolean(),
-      crackles: z.boolean(),
-      stridor: z.boolean(),
-      frictionRub: z.boolean(),
-    }),
-    mechanics: z.object({
-      accessoryMuscleUse: z.boolean(),
-      apnea: z.boolean(),
-      asymmetrical: z.boolean(),
-      fatigue: z.boolean(),
-      guarding: z.boolean(),
-      normal: z.boolean(),
-      hypoventilation: z.boolean(),
-      ventilated: z.boolean(),
-    }),
-    neckVeins: z.object({
-      normal: z.boolean(),
-      distended: z.boolean(),
-    }),
-  }),
-  circulation: z.object({
-    haemorrhage: z.object({
-      none: z.boolean(),
-      arterial: z.boolean(),
-      venous: z.boolean(),
-      capillary: z.boolean(),
-      mild: z.boolean(),
-      moderate: z.boolean(),
-      severe: z.boolean(),
-      internal: z.boolean(),
-    }),
-    assessmentOfPulses: z.object({
-      palpableCentral: z.boolean(),
-      palpablePeripherals: z.boolean(),
-      weak: z.boolean(),
-      absent: z.boolean(),
-      strong: z.boolean(),
-    }),
-    perfusion: z.object({
-      good: z.boolean(),
-      poor: z.boolean(),
-      none: z.boolean(),
-      mucosa: z.object({
-        pink: z.boolean(),
-        pale: z.boolean(),
-        cyanosed: z.boolean(),
-      }),
-      CRT: z.object({
-        lessThan2Sec: z.boolean(),
-        moreThan2Sec: z.boolean(),
-      }),
-    }),
-  }),
-  disability: z.object({
-    initialGCS: z.object({
-      total: z.string(),
-      motor: z.string(),
-      verbal: z.string(),
-      eyes: z.string(),
-    }),
-    AVPU: z.object({
-      A: z.boolean(),
-      V: z.boolean(),
-      P: z.boolean(),
-      U: z.boolean(),
-    }),
-    combative: z.boolean(),
-    spinal: z.object({
-      motorFunction: z.object({
-        normal: z.boolean(),
-        guarding: z.boolean(),
-        loss: z.boolean(),
-      }),
-      sensation: z.object({
-        intact: z.boolean(),
-        pinsAndNeedles: z.boolean(),
-        numbness: z.boolean(),
-        none: z.boolean(),
-        fromNeck: z.boolean(),
-        nippleLine: z.boolean(),
-        abd: z.boolean(),
-      }),
-    }),
-  }),
-  patientValuables: z.object({
-    cash: z.string(),
-    laptop: z.boolean(),
-    wallet: z.boolean(),
-    idDocument: z.boolean(),
-    phone: z.boolean(),
-    bag: z.boolean(),
-    none: z.boolean(),
-    clothing: z.boolean(),
-    toiletries: z.boolean(),
-    meds: z.boolean(),
-    handedTo: z.string(),
-    signature: z.string(),
   }),
 });
 export const SecondarySurveySchema = z.object({
@@ -367,39 +241,160 @@ export const SecondarySurveySchema = z.object({
   }),
   additionalFindings: z.string(),
 });
-export const VitalSignsSchema = z.object({
-  bloodPressure: z.object({
-    systolic: z.number(),
-    diastolic: z.number(),
+
+export const IntravenousTherapySchema = z.object({
+  therapyDetails: z.array(
+    z.object({
+      fluid: z.string().min(1, "Fluid is required"),
+      volume: z.string().min(1, "Volume is required"),
+      admin: z.string().min(1, "Admin is required"),
+      rate: z.string().min(1, "Rate is required"),
+      time: z.string().min(1, "Time is required"),
+      jelco: z.string().min(1, "Jelco is required"),
+      site: z.string().min(1, "Site is required"),
+      volumeAdministered: z.string().min(1, "Volume administered is required"),
+    }),
+  ),
+  motivationForIV: z.object({
+    drugRoute: z.boolean(),
+    fluidBolus: z.boolean(),
+    p1Unstable: z.boolean(),
   }),
-  pulseRate: z.object({
-    rate: z.number(),
-    rhythm: z.string(),
-    strength: z.string(),
-  }),
-  respiratoryRate: z.object({
-    rate: z.number(),
-    effort: z.string(),
-    breathSounds: z.string(),
-  }),
-  temperature: z.object({
-    value: z.number(),
-    method: z.string(),
-  }),
-  oxygenSaturation: z.number(),
-  bloodGlucoseLevel: z.number(),
-  GCS: z.object({
-    eyes: z.number(),
-    verbal: z.number(),
-    motor: z.number(),
-  }),
-  painScore: z.number(),
-  weight: z.number(),
-  height: z.number(),
-  additionalObservations: z.string().optional(),
+  weight: z.string().min(1, "Weight is required"),
+  pawperTape: z.boolean(),
+  broselowTape: z.boolean(),
+});
+const MedicationSchema = z.object({
+  medicine: z.string().min(1, "Medicine is required"),
+  dose: z.string().min(1, "Dose is required"),
+  route: z.string().min(1, "Route is required"),
+  time: z.string().min(1, "Time is required"),
+  hpcsa: z.string().min(1, "HPCSA is required"),
+  name: z.string().min(1, "Name is required"),
+  signature: z.string().min(1, "Signature is required"),
 });
 
-// Combine schemas for PRF_FORM_DATA
+const ConsultationSchema = z.object({
+  consulted: z.boolean(),
+  practitioner: z.string().optional(),
+  hpcsa: z.string().optional(),
+  summaryOfConsult: z.string().optional(),
+});
+
+export const MedicationAdministeredSchema = z.object({
+  medications: z.array(MedicationSchema),
+  consultation: ConsultationSchema,
+});
+
+export type MedicationAdministeredType = z.infer<
+  typeof MedicationAdministeredSchema
+>;
+
+export const DiagnosisSchema = z.object({
+  diagnosis: z.string().min(1, "Diagnosis is required"),
+  priority: z.enum(["1", "2", "3", "4"], {
+    required_error: "You need to select a priority.",
+  }),
+});
+
+export type DiagnosisType = z.infer<typeof DiagnosisSchema>;
+
+export const MechanismOfInjurySchema = z.object({
+  vehicleType: z.enum([
+    "MVA",
+    "MBA",
+    "PVA",
+    "Bus",
+    "Cyclist",
+    "Taxi",
+    "Train",
+    "Truck",
+  ]),
+  impactType: z.array(
+    z.enum(["Frontal Impact", "Rear", "Rollover", "T - Boned", "Vehicle Spun"]),
+  ),
+  speed: z.enum(["<60km/h", "60-100km/h", ">120km/h"]),
+  personType: z.enum(["Driver", "Passenger", "Unknown"]),
+  safetyFeatures: z.array(z.enum(["Airbags", "Restrained"])),
+  incidentDetails: z.array(
+    z.enum(["?↓LOC", "Multiple Patients", "P1", "or P4", "on Scene"]),
+  ),
+  extractionMethod: z.enum([
+    "Ejected",
+    "Removed by Bystander",
+    "Extricated by EMS",
+    "Self-Extricated",
+  ]),
+  helmetRemoval: z.enum(["EMS", "Self", "Bystander", "No Helmet"]),
+  violenceType: z.array(
+    z.enum(["Assault", "Stabbing", "Rape", "Strangulation", "Armed Robbery"]),
+  ),
+  otherIncidents: z.array(
+    z.enum([
+      "Industrial Accident",
+      "Sports Injury",
+      "Limited Patient Access",
+      "Self-Inflicted Wounds",
+      "Suicidal Tendencies",
+    ]),
+  ),
+  falls: z.object({
+    type: z.array(z.enum(["Bed", "Same Level", ">3m", ">10m"])),
+    weaponType: z.array(z.enum(["GSW", "AR", "Handgun", "Rifle"])),
+  }),
+  entrapment: z.object({
+    occurred: z.boolean(),
+    duration: z.enum(["<30 Mins", "30mins-1hr", "1-2hr", ">2hr", "Unknown"]),
+  }),
+  crushInjury: z.boolean(),
+  drowning: z.object({
+    occurred: z.boolean(),
+    duration: z.enum(["< 5min", "5 - 10min", "> 10min", "Unknown"]),
+    type: z.array(z.enum(["Cold Water", "River / Dam", "Flood", "Pool"])),
+    bystanderCPR: z.boolean(),
+  }),
+  burns: z.object({
+    occurred: z.boolean(),
+    bsa: z.enum(["<15%", ">15%"]),
+    confinedSpace: z.boolean(),
+    duration: z.string(),
+    type: z.array(
+      z.enum([
+        "Chemical",
+        "Electrical",
+        "Flash",
+        "Lightning",
+        "Steam",
+        "Smoke Inhalation",
+        "Thermal",
+      ]),
+    ),
+  }),
+  allergicReaction: z.object({
+    occurred: z.boolean(),
+    symptoms: z.array(
+      z.enum(["Stridor", "Wheezes", "Erythema", "Pruritus", "Urticaria"]),
+    ),
+    location: z.array(z.enum(["Abd", "Head", "Limbs", "Torso"])),
+  }),
+  poisoning: z.boolean(),
+  symptoms: z.array(
+    z.enum([
+      "Abdominal Pain",
+      "Altered LOC",
+      "Bradycardia",
+      "Secretions",
+      "Diaphoresis",
+      "Hypotension",
+      "Incontinence",
+      "Miosis",
+      "Seizures",
+      "Vomiting",
+    ]),
+  ),
+});
+
+export type MechanismOfInjuryType = z.infer<typeof MechanismOfInjurySchema>;
 export const PRFFormDataSchema = z.object({
   case_details: z
     .object({
@@ -447,7 +442,14 @@ export const PRFFormDataSchema = z.object({
     .object({
       isOptional: z.boolean().default(false),
       isCompleted: z.boolean().default(false),
-      data: VitalSignsSchema,
+      data: VitalSignsSchema.optional(),
+    })
+    .optional(),
+  intravenous_therapy: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: IntravenousTherapySchema,
     })
     .optional(),
   history_taking: z
@@ -471,14 +473,27 @@ export const PRFFormDataSchema = z.object({
       data: z.string(),
     })
     .optional(),
+  diagnosis: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: DiagnosisSchema,
+    })
+    .optional(),
   medication_administration: z
     .object({
       isOptional: z.boolean().default(false),
       isCompleted: z.boolean().default(false),
-      data: z.string(),
+      data: MedicationAdministeredSchema,
     })
     .optional(),
-
+  mechanism_of_injury: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: MechanismOfInjurySchema,
+    })
+    .optional(),
   patient_handover: z
     .object({
       isOptional: z.boolean().default(false),

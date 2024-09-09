@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-import { X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { PRF_FORM } from "@/interfaces/prf-form";
 import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
@@ -112,8 +112,6 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
         ...prf_from_store?.prfData,
       },
     };
-    console.log("$$$$$:", prf_from_store?.prfData);
-    console.log("#####:", prfUpdateValue);
 
     updatePrfQuery.mutate(prfUpdateValue, {
       onSuccess: (data) => {
@@ -122,7 +120,6 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
           position: "top-right",
         });
 
-        console.log("Updated PRF ------>>>>>>>", data);
         router.push(`/edit-prf/${data?.prfFormId}`);
       },
       onError: (error) => {
@@ -146,6 +143,24 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
           onSubmit={form.handleSubmit(onSubmit)}
           className="flex flex-col space-y-8"
         >
+          <div className="flex items-center justify-between">
+            <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+              Patient Information
+            </h3>
+            <Button
+              type="submit"
+              disabled={!form.formState.isDirty}
+              className="self-end"
+            >
+              {form.formState.isSubmitting || updatePrfQuery.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving
+                </>
+              ) : (
+                "Save"
+              )}
+            </Button>
+          </div>
           {/* Patient Details */}
           <AccordionItem value="patient-details">
             <AccordionTrigger
@@ -224,7 +239,6 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                           <Button
                             onClick={(e) => {
                               e.preventDefault();
-                              console.log(e);
                               field.onChange("");
                             }}
                             variant={"ghost"}
@@ -546,11 +560,17 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
           </AccordionItem>
           {/* Submit form */}
           <Button
-            disabled={form.formState.isDirty === false}
             type="submit"
+            disabled={!form.formState.isDirty}
             className="self-end"
           >
-            Save
+            {form.formState.isSubmitting || updatePrfQuery.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving
+              </>
+            ) : (
+              "Save"
+            )}
           </Button>
         </form>
       </Form>

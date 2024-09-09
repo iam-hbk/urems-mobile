@@ -22,6 +22,8 @@
     "@radix-ui/react-select": "^2.1.1",
     "@radix-ui/react-separator": "^1.1.0",
     "@radix-ui/react-slot": "^1.1.0",
+    "@radix-ui/react-switch": "^1.1.0",
+    "@radix-ui/react-tooltip": "^1.1.2",
     "@react-google-maps/api": "^2.19.3",
     "@tabler/icons-react": "^3.11.0",
     "@tanstack/react-query": "^5.51.23",
@@ -31,7 +33,7 @@
     "cmdk": "1.0.0",
     "date-fns": "^3.6.0",
     "framer-motion": "^11.3.21",
-    "lucide-react": "^0.424.0",
+    "lucide-react": "latest",
     "next": "14.2.5",
     "next-themes": "^0.3.0",
     "react": "^18",
@@ -47,6 +49,8 @@
     "zustand": "^4.5.5"
   },
   "devDependencies": {
+    "@swc/cli": "^0.4.0",
+    "@swc/core": "^1.7.24",
     "@tanstack/eslint-plugin-query": "^5.51.15",
     "@types/node": "^20",
     "@types/react": "^18",

@@ -4,12 +4,11 @@ import {
   TransportationSchema,
   IncidentInformationSchema,
   PRFFormDataSchema,
-  PrimarySurveySchema,
   SecondarySurveySchema,
-  VitalSignsSchema,
   CaseDetailsSchema,
   PatientDetailsSchema,
 } from "./prf-schema";
+import { PrimarySurveySchema } from "./prf-primary-survey-schema";
 
 export type PRF_FORM = z.infer<typeof PRFFormSchema>;
 
@@ -35,6 +34,9 @@ export const sectionDescriptions = [
   "Medication Administration",
   "Patient Handover",
   "Notes",
+  "Intravenous Therapy",
+  "Diagnosis",
+  "Mechanism of Injury",
 ] as const;
 export const PRF_FORM_DATA_DISPLAY_NAMES: Record<
   keyof PRF_FORM_DATA,
@@ -53,4 +55,7 @@ export const PRF_FORM_DATA_DISPLAY_NAMES: Record<
   medication_administration: "Medication Administration",
   patient_handover: "Patient Handover",
   notes: "Notes",
+  intravenous_therapy: "Intravenous Therapy",
+  diagnosis: "Diagnosis",
+  mechanism_of_injury: "Mechanism of Injury",
 };

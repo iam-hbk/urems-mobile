@@ -23,7 +23,6 @@ const api = wretch("https://localhost:7089/api")
   .errorType("json")
   .content("application/json")
   .resolve(async (r) => {
-    // console.log("Response", await r.json());
     return r.json();
   });
 

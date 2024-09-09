@@ -21,7 +21,7 @@ import {
   AccordionTrigger,
 } from "../ui/accordion";
 import { cn } from "@/lib/utils";
-import { UserRoundPlus, X } from "lucide-react";
+import { Loader2, UserRoundPlus, X } from "lucide-react";
 import { TransportationSchema } from "@/interfaces/prf-schema";
 import { usePathname, useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
@@ -61,19 +61,17 @@ const TransportationForm: React.FC<TransportationFormProps> = ({
   });
 
   function onSubmit(values: TransportationType) {
-    console.log("Form Submitted with Values:", values);
     const prfUpdateValue: PRF_FORM = {
       prfFormId: prfId,
       prfData: {
+        ...prf_from_store?.prfData,
         transportation: {
           data: values,
           isCompleted: true,
           isOptional: false,
         },
-        ...prf_from_store?.prfData,
       },
     };
-    console.log(prfUpdateValue);
 
     updatePrfQuery.mutate(prfUpdateValue, {
       onSuccess: (data) => {
@@ -104,6 +102,11 @@ const TransportationForm: React.FC<TransportationFormProps> = ({
           onSubmit={form.handleSubmit(onSubmit)}
           className="flex flex-col space-y-8"
         >
+          <div className="flex items-center justify-between">
+            <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+              Transportation
+            </h3>
+          </div>
           <AccordionItem value="transportation">
             <AccordionTrigger
               className={cn({
@@ -241,12 +244,19 @@ const TransportationForm: React.FC<TransportationFormProps> = ({
               </Button>
             </AccordionContent>
           </AccordionItem>
+
           <Button
-            disabled={form.formState.isDirty === false}
             type="submit"
+            disabled={!form.formState.isDirty}
             className="self-end"
           >
-            Save
+            {form.formState.isSubmitting || updatePrfQuery.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving
+              </>
+            ) : (
+              "Save"
+            )}
           </Button>
         </form>
       </Form>

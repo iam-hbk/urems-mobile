@@ -92,7 +92,6 @@ const PRFEditSummary = ({
             duration: 3000,
             position: "top-right",
           });
-          console.log("Created PRF ------>>>>>>>", data, v, context);
 
           router.push(`/edit-prf/${data?.prfFormId}`);
         },
@@ -110,8 +109,6 @@ const PRFEditSummary = ({
             duration: 3000,
             position: "top-right",
           });
-          console.log("Updated PRF ------>>>>>>>", data);
-          console.log("Value Sent PRF ------>>>>>>>", v);
 
           router.push(`/edit-prf/${data?.prfFormId}`);
         },
@@ -135,7 +132,6 @@ const PRFEditSummary = ({
             duration: 3000,
             position: "top-right",
           });
-          console.log("Created PRF ------>>>>>>>", data, v, context);
 
           router.push(`/edit-prf/${data?.prfFormId}`);
         },

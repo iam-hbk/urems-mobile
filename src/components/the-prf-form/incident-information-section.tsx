@@ -108,7 +108,6 @@ const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
         ...prf_from_store?.prfData,
       },
     };
-    console.log(prfUpdateValue);
 
     updatePrfQuery.mutate(prfUpdateValue, {
       onSuccess: (data) => {

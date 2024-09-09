@@ -19,6 +19,7 @@ const updatePrfForm = async (updatedPrf: PRF_FORM) => {
     return null;
   } else if (response.ok) {
     const data = await response.json();
+    console.log("Data From Network Request -> ", data);
     return data;
   } else {
     // Handle non-2xx status codes
@@ -40,6 +41,7 @@ export const useUpdatePrf = () => {
           ...data,
           prfData: JSON.parse(data.prfData as string),
         };
+        console.log("Sending", processedData);
         updatePrfInStore(processedData);
       }
 

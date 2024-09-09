@@ -30,6 +30,8 @@ import {
   ChevronDown,
   CheckCircle,
   AlertCircle,
+  ClipboardPlus,
+  Cog as Bandage,
 } from "lucide-react";
 import {
   PRF_FORM,
@@ -40,12 +42,10 @@ import {
 import { PRFFormDataSchema } from "@/interfaces/prf-schema";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
-import { get } from "http";
 import { Badge } from "./ui/badge";
 
 // utils
 const animations = ["animate-shake1", "animate-shake2", "animate-shake3"];
-const toSnakeCase = (str: string) => str.toLowerCase().replace(/\s+/g, "-");
 
 // QuickLinks Component
 export default function QuickLinks({ prf }: { prf: PRF_FORM }) {
@@ -112,17 +112,15 @@ export default function QuickLinks({ prf }: { prf: PRF_FORM }) {
             // if (!optionData) return null;
 
             const Icon =
-              optionData?.icon || iconMap[item as keyof typeof iconMap];
+              optionData?.icon ||
+              iconMap[item as keyof typeof iconMap] ||
+              ClipboardPlus;
             const isCompleted = optionData?.status === "completed";
 
             const isOptional = optionData?.priority === "optional";
-            console.log(optionData?.route);
 
             return (
-              <Link
-                key={item}
-                href={`/edit-prf/${prf.prfFormId}/${toSnakeCase(item)}`}
-              >
+              <Link key={item} href={`/edit-prf/${optionData?.route}`}>
                 <Button
                   variant={"secondary"}
                   className={cn({
@@ -229,6 +227,8 @@ const iconMap = {
   "Medication Administration": Pill,
   "Patient Handover": UserCheck,
   Notes: Edit3,
+  Diagnosis: ClipboardPlus,
+  "Mechanism of Injury": Bandage,
 };
 const getPrfDataShapedSectionsForQuickLinks = (prf: PRF_FORM) => {
   return Object.entries(PRFFormDataSchema.shape).map(([sectionKey]) => {
@@ -256,8 +256,8 @@ const getPrfDataShapedSectionsForQuickLinks = (prf: PRF_FORM) => {
         : "optional";
     const route =
       sectionKey === "case_details"
-        ? "#"
-        : `${prf.prfFormId}/${sectionKey.replace("_", "-")}`;
+        ? `${prf.prfFormId}/#`
+        : `${prf.prfFormId}/${sectionKey.replace(/_/g, "-")}`;
 
     return {
       sectionDescription:

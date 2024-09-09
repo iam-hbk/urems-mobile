@@ -1,4 +1,5 @@
-import TransportationForm from "@/components/the-prf-form/transportation-section";
+
+import IntravenousTherapyForm from "@/components/the-prf-form/intravenous-therapy-form";
 
 import React from "react";
 
@@ -7,7 +8,7 @@ function PatientDetails() {
   
   return (
     <div className="border w-11/12 rounded-md p-8 m-10">
-      <TransportationForm />
+      <IntravenousTherapyForm />
     </div>
   );
 }

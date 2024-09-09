@@ -65,8 +65,6 @@ const PRF = (props: Props) => {
             initialData={prf}
             action="edit"
             buttonTitle="Edit Case Details"
-
-            // collectData={(data: any) => console.log("Summary Data", data)}
           />
         </div>
         <div className="flex flex-col gap-1">
