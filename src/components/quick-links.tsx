@@ -32,6 +32,7 @@ import {
   AlertCircle,
   ClipboardPlus,
   Cog as Bandage,
+  ArrowDownUp,
 } from "lucide-react";
 import {
   PRF_FORM,
@@ -229,6 +230,7 @@ const iconMap = {
   Notes: Edit3,
   Diagnosis: ClipboardPlus,
   "Mechanism of Injury": Bandage,
+  Procedures: ArrowDownUp,
 };
 const getPrfDataShapedSectionsForQuickLinks = (prf: PRF_FORM) => {
   return Object.entries(PRFFormDataSchema.shape).map(([sectionKey]) => {

@@ -37,6 +37,7 @@ export const sectionDescriptions = [
   "Intravenous Therapy",
   "Diagnosis",
   "Mechanism of Injury",
+  "Procedures",
 ] as const;
 export const PRF_FORM_DATA_DISPLAY_NAMES: Record<
   keyof PRF_FORM_DATA,
@@ -58,4 +59,5 @@ export const PRF_FORM_DATA_DISPLAY_NAMES: Record<
   intravenous_therapy: "Intravenous Therapy",
   diagnosis: "Diagnosis",
   mechanism_of_injury: "Mechanism of Injury",
+  procedures: "Procedures",
 };

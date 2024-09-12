@@ -393,8 +393,86 @@ export const MechanismOfInjurySchema = z.object({
     ]),
   ),
 });
-
 export type MechanismOfInjuryType = z.infer<typeof MechanismOfInjurySchema>;
+
+export const ProceduresSchema = z.object({
+  airway: z.object({
+    ett: z.boolean(),
+    ettSize: z.number().optional(),
+    depth: z.number().optional(),
+    ettCuffPressure: z.enum([
+      "20-30cmH2O",
+      "CUFF NOT INFLATED",
+      "NOT MEASURED",
+    ]),
+    gastricTube: z.boolean(),
+    iGel: z.boolean(),
+    lma: z.boolean(),
+    lta: z.boolean(),
+    lateral: z.boolean(),
+    needleAirway: z.boolean(),
+    opa: z.boolean(),
+    rsi: z.boolean(),
+    suction: z.boolean(),
+    surgicalCric: z.boolean(),
+  }),
+  alignment: z.object({
+    extrication: z.boolean(),
+    headblocks: z.boolean(),
+    ked: z.boolean(),
+    logroll: z.boolean(),
+    mils: z.boolean(),
+    scoop: z.boolean(),
+    spiderHarness: z.boolean(),
+    spineboard: z.boolean(),
+    splint: z.boolean(),
+    tracIii: z.boolean(),
+  }),
+  breathing: z.object({
+    bvm: z.boolean(),
+    chestDecompression: z.boolean(),
+    cpap: z.boolean(),
+    etco2: z.boolean(),
+    icd: z.boolean(),
+    l: z.boolean(),
+    r: z.boolean(),
+    date: z.string().optional(),
+    oxygen: z.boolean(),
+    spo2: z.boolean(),
+    ventilation: z.boolean(),
+    ventilator: z.string().optional(),
+    mode: z.string().optional(),
+    peep: z.number().optional(),
+    pip: z.number().optional(),
+    fio2: z.number().optional(),
+    ie: z.string().optional(),
+    tv: z.number().optional(),
+    rate: z.number().optional(),
+  }),
+  circulation: z.object({
+    blood: z.boolean(),
+    bolus: z.boolean(),
+    buretrol: z.boolean(),
+    cpr: z.boolean(),
+    cardioversion: z.boolean(),
+    centralIv: z.boolean(),
+    defib: z.boolean(),
+    dialAFlow: z.boolean(),
+    ecg: z.boolean(),
+    lead12: z.boolean(),
+    fluidWarmer: z.boolean(),
+    hiCapLine: z.boolean(),
+    infusionPump: z.boolean(),
+    infusion: z.boolean(),
+    io: z.boolean(),
+    pacing: z.boolean(),
+    peripheralIv: z.boolean(),
+    plasma: z.boolean(),
+    syringeDriver: z.boolean(),
+  }),
+});
+export type ProceduresType = z.infer<typeof ProceduresSchema>;
+
 export const PRFFormDataSchema = z.object({
   case_details: z
     .object({
@@ -492,6 +570,13 @@ export const PRFFormDataSchema = z.object({
       isOptional: z.boolean().default(false),
       isCompleted: z.boolean().default(false),
       data: MechanismOfInjurySchema,
+    })
+    .optional(),
+  procedures: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: ProceduresSchema,
     })
     .optional(),
   patient_handover: z

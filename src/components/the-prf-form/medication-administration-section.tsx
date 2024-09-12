@@ -51,7 +51,7 @@ export default function MedicationAdministeredForm() {
           route: "",
           time: "",
           hpcsa: "",
-          name: "",
+          name: "", // TODO:Prefill with currently logged in user's name and signature if they are adminisration the medication
           signature: "",
         },
       ],
