@@ -33,6 +33,8 @@ import {
   ClipboardPlus,
   Cog as Bandage,
   ArrowDownUp,
+  Wind,
+  PersonStanding,
 } from "lucide-react";
 import {
   PRF_FORM,
@@ -231,6 +233,9 @@ const iconMap = {
   Diagnosis: ClipboardPlus,
   "Mechanism of Injury": Bandage,
   Procedures: ArrowDownUp,
+  "Respiratory Distress Assessment": Wind,
+  "Injuries": PersonStanding,
+  "Assessments": ClipboardPlus,
 };
 const getPrfDataShapedSectionsForQuickLinks = (prf: PRF_FORM) => {
   return Object.entries(PRFFormDataSchema.shape).map(([sectionKey]) => {

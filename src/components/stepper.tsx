@@ -145,7 +145,7 @@ export function Stepper({ prf }: StepperProps) {
       const route =
         sectionKey === "case_details"
           ? `/edit-prf/${prf.prfFormId}`
-          : `/edit-prf/${prf.prfFormId}/${sectionKey.replace("_", "-")}`;
+          : `/edit-prf/${prf.prfFormId}/${sectionKey.replace(/_/g, "-")}`;
 
       return {
         title: PRF_FORM_DATA_DISPLAY_NAMES[sectionKey as keyof PRF_FORM_DATA],

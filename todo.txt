@@ -1,0 +1,6 @@
+Injuries
+Autofil some fields (based on logged in user/ company they belong/ crew details)
+Touch up the angular app
+Transported to (Autofil hospital address [OnClick]-> Use current location)
+Handover signature
+Processes [finish]

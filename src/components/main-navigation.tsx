@@ -11,7 +11,13 @@ import {
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, LogOut, Settings, User2 } from "lucide-react";
+import {
+  HelpCircle,
+  LayoutDashboard,
+  LogOut,
+  Settings,
+  User2,
+} from "lucide-react";
 
 export function NavigationBar({
   children,
@@ -22,23 +28,34 @@ export function NavigationBar({
     {
       label: "Dashboard",
       href: "/",
-      icon: <LayoutDashboard className="text-primary-foreground h-5 w-5 flex-shrink-0" />,
+      icon: (
+        <LayoutDashboard className="h-5 w-5 flex-shrink-0 text-primary-foreground" />
+      ),
     },
     {
       label: "Profile",
       href: "#",
-      icon: <User2 className="text-primary-foreground h-5 w-5 flex-shrink-0" />,
+      icon: <User2 className="h-5 w-5 flex-shrink-0 text-primary-foreground" />,
+    },
+    {
+      label: "Guides",
+      href: "#",
+      icon: (
+        <HelpCircle className="h-5 w-5 flex-shrink-0 text-primary-foreground" />
+      ),
     },
     {
       label: "Settings",
       href: "#",
-      icon: <Settings className="text-primary-foreground h-5 w-5 flex-shrink-0" />,
+      icon: (
+        <Settings className="h-5 w-5 flex-shrink-0 text-primary-foreground" />
+      ),
     },
     {
       label: "Logout",
       href: "#",
       icon: (
-        <LogOut className="transform scale-x-[-1] text-primary-foreground h-5 w-5 flex-shrink-0" />
+        <LogOut className="h-5 w-5 flex-shrink-0 scale-x-[-1] transform text-primary-foreground" />
       ),
     },
   ];
@@ -46,13 +63,13 @@ export function NavigationBar({
   return (
     <div
       className={cn(
-        "flex flex-col md:flex-row bg-background w-full flex-1 overflow-hidden",
-        "h-screen"
+        "flex w-full flex-1 flex-col overflow-hidden bg-background md:flex-row",
+        "h-screen",
       )}
     >
       <Sidebar open={open} setOpen={setOpen}>
         <SidebarBody className="justify-between gap-10">
-          <div className="flex flex-col flex-1 overflow-y overflow-x-hidden">
+          <div className="overflow-y flex flex-1 flex-col overflow-x-hidden">
             {open ? <Logo /> : <LogoIcon />}
             <div className="mt-8 flex flex-col gap-2">
               {links.map((link, idx) => (
@@ -83,13 +100,13 @@ export const Logo = () => {
   return (
     <Link
       href="#"
-      className="font-normal flex space-x-2 items-center text-sm text-primary py-1 relative z-20"
+      className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-primary"
     >
-      <div className="h-5 w-6 bg-secondary rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
+      <div className="h-5 w-6 flex-shrink-0 rounded-bl-sm rounded-br-lg rounded-tl-lg rounded-tr-sm bg-secondary" />
       <motion.span
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="font-medium text-primary-foreground  whitespace-pre"
+        className="whitespace-pre font-medium text-primary-foreground"
       >
         Patient Report Form
       </motion.span>
@@ -100,7 +117,7 @@ export const LogoIcon = () => {
   return (
     <Link
       href="#"
-      className="font-normal items-center text-sm text-primary-foreground border border-primary-foreground text-center rounded-sm px-1 relative z-20"
+      className="relative z-20 items-center rounded-sm border border-primary-foreground px-1 text-center text-sm font-normal text-primary-foreground"
     >
       PRF
     </Link>

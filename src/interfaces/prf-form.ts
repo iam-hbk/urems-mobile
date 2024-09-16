@@ -38,6 +38,9 @@ export const sectionDescriptions = [
   "Diagnosis",
   "Mechanism of Injury",
   "Procedures",
+  "Respiratory Distress Assessment",
+  "Injuries",
+  "Assessments",
 ] as const;
 export const PRF_FORM_DATA_DISPLAY_NAMES: Record<
   keyof PRF_FORM_DATA,
@@ -60,4 +63,7 @@ export const PRF_FORM_DATA_DISPLAY_NAMES: Record<
   diagnosis: "Diagnosis",
   mechanism_of_injury: "Mechanism of Injury",
   procedures: "Procedures",
+  respiratory_distress: "Respiratory Distress Assessment",
+  injuries: "Injuries",
+  assessments: "Assessments",
 };

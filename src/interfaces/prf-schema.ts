@@ -473,6 +473,241 @@ export const ProceduresSchema = z.object({
 });
 export type ProceduresType = z.infer<typeof ProceduresSchema>;
 
+const RespiratoryDistressSchema = z.object({
+  hx: z.array(
+    z.enum([
+      "Asthma",
+      "COPD",
+      "Emphysema",
+      "Hx of Pulmonary Emboli",
+      "Lung Cancer",
+      "Prone to Chest Infections / Pneumonia",
+      "Pulmonary TB",
+      "COVID +",
+    ]),
+  ),
+  riskFactorsForPulmEmbolus: z.array(
+    z.enum([
+      "Taking Contraceptives",
+      "Hx of DVTs",
+      "Recent: Long Distance Travel",
+      "Fracture",
+      "Recently given birth",
+    ]),
+  ),
+  additionalFindings: z.array(
+    z.enum([
+      "Accessory Muscles Use",
+      "Audible Wheezes",
+      "Audible Stridor",
+      "Apnea",
+      "On Home O2",
+      "Coughing: Wet",
+      "Coughing: Dry",
+      "Dyspnoea Not Relieved by Prescribed Medication",
+      "Guards Depth of Breathing",
+      "Hyperventilation",
+      "Inability to Talk",
+      "Kussmaul",
+      "Recent Flu",
+      "Severe Drooling",
+      "Signs of Respiratory Fatigue",
+      "Soot in Mouth",
+      "Tachypnoea",
+      "Tripod Position",
+      "Talks in Phrases",
+      "Uses Single Words Only",
+    ]),
+  ),
+  infant: z.array(
+    z.enum([
+      "Chest Recession",
+      "Grunting",
+      "Irritable",
+      "Prem Baby: Respiratory Distress Syndrome",
+      "Congenital Abnormality",
+      "Hyaline Membrane Disease",
+    ]),
+  ),
+});
+
+export type RespiratoryDistressType = z.infer<typeof RespiratoryDistressSchema>;
+
+export const AssessmentsSchema = z.object({
+  neuroAssessment: z.object({
+    cincinnatiScale: z.object({
+      armDrift: z.boolean(),
+      facialDroop: z.boolean(),
+      slurredSpeech: z.boolean(),
+    }),
+    seizure: z.object({
+      tonic: z.boolean(),
+      clonic: z.boolean(),
+      petite: z.boolean(),
+    }),
+    acuteDelirium: z.boolean(),
+    aphasia: z.boolean(),
+    incontinence: z.object({
+      urine: z.boolean(),
+      stool: z.boolean(),
+    }),
+    stupor: z.boolean(),
+    syncopeEvents: z.boolean(),
+  }),
+  neuroConditions: z.array(
+    z.enum([
+      "Brain tumour",
+      "Bipolar",
+      "Dementia",
+      "Depression",
+      "Epilepsy",
+      "Hydrocephalus",
+      "Multiple Sclerosis",
+      "Parkinson's",
+      "Previous: TBI",
+      "Previous: TIA",
+      "Previous: Stroke",
+      "Quadriplegia",
+      "Paraplegia",
+      "Schizophrenia",
+      "Syndrome",
+    ]),
+  ),
+  abdominalAssessment: z.object({
+    urineOutput: z.object({
+      burning: z.boolean(),
+      darkYellow: z.boolean(),
+      normal: z.boolean(),
+      blood: z.boolean(),
+      poly: z.boolean(),
+      noOutput: z.boolean(),
+      ihtFoleyCath: z.boolean(),
+      uo: z.string(),
+    }),
+    hx: z.array(
+      z.enum(["Diverticulitis", "Liver or Renal Failure", "Stones", "UTIs"]),
+    ),
+    git: z.array(z.enum(["Ascites", "Bloated", "Constipation", "Diaphoresis"])),
+    gastroenteritis: z.boolean(),
+    hematemesis: z.boolean(),
+    melaenaStool: z.boolean(),
+    pegTube: z.boolean(),
+    diarrhoea: z.boolean(),
+    emesis: z.boolean(),
+    emesisAmount: z.string(),
+    emesisDays: z.string(),
+    pain: z.array(
+      z.enum(["Burning", "Cramping", "Dull", "Sharp", "Tearing", "Reflux"]),
+    ),
+    contractions: z.object({
+      mild: z.boolean(),
+      mod: z.boolean(),
+      severe: z.boolean(),
+      amount: z.string(),
+    }),
+    pregnant: z.boolean(),
+    twinPregnancy: z.boolean(),
+    paraGravida: z.string(),
+    discharge: z.boolean(),
+    pvBleeding: z.boolean(),
+    lastDrVisit: z.string(),
+    gestation: z.string(),
+  }),
+  painAssessment: z.object({
+    provocation: z.object({
+      onsetDuringExertion: z.boolean(),
+      duringRest: z.boolean(),
+      wokenByPain: z.boolean(),
+      onsetDuringMild: z.boolean(),
+      onsetDuringMod: z.boolean(),
+      onsetDuringActivity: z.boolean(),
+    }),
+    quality: z.array(
+      z.enum([
+        "Burning",
+        "Crushing / Weight",
+        "Intermittent",
+        "Constant",
+        "Dull",
+        "Sharp",
+        "Tearing",
+        "Cannot Describe",
+      ]),
+    ),
+    radiating: z.object({
+      yes: z.boolean(),
+      lArm: z.boolean(),
+      rArm: z.boolean(),
+      face: z.boolean(),
+      back: z.boolean(),
+      leg: z.boolean(),
+    }),
+    severity: z.object({
+      atOnset: z.string(),
+      current: z.string(),
+    }),
+    timeOfOnset: z.string(),
+    negativeMurphysSign: z.boolean(),
+  }),
+  cardiacRiskFactors: z.array(
+    z.enum([
+      "Age",
+      "↑BMI",
+      "Diabetes",
+      "Family Cardiac Hx",
+      "Hypertension",
+      "↑Cholesterol",
+      "Previous Cardiac Event",
+      "Smoker",
+      "Stress",
+    ]),
+  ),
+  signsOfDehydration: z.array(
+    z.enum([
+      "Cold Peripheries",
+      "Confused",
+      "Cramping",
+      "Dysphagia",
+      "Dizziness",
+      "Dry Mucosa",
+      "Hypotension",
+      "Poor Skin Turgor",
+      "Sunken Eyes",
+      "Sunken Fontanelles",
+      "Syncope",
+      "Tachycardia",
+      "Weak",
+    ]),
+  ),
+  signsOfAcuteCoronarySyndrome: z.array(
+    z.enum([
+      "Chest Pain Not Increased by Deep Breathing",
+      "Crushing Pain",
+      "Diaphoresis",
+      "Radiating Pain",
+      "Nausea",
+      "Pale",
+      "ECG Changes",
+      "ST Elevation",
+    ]),
+  ),
+});
+
+export type AssessmentsType = z.infer<typeof AssessmentsSchema>;
+
+export const InjurySchema = z.object({
+  injuries: z.array(
+    z.object({
+      id: z.number(),
+      x: z.number(),
+      y: z.number(),
+      symbol: z.string(),
+    }),
+  ),
+});
+
+export type InjuryType = z.infer<typeof InjurySchema>;
+// --------------------------------------------
 export const PRFFormDataSchema = z.object({
   case_details: z
     .object({
@@ -577,6 +812,27 @@ export const PRFFormDataSchema = z.object({
       isOptional: z.boolean().default(false),
       isCompleted: z.boolean().default(false),
       data: ProceduresSchema,
+    })
+    .optional(),
+  respiratory_distress: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: RespiratoryDistressSchema,
+    })
+    .optional(),
+  injuries: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: InjurySchema,
+    })
+    .optional(),
+  assessments: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: AssessmentsSchema,
     })
     .optional(),
   patient_handover: z
