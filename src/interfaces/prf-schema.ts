@@ -698,6 +698,7 @@ export type AssessmentsType = z.infer<typeof AssessmentsSchema>;
 export const InjurySchema = z.object({
   injuries: z.array(
     z.object({
+      side: z.enum(["anterior", "posterior"]),
       id: z.number(),
       x: z.number(),
       y: z.number(),
@@ -707,6 +708,19 @@ export const InjurySchema = z.object({
 });
 
 export type InjuryType = z.infer<typeof InjurySchema>;
+
+export const PatientHandoverSchema = z.object({
+  fullName: z.string().min(3, { message: "Full Name is required" }),
+  date: z.date({ message: "Date is required" }),
+  patientSignature: z.string({
+    message: "Patient Signature is required",
+  }),
+  witnessSignature: z.string({
+    message: "Witness Signature is required",
+  }),
+});
+export type PatientHandoverType = z.infer<typeof PatientHandoverSchema>;
+
 // --------------------------------------------
 export const PRFFormDataSchema = z.object({
   case_details: z
@@ -839,7 +853,7 @@ export const PRFFormDataSchema = z.object({
     .object({
       isOptional: z.boolean().default(false),
       isCompleted: z.boolean().default(false),
-      data: z.string(),
+      data: PatientHandoverSchema,
     })
     .optional(),
   notes: z
