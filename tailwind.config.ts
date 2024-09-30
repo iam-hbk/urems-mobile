@@ -11,7 +11,7 @@ const config = {
   prefix: "",
   theme: {
   	container: {
-  		center: 'true',
+  		center: true,
   		padding: '2rem',
   		screens: {
   			'2xl': '1400px'
@@ -59,22 +59,7 @@ const config = {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		keyframes: {
-  			'accordion-down': {
-  				from: {
-  					height: '0'
-  				},
-  				to: {
-  					height: 'var(--radix-accordion-content-height)'
-  				}
-  			},
-  			'accordion-up': {
-  				from: {
-  					height: 'var(--radix-accordion-content-height)'
-  				},
-  				to: {
-  					height: '0'
-  				}
-  			},
+
   			shake1: {
   				'0%, 100%': {
   					transform: 'translate(0, 0)'
@@ -125,15 +110,13 @@ const config = {
   				}
   			}
   		},
-  		animation: {
-  			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out',
-  			shake1: 'shake1 1.5s ease-in-out infinite',
-  			shake2: 'shake2 1.2s ease-in-out infinite',
-  			shake3: 'shake3 1.9s ease-in-out infinite',
-  			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
-  		},
+		animation: {
+			'accordion-down': 'accordion-down 0.2s ease-out',
+			'accordion-up': 'accordion-up 0.2s ease-out',
+			shake1: 'shake1 1.5s ease-in-out infinite',
+			shake2: 'shake2 1.2s ease-in-out infinite',
+			shake3: 'shake3 1.9s ease-in-out infinite'
+		},
   		fontFamily: {
   			sans: ["var(--font-sans)", ...fontFamily.sans]
   		},

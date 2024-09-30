@@ -34,7 +34,7 @@ export function NavigationBar({
     },
     {
       label: "Profile",
-      href: "#",
+      href: "/profile",
       icon: <User2 className="h-5 w-5 flex-shrink-0 text-primary-foreground" />,
     },
     {
