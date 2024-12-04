@@ -38,6 +38,8 @@ export default function MedicationAdministeredForm() {
   const prf_from_store = useStore((state) => state.prfForms).find(
     (prf) => prf.prfFormId == prfId,
   );
+  const user = useStore((state) => state.user);
+  console.log(user);
 
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
@@ -50,9 +52,9 @@ export default function MedicationAdministeredForm() {
           dose: "",
           route: "",
           time: "",
-          hpcsa: "",
-          name: "", // TODO:Prefill with currently logged in user's name and signature if they are adminisration the medication
-          signature: "",
+          hpcsa: user?.hpcsaNumber || "",
+          name: user?.name || "",
+          signature: user?.signature || "",
         },
       ],
       consultation: {

@@ -1,15 +1,61 @@
 import { z } from "zod";
 import { PrimarySurveySchema } from "./prf-primary-survey-schema";
 import { VitalSignsSchema } from "./prf-vital-signs-schema";
+
+type PatientDetailsContext = {
+  parent: {
+    unableToObtainInformation: {
+      status: boolean;
+    };
+  };
+};
+
 export const PatientDetailsSchema = z.object({
-  patientName: z.string().min(2).max(50),
-  patientSurname: z.string().min(2).max(50),
-  age: z.number().int().positive().min(1).max(200),
-  gender: z.enum(["male", "female"], {
-    required_error: "You need to select a gender.",
+  unableToObtainInformation: z.object({
+    status: z.boolean(),
+    estimatedAge: z.number().optional(),
+    notes: z.string(),
   }),
-  id: z.string().min(1).max(50),
-  passport: z.string().optional(),
+  age: z.number().optional().superRefine((val, ctx) => {
+    const status = (ctx as any).parent?.unableToObtainInformation?.status;
+    if (!status && !val) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Age is required when patient information is available",
+      });
+    }
+  }),
+  ageUnit: z.enum(["years", "months", "days"]),
+  gender: z.enum(["male", "female"]).optional().superRefine((val, ctx) => {
+    const status = (ctx as any).parent?.unableToObtainInformation?.status;
+    if (!status && !val) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Gender is required when patient information is available",
+      });
+    }
+  }),
+  patientName: z.string().superRefine((val, ctx) => {
+    const status = (ctx as any).parent?.unableToObtainInformation?.status;
+    if (!status && !val) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Patient name is required when patient information is available",
+      });
+    }
+  }),
+  patientSurname: z.string().superRefine((val, ctx) => {
+    const status = (ctx as any).parent?.unableToObtainInformation?.status;
+    if (!status && !val) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Patient surname is required when patient information is available",
+      });
+    }
+  }),
+  id: z.string(),
+  passport: z.string(),
+  // ------------------------------------
   nextOfKin: z.object({
     name: z.string().min(2).max(50),
     relationToPatient: z.string().min(2).max(50),
@@ -29,6 +75,20 @@ export const PatientDetailsSchema = z.object({
     name: z.string().min(2).max(50),
     workPhoneNo: z.string().min(2).max(15),
     workAddress: z.string().min(2).max(100),
+  }),
+  pastHistory: z.object({
+    allergies: z.string(),
+    medication: z.string(),
+    medicalHx: z.string(),
+    lastMeal: z.string(),
+    cva: z.boolean(),
+    epilepsy: z.boolean(),
+    cardiac: z.boolean(),
+    byPass: z.boolean(),
+    dmOneOrTwo: z.boolean(),
+    HPT: z.boolean(),
+    asthma: z.boolean(),
+    copd: z.boolean(),
   }),
 });
 export const CaseDetailsSchema = z.object({
@@ -62,20 +122,6 @@ export const IncidentInformationSchema = z.object({
   dispatchInfo: z.string().min(5),
   onArrival: z.string().min(5),
   chiefComplaint: z.string(),
-  pastHistory: z.object({
-    allergies: z.string(),
-    medication: z.string(),
-    medicalHx: z.string(),
-    lastMeal: z.string(),
-    cva: z.boolean(),
-    epilepsy: z.boolean(),
-    cardiac: z.boolean(),
-    byPass: z.boolean(),
-    dmOneOrTwo: z.boolean(),
-    HPT: z.boolean(),
-    asthma: z.boolean(),
-    copd: z.boolean(),
-  }),
 });
 export const SecondarySurveySchema = z.object({
   scalp: z.object({
@@ -292,6 +338,7 @@ export type MedicationAdministeredType = z.infer<
 
 export const DiagnosisSchema = z.object({
   diagnosis: z.string().min(1, "Diagnosis is required"),
+  //TODO: add a toggel to chose between 1, 2, 3, 4 and colors [red, yellow,orange, green, blue]
   priority: z.enum(["1", "2", "3", "4"], {
     required_error: "You need to select a priority.",
   }),
@@ -722,6 +769,81 @@ export const PatientHandoverSchema = z.object({
 export type PatientHandoverType = z.infer<typeof PatientHandoverSchema>;
 
 // --------------------------------------------
+export const PastMedicalHistorySchema = z.object({
+  allergies: z.array(z.object({
+    allergen: z.string().min(1, "Allergen is required"),
+    reaction: z.string().min(1, "Reaction is required"),
+    severity: z.enum(["Mild", "Moderate", "Severe"]),
+  })),
+  currentMedications: z.array(z.object({
+    medication: z.string().min(1, "Medication name is required"),
+    dosage: z.string().min(1, "Dosage is required"),
+    frequency: z.string().min(1, "Frequency is required"),
+    lastTaken: z.string().optional(),
+  })),
+  lastMeal: z.object({
+    time: z.string().min(1, "Time is required"),
+    description: z.string().optional(),
+  }),
+  medicalConditions: z.object({
+    cardiovascular: z.object({
+      hasCondition: z.boolean(),
+      conditions: z.array(z.enum([
+        "Hypertension",
+        "Previous MI",
+        "Angina",
+        "Bypass Surgery",
+        "Pacemaker",
+        "Heart Failure",
+        "Arrhythmia",
+        "Other"
+      ])),
+      details: z.string().optional(),
+    }),
+    respiratory: z.object({
+      hasCondition: z.boolean(),
+      conditions: z.array(z.enum([
+        "Asthma",
+        "COPD",
+        "Tuberculosis",
+        "Sleep Apnea",
+        "Other"
+      ])),
+      details: z.string().optional(),
+    }),
+    neurological: z.object({
+      hasCondition: z.boolean(),
+      conditions: z.array(z.enum([
+        "CVA/Stroke",
+        "Epilepsy",
+        "TIA",
+        "Seizures",
+        "Other"
+      ])),
+      details: z.string().optional(),
+    }),
+    endocrine: z.object({
+      hasCondition: z.boolean(),
+      conditions: z.array(z.enum([
+        "Diabetes Type 1",
+        "Diabetes Type 2",
+        "Thyroid Disease",
+        "Other"
+      ])),
+      details: z.string().optional(),
+    }),
+  }),
+  surgicalHistory: z.array(z.object({
+    procedure: z.string().min(1, "Procedure is required"),
+    date: z.string().optional(),
+    complications: z.string().optional(),
+  })),
+  familyHistory: z.array(z.string()).optional(),
+  additionalNotes: z.string().optional(),
+});
+
+export type PastMedicalHistoryType = z.infer<typeof PastMedicalHistorySchema>;
+
 export const PRFFormDataSchema = z.object({
   case_details: z
     .object({
@@ -863,6 +985,11 @@ export const PRFFormDataSchema = z.object({
       data: z.string(),
     })
     .optional(),
+  past_medical_history: z.object({
+    isOptional: z.boolean().default(false),
+    isCompleted: z.boolean().default(false),
+    data: PastMedicalHistorySchema,
+  }).optional(),
 });
 
 // Define the full form schema

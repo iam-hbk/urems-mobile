@@ -30,12 +30,30 @@ import {
 } from "../ui/accordion";
 import { cn } from "@/lib/utils";
 import { PatientDetailsSchema } from "@/interfaces/prf-schema";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
 
 export type PatientDetailsType = z.infer<typeof PatientDetailsSchema>;
 
 type PatientDetailsFormProps = {
   initialData?: PRF_FORM;
 };
+
+type AgeUnit = "years" | "months" | "days";
 
 const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
   const prfId = usePathname().split("/")[2];
@@ -50,6 +68,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
     defaultValues: {
       age:
         Number(prf_from_store?.prfData.patient_details?.data.age) || undefined,
+      ageUnit: prf_from_store?.prfData.patient_details?.data.ageUnit || "years",
       gender: prf_from_store?.prfData.patient_details?.data.gender || undefined,
       patientName:
         prf_from_store?.prfData.patient_details?.data.patientName || "",
@@ -97,8 +116,83 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
           prf_from_store?.prfData.patient_details?.data.employer.workAddress ||
           "",
       },
+      unableToObtainInformation: {
+        status: prf_from_store?.prfData.patient_details?.data.unableToObtainInformation?.status || false,
+        estimatedAge: prf_from_store?.prfData.patient_details?.data.unableToObtainInformation?.estimatedAge || undefined,
+        notes: prf_from_store?.prfData.patient_details?.data.unableToObtainInformation?.notes || "",
+      },
+      pastHistory: {
+        allergies: prf_from_store?.prfData.patient_details?.data.pastHistory?.allergies || "",
+        medication: prf_from_store?.prfData.patient_details?.data.pastHistory?.medication || "",
+        medicalHx: prf_from_store?.prfData.patient_details?.data.pastHistory?.medicalHx || "",
+        lastMeal: prf_from_store?.prfData.patient_details?.data.pastHistory?.lastMeal || "",
+        cva: prf_from_store?.prfData.patient_details?.data.pastHistory?.cva ?? false,
+        epilepsy: prf_from_store?.prfData.patient_details?.data.pastHistory?.epilepsy ?? false,
+        cardiac: prf_from_store?.prfData.patient_details?.data.pastHistory?.cardiac ?? false,
+        byPass: prf_from_store?.prfData.patient_details?.data.pastHistory?.byPass ?? false,
+        dmOneOrTwo: prf_from_store?.prfData.patient_details?.data.pastHistory?.dmOneOrTwo ?? false,
+        HPT: prf_from_store?.prfData.patient_details?.data.pastHistory?.HPT ?? false,
+        asthma: prf_from_store?.prfData.patient_details?.data.pastHistory?.asthma ?? false,
+        copd: prf_from_store?.prfData.patient_details?.data.pastHistory?.copd ?? false,
+      },
     },
   });
+
+  // Watch the unableToObtainInformation.status field
+  const unableToObtainInfo = form.watch("unableToObtainInformation.status");
+
+  // Update validation rules when unableToObtainInfo changes
+  React.useEffect(() => {
+    if (unableToObtainInfo) {
+      // Clear validation errors for optional fields
+      form.clearErrors([
+        "age",
+        "gender",
+        "patientName",
+        "patientSurname",
+        "id",
+        "passport"
+      ]);
+    }
+    
+    // Trigger revalidation
+    form.trigger();
+  }, [unableToObtainInfo, form]);
+
+  // Add this state for the toggle
+  const [useDateOfBirth, setUseDateOfBirth] = React.useState(false);
+
+  // Add this state to track the selected date
+  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(undefined);
+
+  // Add this function to calculate age from DOB
+  const calculateAge = (birthDate: Date) => {
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    
+    // Calculate months for infants
+    if (age === 0) {
+      const months = monthDiff + 12;
+      if (months <= 0) {
+        // Calculate days for newborns
+        const diffTime = Math.abs(today.getTime() - birthDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        form.setValue("age", diffDays);
+        form.setValue("ageUnit", "days");
+      } else {
+        form.setValue("age", months);
+        form.setValue("ageUnit", "months");
+      }
+    } else {
+      form.setValue("age", age);
+      form.setValue("ageUnit", "years");
+    }
+  };
 
   function onSubmit(values: z.infer<typeof PatientDetailsSchema>) {
     const prfUpdateValue: PRF_FORM = {
@@ -221,33 +315,108 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                 control={form.control}
                 name="age"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Age</FormLabel>
-                    <FormControl>
-                      <div className="relative flex flex-row">
-                        <Input
-                          type="number"
-                          placeholder="Age"
-                          {...field}
-                          onChange={(e) => {
-                            if (!!Number(e.target.value))
-                              field.onChange(Number(e.target.value));
-                          }}
+                  <FormItem className="flex flex-col">
+                    <div className="flex items-center justify-between">
+                      <FormLabel>Age</FormLabel>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={useDateOfBirth}
+                          onCheckedChange={setUseDateOfBirth}
                         />
-                        {(form.formState.touchedFields.age ||
-                          form.formState.errors.age) && (
-                          <Button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              field.onChange("");
-                            }}
-                            variant={"ghost"}
-                            size={"icon"}
-                            className="absolute right-0 z-10"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
+                        <FormLabel className="font-normal">
+                          Use Date of Birth
+                        </FormLabel>
+                      </div>
+                    </div>
+                    <FormControl>
+                      <div className="flex gap-2">
+                        {useDateOfBirth ? (
+                          <div className="flex-1">
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full justify-start text-left font-normal",
+                                    !selectedDate && "text-muted-foreground"
+                                  )}
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {selectedDate ? (
+                                    format(selectedDate, "PPP")
+                                  ) : (
+                                    <span>Pick a date</span>
+                                  )}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={selectedDate}
+                                  onSelect={(date) => {
+                                    setSelectedDate(date);
+                                    if (date) {
+                                      calculateAge(date);
+                                    }
+                                  }}
+                                  disabled={(date) =>
+                                    date > new Date() || date < new Date("1900-01-01")
+                                  }
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          </div>
+                        ) : (
+                          <div className="relative flex flex-1">
+                            <Input
+                              type="number"
+                              placeholder="Age"
+                              {...field}
+                              step="any"
+                              min="0"
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (value === "" || !isNaN(Number(value))) {
+                                  field.onChange(value === "" ? "" : Number(value));
+                                }
+                              }}
+                            />
+                            {(form.formState.touchedFields.age ||
+                              form.formState.errors.age) && (
+                              <Button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  field.onChange("");
+                                }}
+                                variant={"ghost"}
+                                size={"icon"}
+                                className="absolute right-0 z-10"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
                         )}
+                        <FormField
+                          control={form.control}
+                          name="ageUnit"
+                          render={({ field }) => (
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <SelectTrigger className="w-[110px]">
+                                <SelectValue placeholder="Unit" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="years">Years</SelectItem>
+                                <SelectItem value="months">Months</SelectItem>
+                                <SelectItem value="days">Days</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -259,7 +428,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                 name="gender"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Gender</FormLabel>
+                    <FormLabel>Sex</FormLabel>
                     <FormControl>
                       <RadioGroup
                         onValueChange={field.onChange}
@@ -311,6 +480,72 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="unableToObtainInformation.status"
+                render={({ field }) => (
+                  <FormItem className="col-span-full">
+                    <div className="flex items-center space-x-2">
+                      <FormControl>
+                        <input
+                          type="checkbox"
+                          checked={field.value}
+                          onChange={field.onChange}
+                          className="h-4 w-4"
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal">Unable to obtain information</FormLabel>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {form.watch("unableToObtainInformation.status") && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="unableToObtainInformation.estimatedAge"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Estimated Age</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            placeholder="Estimated Age"
+                            {...field}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (value === "" || !isNaN(Number(value))) {
+                                field.onChange(value === "" ? undefined : Number(value));
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="unableToObtainInformation.notes"
+                    render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel>Notes</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Additional notes about inability to obtain information"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
             </AccordionContent>
           </AccordionItem>
 
@@ -558,6 +793,228 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
               />
             </AccordionContent>
           </AccordionItem>
+
+          {/* Past Medical History */}
+          <AccordionItem value="past-medical-history">
+            <AccordionTrigger
+              className={cn({
+                "text-destructive": form.formState.errors.pastHistory,
+              })}
+            >
+              <h4
+                className={cn({
+                  "col-span-full scroll-m-20 text-lg font-semibold tracking-tight": true,
+                  "text-destructive": form.formState.errors.pastHistory,
+                })}
+              >
+                Past Medical History
+              </h4>
+            </AccordionTrigger>
+            <AccordionContent className="grid gap-3 px-4 sm:grid-cols-2 lg:grid-cols-3">
+              <FormField
+                control={form.control}
+                name="pastHistory.allergies"
+                render={({ field }) => (
+                  <FormItem className="col-span-full">
+                    <FormLabel>Allergies</FormLabel>
+                    <FormControl>
+                      <Input placeholder="List any known allergies" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="pastHistory.medication"
+                render={({ field }) => (
+                  <FormItem className="col-span-full">
+                    <FormLabel>Current Medications</FormLabel>
+                    <FormControl>
+                      <Input placeholder="List current medications" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="pastHistory.medicalHx"
+                render={({ field }) => (
+                  <FormItem className="col-span-full">
+                    <FormLabel>Medical History</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Relevant medical history" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="pastHistory.lastMeal"
+                render={({ field }) => (
+                  <FormItem className="col-span-full">
+                    <FormLabel>Last Meal</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Time and description of last meal" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="col-span-full grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <FormField
+                  control={form.control}
+                  name="pastHistory.cva"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-2">
+                      <FormControl>
+                        <input
+                          type="checkbox"
+                          checked={field.value}
+                          onChange={field.onChange}
+                          className="h-4 w-4"
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal">CVA</FormLabel>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="pastHistory.epilepsy"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-2">
+                      <FormControl>
+                        <input
+                          type="checkbox"
+                          checked={field.value}
+                          onChange={field.onChange}
+                          className="h-4 w-4"
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal">Epilepsy</FormLabel>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="pastHistory.cardiac"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-2">
+                      <FormControl>
+                        <input
+                          type="checkbox"
+                          checked={field.value}
+                          onChange={field.onChange}
+                          className="h-4 w-4"
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal">Cardiac</FormLabel>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="pastHistory.byPass"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-2">
+                      <FormControl>
+                        <input
+                          type="checkbox"
+                          checked={field.value}
+                          onChange={field.onChange}
+                          className="h-4 w-4"
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal">Bypass</FormLabel>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="pastHistory.dmOneOrTwo"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-2">
+                      <FormControl>
+                        <input
+                          type="checkbox"
+                          checked={field.value}
+                          onChange={field.onChange}
+                          className="h-4 w-4"
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal">Diabetes</FormLabel>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="pastHistory.HPT"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-2">
+                      <FormControl>
+                        <input
+                          type="checkbox"
+                          checked={field.value}
+                          onChange={field.onChange}
+                          className="h-4 w-4"
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal">Hypertension</FormLabel>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="pastHistory.asthma"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-2">
+                      <FormControl>
+                        <input
+                          type="checkbox"
+                          checked={field.value}
+                          onChange={field.onChange}
+                          className="h-4 w-4"
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal">Asthma</FormLabel>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="pastHistory.copd"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-2">
+                      <FormControl>
+                        <input
+                          type="checkbox"
+                          checked={field.value}
+                          onChange={field.onChange}
+                          className="h-4 w-4"
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal">COPD</FormLabel>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
           {/* Submit form */}
           <Button
             type="submit"

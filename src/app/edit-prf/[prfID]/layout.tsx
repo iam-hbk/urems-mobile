@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import Script from "next/script";
 import QuickLinks from "@/components/quick-links";
+import { Notebook } from "lucide-react";
 
 type Props = {};
 
@@ -63,6 +64,9 @@ function Layout({
         strategy="afterInteractive"
         async
       />
+      <div className="absolute shadow-lg bottom-10 right-10 rounded-full w-12 h-12  bg-primary text-primary-foreground flex justify-center items-center z-50">
+        <Notebook />
+      </div>
     </div>
   );
 }
