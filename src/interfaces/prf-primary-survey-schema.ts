@@ -98,13 +98,14 @@ const CirculationSchema = z.object({
 });
 
 const InitialGCSSchema = z.object({
-  total: z.string(),
-  motor: z.string(),
-  verbal: z.string(),
-  eyes: z.string(),
+  total: z.string(), //TODO: the sum of motor, verbal and eyes, if verbal is T, then total of motor and eyes+T eg. 9T
+  motor: z.string(), //TODO: can only be between 1 and 6
+  verbal: z.string(), //TODO: can only be between 1 and 5 or a T
+  eyes: z.string(), //TODO: can only be between 1 and 4
 });
 
 const AVPUSchema = z.object({
+  // TODO: can only be A, V, P or U and should be radio button
   A: z.boolean(),
   V: z.boolean(),
   P: z.boolean(),
@@ -116,9 +117,9 @@ const SpinalSensationSchema = z.object({
   pinsAndNeedles: z.boolean(),
   numbness: z.boolean(),
   none: z.boolean(),
-  fromNeck: z.boolean(),
-  nippleLine: z.boolean(),
-  abd: z.boolean(),
+  fromNeck: z.boolean(), //TODO: this is a location and should become an attribute
+  nippleLine: z.boolean(), //TODO: this is a location and should become an attribute
+  abd: z.boolean(), //TODO: this is a location and should become an attribute
 });
 
 const SpinalSchema = z.object({
@@ -126,6 +127,11 @@ const SpinalSchema = z.object({
     normal: z.boolean(),
     guarding: z.boolean(),
     loss: z.boolean(),
+    //TODO: add this to the form
+    deformity: z.object({
+      present: z.boolean(),
+      explanation: z.string().optional(),
+    }),
   }),
   sensation: SpinalSensationSchema,
 });
@@ -133,7 +139,7 @@ const SpinalSchema = z.object({
 const DisabilitySchema = z.object({
   initialGCS: InitialGCSSchema,
   AVPU: AVPUSchema,
-  combative: z.boolean(),
+  combative: z.boolean(), //TODO: show in the form as a different section. not under AVPU.
   spinal: SpinalSchema,
 });
 

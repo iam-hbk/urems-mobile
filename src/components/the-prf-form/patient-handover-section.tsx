@@ -49,7 +49,7 @@ export default function PatientHandoverForm() {
 
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
-
+  const user = useStore((state) => state.user);
   const [signatureModalOpen, setSignatureModalOpen] = useState(false);
   const [currentSignatureField, setCurrentSignatureField] = useState<
     "patientSignature" | "witnessSignature" | null
