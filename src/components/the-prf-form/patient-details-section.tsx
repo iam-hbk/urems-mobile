@@ -162,9 +162,6 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
   // Add this state for the toggle
   const [useDateOfBirth, setUseDateOfBirth] = React.useState(false);
 
-  // Add this state to track the selected date
-  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(undefined);
-
   // Add this function to calculate age from DOB
   const calculateAge = (birthDate: Date) => {
     const today = new Date();
@@ -316,17 +313,15 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                 name="age"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <div className="flex items-center justify-between">
-                      <FormLabel>Age</FormLabel>
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          checked={useDateOfBirth}
-                          onCheckedChange={setUseDateOfBirth}
-                        />
-                        <FormLabel className="font-normal">
-                          Use Date of Birth
-                        </FormLabel>
-                      </div>
+                    <FormLabel>Age</FormLabel>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Switch
+                        checked={useDateOfBirth}
+                        onCheckedChange={setUseDateOfBirth}
+                      />
+                      <FormLabel className="font-normal">
+                        Use Date of Birth
+                      </FormLabel>
                     </div>
                     <FormControl>
                       <div className="flex gap-2">
@@ -338,12 +333,12 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                                   variant={"outline"}
                                   className={cn(
                                     "w-full justify-start text-left font-normal",
-                                    !selectedDate && "text-muted-foreground"
+                                    !field.value && "text-muted-foreground"
                                   )}
                                 >
                                   <CalendarIcon className="mr-2 h-4 w-4" />
-                                  {selectedDate ? (
-                                    format(selectedDate, "PPP")
+                                  {field.value ? (
+                                    format(new Date(), "PPP")
                                   ) : (
                                     <span>Pick a date</span>
                                   )}
@@ -352,9 +347,8 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                               <PopoverContent className="w-auto p-0" align="start">
                                 <Calendar
                                   mode="single"
-                                  selected={selectedDate}
+                                  selected={field.value ? new Date() : undefined}
                                   onSelect={(date) => {
-                                    setSelectedDate(date);
                                     if (date) {
                                       calculateAge(date);
                                     }

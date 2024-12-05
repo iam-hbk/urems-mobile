@@ -2,7 +2,7 @@
 
 import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Field, FieldPath, useForm } from "react-hook-form";
+import { Field, FieldError, FieldPath, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -33,6 +33,29 @@ type PrimarySurveyType = z.infer<typeof PrimarySurveySchema>;
 
 type PrimarySurveyFormProps = {
   initialData?: PrimarySurveyType;
+};
+
+const calculateTotal = (motor: string, verbal: string, eyes: string): string => {
+  if (!motor || !verbal || !eyes) return '';
+  
+  if (verbal === 'T') {
+    const motorNum = parseInt(motor);
+    const eyesNum = parseInt(eyes);
+    if (!isNaN(motorNum) && !isNaN(eyesNum)) {
+      return `${motorNum + eyesNum}T`;
+    }
+    return '';
+  }
+
+  const motorNum = parseInt(motor);
+  const verbalNum = parseInt(verbal);
+  const eyesNum = parseInt(eyes);
+  
+  if (!isNaN(motorNum) && !isNaN(verbalNum) && !isNaN(eyesNum)) {
+    return (motorNum + verbalNum + eyesNum).toString();
+  }
+  
+  return '';
 };
 
 export default function PrimarySurveyForm({
@@ -548,11 +571,49 @@ export default function PrimarySurveyForm({
                           </FormLabel>
                           <FormControl>
                             <Input
-                              placeholder={key.split(/(?=[A-Z])/).join(" ")}
+                              placeholder={
+                                key === 'verbal' 
+                                  ? "1-5 or T" 
+                                  : key === 'motor' 
+                                  ? "1-6" 
+                                  : key === 'eyes' 
+                                  ? "1-4" 
+                                  : "Total GCS"
+                              }
+                              disabled={key === 'total'}
                               {...field}
-                              value={field.value as string}
+                              value={
+                                key === 'total' 
+                                  ? calculateTotal(
+                                      form.watch('disability.initialGCS.motor'),
+                                      form.watch('disability.initialGCS.verbal'),
+                                      form.watch('disability.initialGCS.eyes')
+                                    )
+                                  : field.value as string
+                              }
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (key === 'total') return; // Prevent manual changes to total
+                                // Allow only numbers and 'T' for verbal
+                                if (key === 'verbal') {
+                                  if (value === 'T' || value === '' || (/^\d+$/.test(value) && parseInt(value) <= 5)) {
+                                    field.onChange(value);
+                                  }
+                                } 
+                                // Allow only numbers within range for others
+                                else {
+                                  if (value === '' || /^\d+$/.test(value)) {
+                                    field.onChange(value);
+                                  }
+                                }
+                              }}
                             />
                           </FormControl>
+                          {form.formState.errors.disability?.initialGCS?.[key as keyof typeof form.formState.errors.disability.initialGCS] && (
+                            <p className="text-sm text-destructive">
+                              {(form.formState.errors.disability?.initialGCS?.[key as keyof typeof form.formState.errors.disability.initialGCS] as FieldError)?.message}
+                            </p>
+                          )}
                         </FormItem>
                       )}
                     />
