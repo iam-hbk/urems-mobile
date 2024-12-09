@@ -32,13 +32,13 @@ function Layout({
   return (
     <div className="flex w-full flex-col items-center overflow-auto">
 
-      <div className="sticky top-2 z-10 m-2 flex w-11/12 flex-col items-center justify-between space-y-2 rounded-lg p-2 shadow shadow-slate-200 backdrop-blur bg-red-600 ">
+      <div className="sticky top-2 z-10 m-2 flex w-11/12 flex-col items-center justify-between space-y-2 rounded-lg p-2 shadow shadow-slate-200 backdrop-blur ">
 
         {/* showQuickLinks - to show the quick links components */}
         {prf && showQuickLinks && <QuickLinks prf={prf} />}
 
-        <div className="flex w-full flex-row items-center justify-between">
-          <div className="flex flex-row gap-1 bg-green-600">
+        <div className="flex w-full flex-col sm:flex-row justify-between ">
+          <div className="flex flex-row gap-1 items-center ">
             {path_blocks.map((block, index) => {
               if (index == 0) {
                 return (
@@ -58,9 +58,9 @@ function Layout({
           </div>
 
           {/* left side of the components */}
-          <div className=" bg-yellow-400 items-center flex  " >
+          <div className=" items-center flex mt-[1rem] sm:mt-[0rem]  " >
             {/* toogle between showing the quicks links and not, to provider user with more view */}
-            <Button className=" mr-[0.5rem] flex items-center "
+            <Button className=" mr-[0.5rem] text-[0.89rem] flex items-center "
               onClick={() => setShowQuickLinks(!showQuickLinks)} >
               {showQuickLinks ? <EyeOffIcon size={20} /> : <Eye size={20} />}
               <span className=" ml-[0.5rem] " >Quick Links</span>
