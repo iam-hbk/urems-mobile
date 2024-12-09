@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 const AirEntrySchema = z.object({
-  left: z.enum(["✓", "↓","x"]).optional(),
-  right: z.enum(["✓", "↓","x"]).optional(),
+  left: z.enum(["✓", "↓", "x"]).optional(),
+  right: z.enum(["✓", "↓", "x"]).optional(),
 });
 
 const PupilReactionSchema = z.object({

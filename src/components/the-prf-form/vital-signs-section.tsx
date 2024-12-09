@@ -162,13 +162,18 @@ const VitalSignsForm: React.FC = () => {
                           <FormLabel>Time</FormLabel>
                           <FormControl>
                             <Input
+                              onFocus={(e) => console.log(e.target.value)}
                               type="time"
                               {...field}
                               value={
-                                field.value !== null ||
+                                field.value !== null &&
                                 field.value !== undefined
                                   ? field.value?.toString()
-                                  : ""
+                                  : new Date().toLocaleTimeString("en-US", {
+                                      hour12: false,
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })
                               }
                             />
                           </FormControl>
@@ -713,7 +718,7 @@ const VitalSignsForm: React.FC = () => {
                     pupilReaction: { left: "Normal", right: "Normal" },
                     pupilSize: { left: "", right: "" },
                     temperature: null,
-                    time: "",
+                    time: `${new Date().getHours()}:${new Date().getMinutes()}`,
                   })
                 }
               >
