@@ -457,15 +457,18 @@ const VitalSignsForm: React.FC = () => {
                         <FormItem>
                           <FormLabel>Perfusion</FormLabel>
                           <FormControl>
-                            <Input
-                              {...field}
-                              value={
-                                field.value !== null ||
-                                field.value !== undefined
-                                  ? field.value?.toString()
-                                  : ""
-                              }
-                            />
+                            <Select
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select Perfusion" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Good">Good</SelectItem>
+                                <SelectItem value="Poor">Poor</SelectItem>
+                                <SelectItem value="Absent">Absent</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
