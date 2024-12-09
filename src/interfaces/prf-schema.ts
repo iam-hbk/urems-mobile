@@ -342,6 +342,31 @@ export const DiagnosisSchema = z.object({
   priority: z.enum(["1", "2", "3", "4"], {
     required_error: "You need to select a priority.",
   }),
+  // 
+  // these are from mechanism of injury
+  // 
+  allergicReaction: z.object({
+    occurred: z.boolean(),
+    symptoms: z.array(
+      z.enum(["Stridor", "Wheezes", "Erythema", "Pruritus", "Urticaria"]),
+    ),
+    location: z.array(z.enum(["Abd", "Head", "Limbs", "Torso"])),
+  }),
+  poisoning: z.boolean(),
+  symptoms: z.array(
+    z.enum([
+      "Abdominal Pain",
+      "Altered LOC",
+      "Bradycardia",
+      "Secretions",
+      "Diaphoresis",
+      "Hypotension",
+      "Incontinence",
+      "Miosis",
+      "Seizures",
+      "Vomiting",
+    ]),
+  ),
 });
 
 export type DiagnosisType = z.infer<typeof DiagnosisSchema>;
@@ -417,6 +442,9 @@ export const MechanismOfInjurySchema = z.object({
       ]),
     ),
   }),
+  // 
+  // this needs to be removed and moved to diagnosis
+  // 
   allergicReaction: z.object({
     occurred: z.boolean(),
     symptoms: z.array(
@@ -440,6 +468,7 @@ export const MechanismOfInjurySchema = z.object({
     ]),
   ),
 });
+
 export type MechanismOfInjuryType = z.infer<typeof MechanismOfInjurySchema>;
 
 export const ProceduresSchema = z.object({

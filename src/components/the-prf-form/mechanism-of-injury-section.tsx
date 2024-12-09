@@ -82,6 +82,7 @@ export default function MechanismOfInjuryForm() {
           </h3>
         </div>
 
+        {/* vehicle type */}
         <FormField
           control={form.control}
           name="vehicleType"
@@ -103,6 +104,7 @@ export default function MechanismOfInjuryForm() {
                     "Taxi",
                     "Train",
                     "Truck",
+                    "Aircraft"
                   ].map((vehicle) => (
                     <FormItem
                       key={vehicle
@@ -124,6 +126,7 @@ export default function MechanismOfInjuryForm() {
           )}
         />
 
+        {/* impact type */}
         <FormField
           control={form.control}
           name="impactType"
@@ -152,20 +155,20 @@ export default function MechanismOfInjuryForm() {
                             <Checkbox
                               checked={field.value?.includes(
                                 item as
-                                  | "Frontal Impact"
-                                  | "Rear"
-                                  | "Rollover"
-                                  | "T - Boned"
-                                  | "Vehicle Spun",
+                                | "Frontal Impact"
+                                | "Rear"
+                                | "Rollover"
+                                | "T - Boned"
+                                | "Vehicle Spun",
                               )}
                               onCheckedChange={(checked) => {
                                 return checked
                                   ? field.onChange([...field.value, item])
                                   : field.onChange(
-                                      field.value?.filter(
-                                        (value) => value !== item,
-                                      ),
-                                    );
+                                    field.value?.filter(
+                                      (value) => value !== item,
+                                    ),
+                                  );
                               }}
                             />
                           </FormControl>
@@ -180,6 +183,7 @@ export default function MechanismOfInjuryForm() {
           )}
         />
 
+        {/* speed */}
         <FormField
           control={form.control}
           name="speed"
@@ -210,6 +214,7 @@ export default function MechanismOfInjuryForm() {
           )}
         />
 
+        {/* role in injury - drvier, passenger, unknown */}
         <FormField
           control={form.control}
           name="personType"
@@ -261,10 +266,10 @@ export default function MechanismOfInjuryForm() {
                               return checked
                                 ? field.onChange([...field.value, item])
                                 : field.onChange(
-                                    field.value?.filter(
-                                      (value) => value !== item,
-                                    ),
-                                  );
+                                  field.value?.filter(
+                                    (value) => value !== item,
+                                  ),
+                                );
                             }}
                           />
                         </FormControl>
@@ -298,20 +303,20 @@ export default function MechanismOfInjuryForm() {
                             <Checkbox
                               checked={field.value?.includes(
                                 item as
-                                  | "?↓LOC"
-                                  | "Multiple Patients"
-                                  | "P1"
-                                  | "or P4"
-                                  | "on Scene",
+                                | "?↓LOC"
+                                | "Multiple Patients"
+                                | "P1"
+                                | "or P4"
+                                | "on Scene",
                               )}
                               onCheckedChange={(checked) => {
                                 return checked
                                   ? field.onChange([...field.value, item])
                                   : field.onChange(
-                                      field.value?.filter(
-                                        (value) => value !== item,
-                                      ),
-                                    );
+                                    field.value?.filter(
+                                      (value) => value !== item,
+                                    ),
+                                  );
                               }}
                             />
                           </FormControl>
@@ -416,20 +421,20 @@ export default function MechanismOfInjuryForm() {
                           <Checkbox
                             checked={field.value?.includes(
                               item as
-                                | "Assault"
-                                | "Stabbing"
-                                | "Rape"
-                                | "Strangulation"
-                                | "Armed Robbery",
+                              | "Assault"
+                              | "Stabbing"
+                              | "Rape"
+                              | "Strangulation"
+                              | "Armed Robbery",
                             )}
                             onCheckedChange={(checked) => {
                               return checked
                                 ? field.onChange([...field.value, item])
                                 : field.onChange(
-                                    field.value?.filter(
-                                      (value) => value !== item,
-                                    ),
-                                  );
+                                  field.value?.filter(
+                                    (value) => value !== item,
+                                  ),
+                                );
                             }}
                           />
                         </FormControl>
@@ -468,20 +473,20 @@ export default function MechanismOfInjuryForm() {
                           <Checkbox
                             checked={field.value?.includes(
                               item as
-                                | "Industrial Accident"
-                                | "Sports Injury"
-                                | "Limited Patient Access"
-                                | "Self-Inflicted Wounds"
-                                | "Suicidal Tendencies",
+                              | "Industrial Accident"
+                              | "Sports Injury"
+                              | "Limited Patient Access"
+                              | "Self-Inflicted Wounds"
+                              | "Suicidal Tendencies",
                             )}
                             onCheckedChange={(checked) => {
                               return checked
                                 ? field.onChange([...field.value, item])
                                 : field.onChange(
-                                    field.value?.filter(
-                                      (value) => value !== item,
-                                    ),
-                                  );
+                                  field.value?.filter(
+                                    (value) => value !== item,
+                                  ),
+                                );
                             }}
                           />
                         </FormControl>
@@ -519,10 +524,10 @@ export default function MechanismOfInjuryForm() {
                               return checked
                                 ? field.onChange([...field.value, item])
                                 : field.onChange(
-                                    field.value?.filter(
-                                      (value) => value !== item,
-                                    ),
-                                  );
+                                  field.value?.filter(
+                                    (value) => value !== item,
+                                  ),
+                                );
                             }}
                           />
                         </FormControl>
@@ -559,10 +564,10 @@ export default function MechanismOfInjuryForm() {
                               return checked
                                 ? field.onChange([...field.value, item])
                                 : field.onChange(
-                                    field.value?.filter(
-                                      (value) => value !== item,
-                                    ),
-                                  );
+                                  field.value?.filter(
+                                    (value) => value !== item,
+                                  ),
+                                );
                             }}
                           />
                         </FormControl>
@@ -725,19 +730,19 @@ export default function MechanismOfInjuryForm() {
                                 <Checkbox
                                   checked={field.value?.includes(
                                     item as
-                                      | "Cold Water"
-                                      | "River / Dam"
-                                      | "Flood"
-                                      | "Pool",
+                                    | "Cold Water"
+                                    | "River / Dam"
+                                    | "Flood"
+                                    | "Pool",
                                   )}
                                   onCheckedChange={(checked) => {
                                     return checked
                                       ? field.onChange([...field.value, item])
                                       : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== item,
-                                          ),
-                                        );
+                                        field.value?.filter(
+                                          (value) => value !== item,
+                                        ),
+                                      );
                                   }}
                                 />
                               </FormControl>
@@ -888,22 +893,22 @@ export default function MechanismOfInjuryForm() {
                               <Checkbox
                                 checked={field.value?.includes(
                                   item as
-                                    | "Chemical"
-                                    | "Electrical"
-                                    | "Flash"
-                                    | "Lightning"
-                                    | "Steam"
-                                    | "Smoke Inhalation"
-                                    | "Thermal",
+                                  | "Chemical"
+                                  | "Electrical"
+                                  | "Flash"
+                                  | "Lightning"
+                                  | "Steam"
+                                  | "Smoke Inhalation"
+                                  | "Thermal",
                                 )}
                                 onCheckedChange={(checked) => {
                                   return checked
                                     ? field.onChange([...field.value, item])
                                     : field.onChange(
-                                        field.value?.filter(
-                                          (value) => value !== item,
-                                        ),
-                                      );
+                                      field.value?.filter(
+                                        (value) => value !== item,
+                                      ),
+                                    );
                                 }}
                               />
                             </FormControl>
@@ -969,20 +974,20 @@ export default function MechanismOfInjuryForm() {
                               <Checkbox
                                 checked={field.value?.includes(
                                   item as
-                                    | "Stridor"
-                                    | "Wheezes"
-                                    | "Erythema"
-                                    | "Pruritus"
-                                    | "Urticaria",
+                                  | "Stridor"
+                                  | "Wheezes"
+                                  | "Erythema"
+                                  | "Pruritus"
+                                  | "Urticaria",
                                 )}
                                 onCheckedChange={(checked) => {
                                   return checked
                                     ? field.onChange([...field.value, item])
                                     : field.onChange(
-                                        field.value?.filter(
-                                          (value) => value !== item,
-                                        ),
-                                      );
+                                      field.value?.filter(
+                                        (value) => value !== item,
+                                      ),
+                                    );
                                 }}
                               />
                             </FormControl>
@@ -1021,10 +1026,10 @@ export default function MechanismOfInjuryForm() {
                                   return checked
                                     ? field.onChange([...field.value, item])
                                     : field.onChange(
-                                        field.value?.filter(
-                                          (value) => value !== item,
-                                        ),
-                                      );
+                                      field.value?.filter(
+                                        (value) => value !== item,
+                                      ),
+                                    );
                                 }}
                               />
                             </FormControl>
@@ -1092,25 +1097,25 @@ export default function MechanismOfInjuryForm() {
                           <Checkbox
                             checked={field.value?.includes(
                               item as
-                                | "Abdominal Pain"
-                                | "Altered LOC"
-                                | "Bradycardia"
-                                | "Secretions"
-                                | "Diaphoresis"
-                                | "Hypotension"
-                                | "Incontinence"
-                                | "Miosis"
-                                | "Seizures"
-                                | "Vomiting",
+                              | "Abdominal Pain"
+                              | "Altered LOC"
+                              | "Bradycardia"
+                              | "Secretions"
+                              | "Diaphoresis"
+                              | "Hypotension"
+                              | "Incontinence"
+                              | "Miosis"
+                              | "Seizures"
+                              | "Vomiting",
                             )}
                             onCheckedChange={(checked) => {
                               return checked
                                 ? field.onChange([...field.value, item])
                                 : field.onChange(
-                                    field.value?.filter(
-                                      (value) => value !== item,
-                                    ),
-                                  );
+                                  field.value?.filter(
+                                    (value) => value !== item,
+                                  ),
+                                );
                             }}
                           />
                         </FormControl>
@@ -1123,6 +1128,7 @@ export default function MechanismOfInjuryForm() {
             </FormItem>
           )}
         />
+
         <Button
           type="submit"
           disabled={!form.formState.isDirty}
