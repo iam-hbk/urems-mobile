@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { z } from "zod";
+// import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -186,7 +186,8 @@ export default function DiagnosisForm() {
                                   | "Urticaria",
                                 )}
                                 onCheckedChange={(checked) => {
-                                  return checked
+                                  // make sure field.value is not null or undefined
+                                  return field.value && checked
                                     ? field.onChange([...field.value, item])
                                     : field.onChange(
                                       field.value?.filter(
@@ -228,7 +229,8 @@ export default function DiagnosisForm() {
                                   item as "Abd" | "Head" | "Limbs" | "Torso",
                                 )}
                                 onCheckedChange={(checked) => {
-                                  return checked
+                                  // there is an error here .. check field is valid and not null
+                                  return field.value && checked
                                     ? field.onChange([...field.value, item])
                                     : field.onChange(
                                       field.value?.filter(
@@ -314,7 +316,7 @@ export default function DiagnosisForm() {
                               | "Vomiting",
                             )}
                             onCheckedChange={(checked) => {
-                              return checked
+                              return field.value && checked
                                 ? field.onChange([...field.value, item])
                                 : field.onChange(
                                   field.value?.filter(

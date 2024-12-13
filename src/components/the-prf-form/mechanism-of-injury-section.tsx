@@ -22,7 +22,7 @@ import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
 import { PRF_FORM } from "@/interfaces/prf-form";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { z } from "zod";
+// import { z } from "zod";
 import {
   MechanismOfInjurySchema,
   MechanismOfInjuryType,
@@ -162,7 +162,7 @@ export default function MechanismOfInjuryForm() {
                                 | "Vehicle Spun",
                               )}
                               onCheckedChange={(checked) => {
-                                return checked
+                                return field.value && checked
                                   ? field.onChange([...field.value, item])
                                   : field.onChange(
                                     field.value?.filter(
@@ -243,6 +243,8 @@ export default function MechanismOfInjuryForm() {
             </FormItem>
           )}
         />
+
+        {/* safety features */}
         <FormField
           control={form.control}
           name="safetyFeatures"
@@ -263,7 +265,7 @@ export default function MechanismOfInjuryForm() {
                               item as "Airbags" | "Restrained",
                             )}
                             onCheckedChange={(checked) => {
-                              return checked
+                              return field.value && checked
                                 ? field.onChange([...field.value, item])
                                 : field.onChange(
                                   field.value?.filter(
@@ -310,7 +312,7 @@ export default function MechanismOfInjuryForm() {
                                 | "on Scene",
                               )}
                               onCheckedChange={(checked) => {
-                                return checked
+                                return field.value && checked
                                   ? field.onChange([...field.value, item])
                                   : field.onChange(
                                     field.value?.filter(
@@ -428,7 +430,7 @@ export default function MechanismOfInjuryForm() {
                               | "Armed Robbery",
                             )}
                             onCheckedChange={(checked) => {
-                              return checked
+                              return field.value && checked
                                 ? field.onChange([...field.value, item])
                                 : field.onChange(
                                   field.value?.filter(
@@ -480,7 +482,7 @@ export default function MechanismOfInjuryForm() {
                               | "Suicidal Tendencies",
                             )}
                             onCheckedChange={(checked) => {
-                              return checked
+                              return field.value && checked
                                 ? field.onChange([...field.value, item])
                                 : field.onChange(
                                   field.value?.filter(
@@ -521,7 +523,7 @@ export default function MechanismOfInjuryForm() {
                               item as "Bed" | "Same Level" | ">3m" | ">10m",
                             )}
                             onCheckedChange={(checked) => {
-                              return checked
+                              return field.value && checked
                                 ? field.onChange([...field.value, item])
                                 : field.onChange(
                                   field.value?.filter(
@@ -541,6 +543,7 @@ export default function MechanismOfInjuryForm() {
           )}
         />
 
+        {/* weapon type */}
         <FormField
           control={form.control}
           name="falls.weaponType"
@@ -561,7 +564,7 @@ export default function MechanismOfInjuryForm() {
                               item as "GSW" | "AR" | "Handgun" | "Rifle",
                             )}
                             onCheckedChange={(checked) => {
-                              return checked
+                              return field.value && checked
                                 ? field.onChange([...field.value, item])
                                 : field.onChange(
                                   field.value?.filter(
@@ -736,7 +739,7 @@ export default function MechanismOfInjuryForm() {
                                     | "Pool",
                                   )}
                                   onCheckedChange={(checked) => {
-                                    return checked
+                                    return field.value && checked
                                       ? field.onChange([...field.value, item])
                                       : field.onChange(
                                         field.value?.filter(
@@ -902,7 +905,7 @@ export default function MechanismOfInjuryForm() {
                                   | "Thermal",
                                 )}
                                 onCheckedChange={(checked) => {
-                                  return checked
+                                  return field.value && checked
                                     ? field.onChange([...field.value, item])
                                     : field.onChange(
                                       field.value?.filter(
@@ -927,7 +930,7 @@ export default function MechanismOfInjuryForm() {
         )}
 
         {/* Allergic Reaction */}
-        <FormField
+        {/* <FormField
           control={form.control}
           name="allergicReaction.occurred"
           render={({ field }) => (
@@ -946,9 +949,9 @@ export default function MechanismOfInjuryForm() {
               </FormControl>
             </FormItem>
           )}
-        />
+        /> */}
 
-        {form.watch("allergicReaction.occurred") && (
+        {/* {form.watch("allergicReaction.occurred") && (
           <>
             <FormField
               control={form.control}
@@ -1045,10 +1048,10 @@ export default function MechanismOfInjuryForm() {
               )}
             />
           </>
-        )}
+        )} */}
 
         {/* Poisoning */}
-        <FormField
+        {/* <FormField
           control={form.control}
           name="poisoning"
           render={({ field }) => (
@@ -1065,10 +1068,10 @@ export default function MechanismOfInjuryForm() {
               </FormControl>
             </FormItem>
           )}
-        />
+        /> */}
 
         {/* Symptoms */}
-        <FormField
+        {/* <FormField
           control={form.control}
           name="symptoms"
           render={() => (
@@ -1127,7 +1130,7 @@ export default function MechanismOfInjuryForm() {
               </div>
             </FormItem>
           )}
-        />
+        /> */}
 
         <Button
           type="submit"
