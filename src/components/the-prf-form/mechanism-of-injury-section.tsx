@@ -85,46 +85,69 @@ export default function MechanismOfInjuryForm() {
         {/* vehicle type */}
         <FormField
           control={form.control}
-          name="vehicleType"
+          name="vehicletype.occured"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Vehicle Type</FormLabel>
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">Vehiche type</FormLabel>
+                <FormDescription>Select vehicle type?</FormDescription>
+              </div>
               <FormControl>
-                <RadioGroup
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  className="grid grid-cols-4 gap-2"
-                >
-                  {[
-                    "MVA",
-                    "MBA",
-                    "PVA",
-                    "Bus",
-                    "Cyclist",
-                    "Taxi",
-                    "Train",
-                    "Truck",
-                    "Aircraft"
-                  ].map((vehicle) => (
-                    <FormItem
-                      key={vehicle
-                        .replace(" ", "")
-                        .replace("-", "")
-                        .toLowerCase()
-                        .trim()}
-                      className="flex max-w-32 items-center space-x-3 space-y-0 "
-                    >
-                      <FormControl>
-                        <RadioGroupItem value={vehicle} />
-                      </FormControl>
-                      <FormLabel className="font-normal">{vehicle}</FormLabel>
-                    </FormItem>
-                  ))}
-                </RadioGroup>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
               </FormControl>
             </FormItem>
           )}
         />
+
+        {form.watch("vehicletype.occured") && (
+          <FormField
+            control={form.control}
+            name="vehicleType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Vehicle Type</FormLabel>
+                <FormControl>
+                  <RadioGroup
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    className="grid grid-cols-4 gap-2"
+                  >
+                    {[
+                      "MVA",
+                      "MBA",
+                      "PVA",
+                      "Bus",
+                      "Cyclist",
+                      "Taxi",
+                      "Train",
+                      "Truck",
+                      "Aircraft"
+                    ].map((vehicle) => (
+                      <FormItem
+                        key={vehicle
+                          .replace(" ", "")
+                          .replace("-", "")
+                          .toLowerCase()
+                          .trim()}
+                        className="flex max-w-32 items-center space-x-3 space-y-0 "
+                      >
+                        <FormControl>
+                          <RadioGroupItem value={vehicle} />
+                        </FormControl>
+                        <FormLabel className="font-normal">{vehicle}</FormLabel>
+                      </FormItem>
+                    ))}
+                  </RadioGroup>
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        )}
+
+
 
         {/* impact type */}
         <FormField
