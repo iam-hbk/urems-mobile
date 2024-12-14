@@ -40,7 +40,9 @@ export default function MechanismOfInjuryForm() {
 
   const form = useForm<MechanismOfInjuryType>({
     resolver: zodResolver(MechanismOfInjurySchema),
-    defaultValues: prf_from_store?.prfData?.mechanism_of_injury?.data || {},
+    defaultValues: prf_from_store?.prfData?.mechanism_of_injury?.data || {
+      burns: { duration: "", occurred: undefined }
+    },
   });
 
   function onSubmit(values: MechanismOfInjuryType) {
@@ -85,7 +87,7 @@ export default function MechanismOfInjuryForm() {
         {/* vehicle type */}
         <FormField
           control={form.control}
-          name="vehicletype.occured"
+          name="vehicleType.occured"
           render={({ field }) => (
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
@@ -102,10 +104,10 @@ export default function MechanismOfInjuryForm() {
           )}
         />
 
-        {form.watch("vehicletype.occured") && (
+        {form.watch("vehicleType.occured") && (
           <FormField
             control={form.control}
-            name="vehicleType"
+            name="vehicleType.vehicleTypesSelection"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Vehicle Type</FormLabel>
@@ -185,8 +187,11 @@ export default function MechanismOfInjuryForm() {
                                 | "Vehicle Spun",
                               )}
                               onCheckedChange={(checked) => {
+                                console.log(form.getFieldState("impactType").error)
+                                // prevent 
                                 return field.value && checked
                                   ? field.onChange([...field.value, item])
+                                  // ? field.onChange(field.value)
                                   : field.onChange(
                                     field.value?.filter(
                                       (value) => value !== item,
@@ -887,7 +892,7 @@ export default function MechanismOfInjuryForm() {
                 <FormItem>
                   <FormLabel>Burn Duration</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} defaultValue={""} />
                   </FormControl>
                 </FormItem>
               )}

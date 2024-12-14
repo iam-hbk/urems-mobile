@@ -372,19 +372,22 @@ export const DiagnosisSchema = z.object({
 export type DiagnosisType = z.infer<typeof DiagnosisSchema>;
 
 export const MechanismOfInjurySchema = z.object({
-  vehicleType: z.enum([
-    "MVA",
-    "MBA",
-    "PVA",
-    "Bus",
-    "Cyclist",
-    "Taxi",
-    "Train",
-    "Truck",
-  ]),
+  vehicleType: z.object({
+    occured: z.boolean(),
+    vehicleTypesSelection: z.enum([
+      "MVA",
+      "MBA",
+      "PVA",
+      "Bus",
+      "Cyclist",
+      "Taxi",
+      "Train",
+      "Truck",
+    ])
+  }),
   impactType: z.array(
     z.enum(["Frontal Impact", "Rear", "Rollover", "T - Boned", "Vehicle Spun"]),
-  ),
+  ).nonempty(),
   speed: z.enum(["<60km/h", "60-100km/h", ">120km/h"]),
   personType: z.enum(["Driver", "Passenger", "Unknown"]),
   safetyFeatures: z.array(z.enum(["Airbags", "Restrained"])),
@@ -429,7 +432,7 @@ export const MechanismOfInjurySchema = z.object({
     occurred: z.boolean(),
     bsa: z.enum(["<15%", ">15%"]),
     confinedSpace: z.boolean(),
-    duration: z.string(),
+    duration: z.string().default(""),
     type: z.array(
       z.enum([
         "Chemical",
