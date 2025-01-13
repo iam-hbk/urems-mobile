@@ -14,6 +14,7 @@ import {
   PhoneIcon,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { UREM__ERP_API_BASE } from "@/lib/wretch";
 
 interface ContactDetails {
   cellNumber: string;
@@ -81,7 +82,7 @@ export default function EmployeeProfile() {
     queryKey: ["employeeData", "2"],
     queryFn: async () => {
       const response = await fetch(
-        "https://localhost:7089/api/Employee/EmployeeWithDetails/2",
+        `${UREM__ERP_API_BASE}/api/Employee/EmployeeWithDetails/2`,
       );
       if (!response.ok) {
         throw new Error("Network response was not ok");
