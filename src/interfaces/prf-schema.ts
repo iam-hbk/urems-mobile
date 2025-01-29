@@ -1024,6 +1024,7 @@ export const PRFFormDataSchema = z.object({
   }).optional(),
 });
 
+
 // Define the full form schema
 export const PRFFormSchema = z.object({
   prfFormId: z.string().optional(),
@@ -1031,4 +1032,6 @@ export const PRFFormSchema = z.object({
   prfData: PRFFormDataSchema,
   createdAt: z.union([z.string(), z.date()]).optional(),
   isCompleted: z.boolean().default(false).optional(),
+  EmployeeID: z.string(), // added employee and crew IDs
+  CrewID: z.string().default("CrewID").optional(), // this can be optional for now
 });

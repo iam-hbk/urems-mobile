@@ -6,20 +6,52 @@ import TimePicker from "@/components/time-picker";
 import { Button } from "@/components/ui/button";
 import { usePrfForms } from "@/hooks/prf/usePrfForms";
 import Link from "next/link";
+import { EmployeeData } from "./profile/page";
+import { useQuery } from "@tanstack/react-query";
+import { UREM__ERP_API_BASE } from "@/lib/wretch";
+import { useEffect } from "react";
+import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 export default function Home() {
   const { data: prfs_, error, isLoading } = usePrfForms();
+  const { zsSetEmployee } = useZuStandEmployeeStore(); // to use employee information
 
-  if (isLoading) {
+  // loading employee profile information - here to avoid loading in the profile page
+  const {
+    data: employeeData,
+    isLoading: loading,
+    error: error_,
+  } = useQuery<EmployeeData>({
+    queryKey: ["employeeData", "2"],
+    queryFn: async () => {
+      const response = await fetch(
+        `${UREM__ERP_API_BASE}/api/Employee/EmployeeWithDetails/2`,
+      );
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      return response.json();
+    },
+  });
+
+  useEffect(() => {
+    if (employeeData) {
+      // console.log(employeeData);
+      zsSetEmployee(employeeData);
+    }
+  }, [employeeData, zsSetEmployee]);
+
+
+
+  if (isLoading || loading) {
     return <div>Loading...</div>;
   }
-  if (!!error) {
+  if (!!error || !!error_) {
     return <div>{JSON.stringify(error)}</div>;
   }
   if (!prfs_) {
     return <div>No PRFs found</div>;
   }
-  console.log(prfs_);
   return (
     <main className="flex w-full flex-col gap-5 overflow-y-scroll p-4">
       <StoreInitializer prfForms={prfs_} />

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { UREM__ERP_API_BASE } from "@/lib/wretch";
+import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 interface ContactDetails {
   cellNumber: string;
@@ -65,7 +66,7 @@ interface VehicleDto {
   vehicleTypeID: number;
 }
 
-interface EmployeeData {
+export interface EmployeeData {
   employeeNumber: number;
   employeeType: EmployeeType;
   person: Person;
@@ -73,7 +74,9 @@ interface EmployeeData {
 }
 
 export default function EmployeeProfile() {
+  const { zsSetEmployee } = useZuStandEmployeeStore()
   const [activeTab, setActiveTab] = useState("personal");
+
   const {
     data: employeeData,
     isLoading,
@@ -90,6 +93,14 @@ export default function EmployeeProfile() {
       return response.json();
     },
   });
+
+  useEffect(() => {
+    if (employeeData) {
+      console.log(employeeData);
+      zsSetEmployee(employeeData);
+    }
+  }, [employeeData, zsSetEmployee]);
+
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -112,6 +123,7 @@ export default function EmployeeProfile() {
   if (!employeeData) {
     return <p>No data found</p>;
   }
+
 
   return (
     <div className="container mx-auto p-6">
