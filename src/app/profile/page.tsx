@@ -81,7 +81,7 @@ export default function EmployeeProfile() {
     queryKey: ["employeeData", "2"],
     queryFn: async () => {
       const response = await fetch(
-        "https://localhost:7089/api/Employee/EmployeeWithDetails/2",
+        "http://localhost:7089/api/Employee/EmployeeWithDetails/2",
       );
       if (!response.ok) {
         throw new Error("Network response was not ok");
