@@ -113,9 +113,6 @@ const SpinalSensationSchema = z.object({
   pinsAndNeedles: z.boolean(),
   numbness: z.boolean(),
   none: z.boolean(),
-  fromNeck: z.boolean(), //TODO: this is a location and should become an attribute
-  nippleLine: z.boolean(), //TODO: this is a location and should become an attribute
-  abd: z.boolean(), //TODO: this is a location and should become an attribute
 });
 
 const SpinalSchema = z.object({
@@ -132,13 +129,18 @@ const SpinalSchema = z.object({
   sensation: SpinalSensationSchema,
 });
 
-
+const LocationSchema = z.object({
+  fromNeck: z.boolean(),
+  nippleLine: z.boolean(),
+  abdomen: z.boolean(), // Changed from 'abd'
+});
 
 const DisabilitySchema = z.object({
   initialGCS: InitialGCSSchema,
   combative: z.boolean(),
   AVPU: AVPUSchema,
   spinal: SpinalSchema,
+  location: LocationSchema, //Add New Location field
 });
 
 const PrimarySurveySchema = z.object({

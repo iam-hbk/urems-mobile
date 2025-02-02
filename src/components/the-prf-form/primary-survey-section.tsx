@@ -125,11 +125,13 @@ export default function PrimarySurveyForm({
             pinsAndNeedles: false,
             numbness: false,
             none: false,
-            fromNeck: false,
-            nippleLine: false,
-            abd: false,
           },
         },
+        location: {
+          fromNeck: false,
+          nippleLine: false,
+          abdomen: false,
+        }
       },
     },
   });
@@ -665,6 +667,34 @@ export default function PrimarySurveyForm({
                   </div>
                 </div>
               </div>
+          <div className="space-y-2">
+      <h5 className="font-bold">Location</h5>
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+        {Object.keys(PrimarySurveySchema.shape.disability.shape.location.shape).map((key) => (
+          <FormField
+            key={key}
+            control={form.control}
+            name={
+              `disability.location.${key}` as FieldPath<PrimarySurveyType>
+            }
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value as boolean}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <FormLabel className="font-normal capitalize">
+                  {key === 'abdomen' ? 'Abdomen' : key.split(/(?=[A-Z])/).join(' ')}
+                </FormLabel>
+              </FormItem>
+            )}
+          />
+        ))}
+      </div>
+    </div>
+            
             </AccordionContent>
           </AccordionItem>
 
