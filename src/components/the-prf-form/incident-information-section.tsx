@@ -55,44 +55,44 @@ const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
         prf_from_store?.prfData.incident_information?.data.onArrival || "",
       chiefComplaint:
         prf_from_store?.prfData.incident_information?.data.chiefComplaint || "",
-      pastHistory: {
-        allergies:
-          prf_from_store?.prfData.incident_information?.data.pastHistory
-            .allergies || "",
-        medication:
-          prf_from_store?.prfData.incident_information?.data.pastHistory
-            .medication || "",
-        medicalHx:
-          prf_from_store?.prfData.incident_information?.data.pastHistory
-            .medicalHx || "",
-        lastMeal:
-          prf_from_store?.prfData.incident_information?.data.pastHistory
-            .lastMeal || "",
-        cva:
-          prf_from_store?.prfData.incident_information?.data.pastHistory.cva ||
-          false,
-        epilepsy:
-          prf_from_store?.prfData.incident_information?.data.pastHistory
-            .epilepsy || false,
-        cardiac:
-          prf_from_store?.prfData.incident_information?.data.pastHistory
-            .cardiac || false,
-        byPass:
-          prf_from_store?.prfData.incident_information?.data.pastHistory
-            .byPass || false,
-        dmOneOrTwo:
-          prf_from_store?.prfData.incident_information?.data.pastHistory
-            .dmOneOrTwo || false,
-        HPT:
-          prf_from_store?.prfData.incident_information?.data.pastHistory.HPT ||
-          false,
-        asthma:
-          prf_from_store?.prfData.incident_information?.data.pastHistory
-            .asthma || false,
-        copd:
-          prf_from_store?.prfData.incident_information?.data.pastHistory.copd ||
-          false,
-      },
+      // pastHistory: {
+      //   allergies:
+      //     prf_from_store?.prfData.incident_information?.data.pastHistory
+      //       .allergies || "",
+      //   medication:
+      //     prf_from_store?.prfData.incident_information?.data.pastHistory
+      //       .medication || "",
+      //   medicalHx:
+      //     prf_from_store?.prfData.incident_information?.data.pastHistory
+      //       .medicalHx || "",
+      //   lastMeal:
+      //     prf_from_store?.prfData.incident_information?.data.pastHistory
+      //       .lastMeal || "",
+      //   cva:
+      //     prf_from_store?.prfData.incident_information?.data.pastHistory.cva ||
+      //     false,
+      //   epilepsy:
+      //     prf_from_store?.prfData.incident_information?.data.pastHistory
+      //       .epilepsy || false,
+      //   cardiac:
+      //     prf_from_store?.prfData.incident_information?.data.pastHistory
+      //       .cardiac || false,
+      //   byPass:
+      //     prf_from_store?.prfData.incident_information?.data.pastHistory
+      //       .byPass || false,
+      //   dmOneOrTwo:
+      //     prf_from_store?.prfData.incident_information?.data.pastHistory
+      //       .dmOneOrTwo || false,
+      //   HPT:
+      //     prf_from_store?.prfData.incident_information?.data.pastHistory.HPT ||
+      //     false,
+      //   asthma:
+      //     prf_from_store?.prfData.incident_information?.data.pastHistory
+      //       .asthma || false,
+      //   copd:
+      //     prf_from_store?.prfData.incident_information?.data.pastHistory.copd ||
+      //     false,
+      // },
     },
   });
 
@@ -116,7 +116,6 @@ const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
           position: "top-right",
         });
         router.push(`/edit-prf/${data?.prfFormId}`);
-
       },
       onError: (error) => {
         toast.error("An error occurred", {
@@ -206,7 +205,7 @@ const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="past-history">
-            <AccordionTrigger
+            {/* <AccordionTrigger
               className={cn({
                 "text-destructive": form.formState.errors.pastHistory,
               })}
@@ -218,8 +217,8 @@ const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
               >
                 Past History
               </h4>
-            </AccordionTrigger>
-            <AccordionContent className="grid gap-3 px-4 sm:grid-cols-2 lg:grid-cols-3">
+            </AccordionTrigger> */}
+            {/* <AccordionContent className="grid gap-3 px-4 sm:grid-cols-2 lg:grid-cols-3">
               <FormField
                 control={form.control}
                 name="pastHistory.allergies"
@@ -400,7 +399,7 @@ const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
                   </FormItem>
                 )}
               />
-            </AccordionContent>
+            </AccordionContent> */}
           </AccordionItem>
           {/* Submit form */}
           <Button
