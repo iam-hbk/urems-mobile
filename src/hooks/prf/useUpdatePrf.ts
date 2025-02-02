@@ -6,7 +6,7 @@ const updatePrfForm = async (updatedPrf: PRF_FORM) => {
   const payload: any = updatedPrf;
   payload.prfData = JSON.stringify(updatedPrf.prfData);
 
-  const response = await fetch(`http://localhost:7089/api/PrfForm/${payload.prfFormId}`, {
+  const response = await fetch(`https://urems-backend-production.up.railway.app/api/PrfForm/${payload.prfFormId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
