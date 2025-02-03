@@ -18,12 +18,14 @@ import {
   Settings,
   User2,
 } from "lucide-react";
+import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 export function NavigationBar({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { zsEmployee } = useZuStandEmployeeStore();
   const links = [
     {
       label: "Dashboard",
@@ -80,7 +82,7 @@ export function NavigationBar({
           <div>
             <SidebarLink
               link={{
-                label: "Heritier Kaumbu",
+                label: `${zsEmployee?.person.firstName} ${zsEmployee?.person.lastName}`,
                 href: "#",
                 icon: (
                   <span>

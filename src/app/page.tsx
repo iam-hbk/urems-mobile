@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { UREM__ERP_API_BASE } from "@/lib/wretch";
 import { useEffect } from "react";
 import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
+import LoadingComponent from "@/components/loading";
 
 
 // 
@@ -44,7 +45,7 @@ export default function Home() {
 
 
   if (isLoading || loading) {
-    return <div>Loading...</div>;
+    return <LoadingComponent />;
   }
   if (!!error || !!error_) {
     return <div>{JSON.stringify(error)}</div>;

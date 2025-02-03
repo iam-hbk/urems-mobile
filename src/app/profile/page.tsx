@@ -16,6 +16,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { UREM__ERP_API_BASE } from "@/lib/wretch";
 import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
+import LoadingComponent from "@/components/loading";
 
 interface ContactDetails {
   cellNumber: string;
@@ -110,12 +111,7 @@ export default function EmployeeProfile() {
   };
 
   if (isLoading) {
-    return (
-      <p className="flex flex-row items-center justify-center">
-        <Loader className="mr-2 h-4 w-4 animate-spin" /> Setting up your
-        profile...
-      </p>
-    );
+    return (<LoadingComponent message="Setting up your profile..." />);
   }
   if (error) {
     return <p>Error: {error.message}</p>;
