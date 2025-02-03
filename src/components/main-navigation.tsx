@@ -83,7 +83,7 @@ export function NavigationBar({
             <SidebarLink
               link={{
                 label: `${zsEmployee?.person.firstName} ${zsEmployee?.person.lastName}`,
-                href: "#",
+                href: "/profile",
                 icon: (
                   <span>
                     <IconUserCircle />
