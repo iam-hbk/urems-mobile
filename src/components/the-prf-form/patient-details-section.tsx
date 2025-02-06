@@ -46,6 +46,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { format } from "date-fns";
+import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 export type PatientDetailsType = z.infer<typeof PatientDetailsSchema>;
 
@@ -55,7 +56,9 @@ type PatientDetailsFormProps = {
 
 type AgeUnit = "years" | "months" | "days";
 
-const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
+const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
+  // SM
+  const { zsEmployee } = useZuStandEmployeeStore();
   const prfId = usePathname().split("/")[2];
   const prf_from_store = useStore((state) => state.prfForms).find(
     (prf) => prf.prfFormId == prfId,
@@ -154,7 +157,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
         "passport"
       ]);
     }
-    
+
     // Trigger revalidation
     form.trigger();
   }, [unableToObtainInfo, form]);
@@ -170,11 +173,11 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    
+
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
       age--;
     }
-    
+
     // Calculate months for infants
     if (age === 0) {
       const months = monthDiff + 12;
@@ -195,6 +198,16 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
   };
 
   function onSubmit(values: z.infer<typeof PatientDetailsSchema>) {
+    // if there is valid employee info
+    console.log(zsEmployee);
+    if (!zsEmployee) {
+      toast.error("No Employee Information Found", {
+        duration: 3000,
+        position: "top-right",
+      });
+      return;
+    }
+
     const prfUpdateValue: PRF_FORM = {
       prfFormId: prfId,
       prfData: {
@@ -205,6 +218,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
         },
         ...prf_from_store?.prfData,
       },
+      EmployeeID: zsEmployee?.employeeNumber.toString(), // employeeID is required.
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
@@ -384,18 +398,18 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                             />
                             {(form.formState.touchedFields.age ||
                               form.formState.errors.age) && (
-                              <Button
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  field.onChange("");
-                                }}
-                                variant={"ghost"}
-                                size={"icon"}
-                                className="absolute right-0 z-10"
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            )}
+                                <Button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    field.onChange("");
+                                  }}
+                                  variant={"ghost"}
+                                  size={"icon"}
+                                  className="absolute right-0 z-10"
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              )}
                           </div>
                         )}
                         <FormField
@@ -511,8 +525,8 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                       <FormItem>
                         <FormLabel>Estimated Age</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
+                          <Input
+                            type="number"
                             placeholder="Estimated Age"
                             {...field}
                             onChange={(e) => {
@@ -535,7 +549,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                       <FormItem className="col-span-2">
                         <FormLabel>Notes</FormLabel>
                         <FormControl>
-                          <Input 
+                          <Input
                             placeholder="Additional notes about inability to obtain information"
                             {...field}
                           />

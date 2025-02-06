@@ -6,17 +6,23 @@ import { usePrfForms } from "@/hooks/prf/usePrfForms";
 import { EmployeeData } from "./profile/page";
 import { useQuery } from "@tanstack/react-query";
 import { UREM__ERP_API_BASE } from "@/lib/wretch";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 import LoadingComponent from "@/components/loading";
+import { apiGetCrewEmployeeID } from "@/lib/api/crew-apis";
+import { TypeCrew } from "@/interfaces/crew";
+import { useZuStandCrewStore } from "@/lib/zuStand/crew";
 
 
 // 
 export default function Home() {
+  const [loading_, setLoading_] = useState({ message: "Loading", status: false });
   const { data: prfs_, error, isLoading } = usePrfForms();
   const { zsSetEmployee } = useZuStandEmployeeStore(); // to use employee information
+  const { zsSetCrewID } = useZuStandCrewStore();
 
   // loading employee profile information - here to avoid loading in the profile page
+  // have to change employee number when auth is enabled
   const {
     data: employeeData,
     isLoading: loading,
@@ -34,10 +40,39 @@ export default function Home() {
     },
   });
 
+  // called like this to avoid errors
+  async function getCrew(id: string) {
+    setLoading_({ ...loading_, message: "Getting Crew Information", status: true })
+    try {
+      // for loading crew information
+      const res = await apiGetCrewEmployeeID(id);
+      // if there is dates for employee
+      if (res && res.data) {
+        // Find all dates that matches today's date. 
+        // Use this id when creating a new pr form
+        const filter_: TypeCrew[] = res.data.filter((i: TypeCrew) =>
+          new Date(i.date).toLocaleDateString() === new Date().toLocaleDateString());
+        // store crewID in ZS-State Management
+        // if there is no crew, the crew id, should be undefined
+        if (filter_.length > 0) {
+          zsSetCrewID(filter_[0].vehicleId);
+        } else { }
+      }
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+      } else { }
+    } finally {
+      setLoading_({ ...loading_, status: false })
+    }
+  }
+
+
   useEffect(() => {
     if (employeeData) {
       // console.log(employeeData);
       zsSetEmployee(employeeData);
+      // 
+      getCrew(employeeData.employeeNumber.toString());
     }
 
   }, [employeeData, zsSetEmployee]);

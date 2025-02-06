@@ -39,6 +39,7 @@ import { Calendar } from "../ui/calendar";
 import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
 import { CaseDetailsSchema } from "@/interfaces/prf-schema";
 import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
+import { useZuStandCrewStore } from "@/lib/zuStand/crew";
 
 export type CaseDetailsType = z.infer<typeof CaseDetailsSchema>;
 
@@ -74,7 +75,7 @@ const PRFEditSummary = ({
   });
   // ZuStand-SM
   const { zsEmployee } = useZuStandEmployeeStore()
-
+  const { zsCrewID } = useZuStandCrewStore();
   // 
   const onSubmit = async (values: z.infer<typeof CaseDetailsSchema>) => {
     // if there is valid employee info
@@ -97,6 +98,7 @@ const PRFEditSummary = ({
         },
       },
       EmployeeID: zsEmployee?.employeeNumber.toString(),
+      CrewID: zsCrewID?.toString(),
     };
 
     // console.log("form data here...", prf);
