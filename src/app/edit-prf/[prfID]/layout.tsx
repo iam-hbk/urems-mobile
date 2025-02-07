@@ -2,12 +2,13 @@
 import StepperView from "@/components/stepper-view";
 import { useStore } from "@/lib/store";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import Script from "next/script";
 import QuickLinks from "@/components/quick-links";
-import { Notebook } from "lucide-react";
+import { Eye, EyeOffIcon, Notebook } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type Props = {};
 
@@ -25,14 +26,19 @@ function Layout({
   path_blocks[1] = path_blocks[1] + "/" + path_blocks[2];
   //Remove index 2
   path_blocks.splice(2, 1);
+  // to toggle the quick links
+  const [showQuickLinks, setShowQuickLinks] = useState<boolean>(true);
 
   return (
     <div className="flex w-full flex-col items-center overflow-auto">
-      <div className="sticky top-2 z-10 m-2 flex w-11/12 flex-col items-center justify-between space-y-2 rounded-lg p-2 shadow shadow-slate-200 backdrop-blur">
-        {prf && <QuickLinks prf={prf} />}
 
-        <div className="flex w-full flex-row items-center justify-between">
-          <div className="flex flex-row gap-1">
+      <div className="sticky top-2 z-10 m-2 flex w-11/12 flex-col items-center justify-between space-y-2 rounded-lg p-2 shadow shadow-slate-200 backdrop-blur ">
+
+        {/* showQuickLinks - to show the quick links components */}
+        {prf && showQuickLinks && <QuickLinks prf={prf} />}
+
+        <div className="flex w-full flex-col sm:flex-row justify-between ">
+          <div className="flex flex-row gap-1 items-center ">
             {path_blocks.map((block, index) => {
               if (index == 0) {
                 return (
@@ -50,9 +56,20 @@ function Layout({
               );
             })}
           </div>
-          {!!prf && (
-            <StepperView prf={prf} triggerTitle="View Progress"></StepperView>
-          )}
+
+          {/* left side of the components */}
+          <div className=" items-center flex mt-[1rem] sm:mt-[0rem]  " >
+            {/* toogle between showing the quicks links and not, to provider user with more view */}
+            <Button className=" mr-[0.5rem] text-[0.89rem] flex items-center "
+              onClick={() => setShowQuickLinks(!showQuickLinks)} >
+              {showQuickLinks ? <EyeOffIcon size={20} /> : <Eye size={20} />}
+              <span className=" ml-[0.5rem] " >Quick Links</span>
+            </Button>
+            {/*  */}
+            {!!prf && (
+              <StepperView prf={prf} triggerTitle="View Progress"></StepperView>
+            )}
+          </div>
         </div>
       </div>
       {/* Body */}

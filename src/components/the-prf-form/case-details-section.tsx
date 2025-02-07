@@ -38,6 +38,8 @@ import { cn } from "@/lib/utils";
 import { Calendar } from "../ui/calendar";
 import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
 import { CaseDetailsSchema } from "@/interfaces/prf-schema";
+import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
+import { useZuStandCrewStore } from "@/lib/zuStand/crew";
 
 export type CaseDetailsType = z.infer<typeof CaseDetailsSchema>;
 
@@ -71,8 +73,20 @@ const PRFEditSummary = ({
         : new Date(),
     },
   });
-
+  // ZuStand-SM
+  const { zsEmployee } = useZuStandEmployeeStore()
+  const { zsCrewID } = useZuStandCrewStore();
+  // 
   const onSubmit = async (values: z.infer<typeof CaseDetailsSchema>) => {
+    // if there is valid employee info
+    if (!zsEmployee) {
+      toast.error("No Employee Information Found", {
+        duration: 3000,
+        position: "top-right",
+      });
+      return;
+    }
+
     const prf: PRF_FORM = {
       prfFormId: initialData?.prfFormId,
       prfData: {
@@ -83,7 +97,11 @@ const PRFEditSummary = ({
           isOptional: false,
         },
       },
+      EmployeeID: zsEmployee?.employeeNumber.toString(),
+      CrewID: zsCrewID?.toString(),
     };
+
+    // console.log("form data here...", prf);
 
     if (action === "create") {
       createPrfQuery.mutate(prf, {
@@ -121,9 +139,21 @@ const PRFEditSummary = ({
       });
     }
   };
+
   const onSkipForNow = async () => {
+    // if there is valid employee info
+    if (!zsEmployee) {
+      toast.error("No Employee Information Found", {
+        duration: 3000,
+        position: "top-right",
+      });
+      return;
+    }
     const prf: PRF_FORM = {
-      prfData: {},
+      prfData: {
+
+      },
+      EmployeeID: zsEmployee?.employeeNumber.toString()
     };
     if (action === "create") {
       createPrfQuery.mutate(prf, {
@@ -144,9 +174,13 @@ const PRFEditSummary = ({
       });
     }
   };
+
   const onClear = () => {
     form.reset();
   };
+
+
+
   return (
     <Dialog>
       <DialogTrigger asChild>
