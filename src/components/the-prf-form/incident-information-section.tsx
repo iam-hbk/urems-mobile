@@ -29,6 +29,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { toast } from "sonner";
 import SceneAddressInput from "../SceneAddressInput";
+import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 export type IncidentInformationType = z.infer<typeof IncidentInformationSchema>;
 
@@ -36,7 +37,7 @@ type IncidentInformationFormProps = {
   initialData?: PRF_FORM;
 };
 
-const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
+const IncidentInformationForm = ({ }: IncidentInformationFormProps) => {
   const prfId = usePathname().split("/")[2];
   const prf_from_store = useStore((state) => state.prfForms).find(
     (prf) => prf.prfFormId == prfId,
@@ -95,8 +96,17 @@ const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
       },
     },
   });
+  const { zsEmployee } = useZuStandEmployeeStore();
 
   function onSubmit(values: IncidentInformationType) {
+    if (!zsEmployee) {
+      toast.error("No Employee Information Found", {
+        duration: 3000,
+        position: "top-right",
+      });
+      return;
+    }
+
     const prfUpdateValue: PRF_FORM = {
       prfFormId: prfId,
       prfData: {
@@ -107,6 +117,7 @@ const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
         },
         ...prf_from_store?.prfData,
       },
+      EmployeeID: zsEmployee.employeeNumber.toString(),
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {

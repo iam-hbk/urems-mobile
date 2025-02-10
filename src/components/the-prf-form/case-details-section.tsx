@@ -153,7 +153,8 @@ const PRFEditSummary = ({
       prfData: {
 
       },
-      EmployeeID: zsEmployee?.employeeNumber.toString()
+      EmployeeID: zsEmployee?.employeeNumber.toString(),
+      CrewID: zsCrewID?.toString(),
     };
     if (action === "create") {
       createPrfQuery.mutate(prf, {

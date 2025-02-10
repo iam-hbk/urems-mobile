@@ -28,6 +28,7 @@ import { useStore } from "@/lib/store";
 import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
 import { PRF_FORM } from "@/interfaces/prf-form";
 import { toast } from "sonner";
+import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 export type TransportationType = z.infer<typeof TransportationSchema>;
 
@@ -42,6 +43,7 @@ const TransportationForm: React.FC<TransportationFormProps> = ({
   const prf_from_store = useStore((state) => state.prfForms).find(
     (prf) => prf.prfFormId == prfId,
   );
+  const { zsEmployee } = useZuStandEmployeeStore();
 
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
@@ -61,6 +63,14 @@ const TransportationForm: React.FC<TransportationFormProps> = ({
   });
 
   function onSubmit(values: TransportationType) {
+    if (!zsEmployee) {
+      toast.error("No Employee Information Found", {
+        duration: 3000,
+        position: "top-right",
+      });
+      return;
+    }
+
     const prfUpdateValue: PRF_FORM = {
       prfFormId: prfId,
       prfData: {
@@ -71,6 +81,7 @@ const TransportationForm: React.FC<TransportationFormProps> = ({
           isOptional: false,
         },
       },
+      EmployeeID: zsEmployee?.employeeNumber.toString(),
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
