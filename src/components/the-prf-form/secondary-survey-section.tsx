@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { SecondarySurveySchema } from "@/interfaces/prf-schema";
+import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 type SecondarySurveyType = z.infer<typeof SecondarySurveySchema>;
 
 type SecondarySurveyFormProps = {
@@ -44,6 +45,7 @@ export default function SecondarySurveyForm({
 
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
+  const { zsEmployee } = useZuStandEmployeeStore();
 
   const form = useForm<SecondarySurveyType>({
     resolver: zodResolver(SecondarySurveySchema),
@@ -214,7 +216,14 @@ export default function SecondarySurveyForm({
   });
 
   function onSubmit(values: SecondarySurveyType) {
-    console.log("VALUES -> ", values);
+    if (!zsEmployee) {
+      toast.error("No Employee Information Found", {
+        duration: 3000,
+        position: "top-right",
+      });
+      return;
+    }
+
     if (!form.formState.isDirty) return;
 
     const prfUpdateValue: PRF_FORM = {
@@ -227,6 +236,7 @@ export default function SecondarySurveyForm({
           isOptional: false,
         },
       },
+      EmployeeID: zsEmployee.employeeNumber.toString()
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {

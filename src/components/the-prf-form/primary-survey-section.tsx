@@ -2,7 +2,7 @@
 
 import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Field, FieldPath, useForm } from "react-hook-form";
+import { FieldPath, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 
 import {
@@ -30,7 +30,7 @@ import { toast } from "sonner";
 import { PrimarySurveySchema } from "@/interfaces/prf-primary-survey-schema";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
-import { usePrfForm } from "@/hooks/prf/usePrfForms";
+import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 type PrimarySurveyType = z.infer<typeof PrimarySurveySchema>;
 
 type PrimarySurveyFormProps = {
@@ -44,6 +44,7 @@ export default function PrimarySurveyForm({
   const prf_from_store = useStore((state) => state.prfForms).find(
     (prf) => prf.prfFormId == prfId,
   );
+  const { zsEmployee } = useZuStandEmployeeStore();
 
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
@@ -116,8 +117,8 @@ export default function PrimarySurveyForm({
       disability: {
         initialGCS: { total: "", motor: "", verbal: "", eyes: "" },
         combative: false,
-        AVPU: { value: undefined},
-        
+        AVPU: { value: undefined },
+
         spinal: {
           motorFunction: { normal: false, guarding: false, loss: false },
           sensation: {
@@ -137,7 +138,15 @@ export default function PrimarySurveyForm({
   });
 
   function onSubmit(values: PrimarySurveyType) {
-    console.log("VALUES -> ", values);
+
+    if (!zsEmployee) {
+      toast.error("No Employee Information Found", {
+        duration: 3000,
+        position: "top-right",
+      });
+      return;
+    }
+
     if (!form.formState.isDirty) return;
 
     const prfUpdateValue: PRF_FORM = {
@@ -150,9 +159,8 @@ export default function PrimarySurveyForm({
           isOptional: false,
         },
       },
+      EmployeeID: zsEmployee.employeeNumber.toString()
     };
-
-    console.log("FROM THE FORM -> ", prfUpdateValue);
 
     updatePrfQuery.mutate(prfUpdateValue, {
       onSuccess: (data) => {
@@ -565,42 +573,42 @@ export default function PrimarySurveyForm({
                 </div>
               </div>
 
-               {/* Combative Section */}
-    <div className="space-y-2">
-      <h5 className="font-bold">Combative</h5>
-      <div className="grid grid-cols-1 px-2">
-        <FormField
-          control={form.control}
-          name="disability.combative"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-              <FormControl>
-                <Checkbox
-                  checked={field.value as boolean}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <FormLabel className="font-normal">Combative</FormLabel>
-            </FormItem>
-          )}
-        />
-      </div>
-    </div>
+              {/* Combative Section */}
+              <div className="space-y-2">
+                <h5 className="font-bold">Combative</h5>
+                <div className="grid grid-cols-1 px-2">
+                  <FormField
+                    control={form.control}
+                    name="disability.combative"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value as boolean}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal">Combative</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
 
               <div className="space-y-2">
-                  {/* AVPU Radio Group */}    
-              <FormField 
-                control={form.control} 
-                name="disability.AVPU.value" 
-                render={({ field }) => ( 
-                  <AVPURadioGroup 
-                  value={field.value} 
-                  onChange={field.onChange} 
-                  disabled={form.formState.isSubmitting} 
-                  /> 
+                {/* AVPU Radio Group */}
+                <FormField
+                  control={form.control}
+                  name="disability.AVPU.value"
+                  render={({ field }) => (
+                    <AVPURadioGroup
+                      value={field.value}
+                      onChange={field.onChange}
+                      disabled={form.formState.isSubmitting}
+                    />
                   )}
-              /> 
-                </div>
+                />
+              </div>
 
               <div className="space-y-2">
                 <h5 className="font-bold">Spinal</h5>
@@ -667,34 +675,34 @@ export default function PrimarySurveyForm({
                   </div>
                 </div>
               </div>
-          <div className="space-y-2">
-      <h5 className="font-bold">Location</h5>
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-        {Object.keys(PrimarySurveySchema.shape.disability.shape.location.shape).map((key) => (
-          <FormField
-            key={key}
-            control={form.control}
-            name={
-              `disability.location.${key}` as FieldPath<PrimarySurveyType>
-            }
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value as boolean}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <FormLabel className="font-normal capitalize">
-                  {key === 'abdomen' ? 'Abdomen' : key.split(/(?=[A-Z])/).join(' ')}
-                </FormLabel>
-              </FormItem>
-            )}
-          />
-        ))}
-      </div>
-    </div>
-            
+              <div className="space-y-2">
+                <h5 className="font-bold">Location</h5>
+                <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+                  {Object.keys(PrimarySurveySchema.shape.disability.shape.location.shape).map((key) => (
+                    <FormField
+                      key={key}
+                      control={form.control}
+                      name={
+                        `disability.location.${key}` as FieldPath<PrimarySurveyType>
+                      }
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value as boolean}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormLabel className="font-normal capitalize">
+                            {key === 'abdomen' ? 'Abdomen' : key.split(/(?=[A-Z])/).join(' ')}
+                          </FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+
             </AccordionContent>
           </AccordionItem>
 

@@ -122,6 +122,10 @@ export const IncidentInformationSchema = z.object({
   dispatchInfo: z.string().min(5),
   onArrival: z.string().min(5),
   chiefComplaint: z.string(),
+  pastHistory: z.object({
+    allergies: z.string().optional(),
+    medicalHx: z.string().optional()
+  }),
 });
 export const SecondarySurveySchema = z.object({
   scalp: z.object({
