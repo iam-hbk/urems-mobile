@@ -4,6 +4,7 @@ import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Field, FieldError, FieldPath, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
+
 import {
   Form,
   FormControl,
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import AVPURadioGroup from "@/components/ui/avpu-radio-group";
 import {
   Accordion,
   AccordionContent,
@@ -140,8 +142,9 @@ export default function PrimarySurveyForm({
       },
       disability: {
         initialGCS: { total: "", motor: "", verbal: "", eyes: "" },
-        AVPU: { A: false, V: false, P: false, U: false },
         combative: false,
+        AVPU: { value: undefined},
+        
         spinal: {
           motorFunction: { normal: false, guarding: false, loss: false },
           sensation: {
@@ -149,11 +152,13 @@ export default function PrimarySurveyForm({
             pinsAndNeedles: false,
             numbness: false,
             none: false,
-            fromNeck: false,
-            nippleLine: false,
-            abd: false,
           },
         },
+        location: {
+          fromNeck: false,
+          nippleLine: false,
+          abdomen: false,
+        }
       },
     },
   });
@@ -641,50 +646,42 @@ export default function PrimarySurveyForm({
                 </div>
               </div>
 
+               {/* Combative Section */}
+    <div className="space-y-2">
+      <h5 className="font-bold">Combative</h5>
+      <div className="grid grid-cols-1 px-2">
+        <FormField
+          control={form.control}
+          name="disability.combative"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={field.value as boolean}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <FormLabel className="font-normal">Combative</FormLabel>
+            </FormItem>
+          )}
+        />
+      </div>
+    </div>
+
               <div className="space-y-2">
-                <h5 className="font-bold">AVPU</h5>
-                <div className="grid gap-4 px-4 sm:grid-cols-2 lg:grid-cols-4">
-                  {Object.keys(
-                    PrimarySurveySchema.shape.disability.shape.AVPU.shape,
-                  ).map((key) => (
-                    <FormField
-                      key={key}
-                      control={form.control}
-                      name={
-                        `disability.AVPU.${key}` as FieldPath<PrimarySurveyType>
-                      }
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value as boolean}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                          <FormLabel className="font-normal capitalize">
-                            {key.split(/(?=[A-Z])/).join(" ")}
-                          </FormLabel>
-                        </FormItem>
-                      )}
-                    />
-                  ))}
-                  <FormField
-                    control={form.control}
-                    name="disability.combative"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value as boolean}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <FormLabel className="font-normal">Combative</FormLabel>
-                      </FormItem>
-                    )}
-                  />
+                  {/* AVPU Radio Group */}    
+              <FormField 
+                control={form.control} 
+                name="disability.AVPU.value" 
+                render={({ field }) => ( 
+                  <AVPURadioGroup 
+                  value={field.value} 
+                  onChange={field.onChange} 
+                  disabled={form.formState.isSubmitting} 
+                  /> 
+                  )}
+              /> 
                 </div>
-              </div>
 
               <div className="space-y-2">
                 <h5 className="font-bold">Spinal</h5>
@@ -751,6 +748,34 @@ export default function PrimarySurveyForm({
                   </div>
                 </div>
               </div>
+          <div className="space-y-2">
+      <h5 className="font-bold">Location</h5>
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+        {Object.keys(PrimarySurveySchema.shape.disability.shape.location.shape).map((key) => (
+          <FormField
+            key={key}
+            control={form.control}
+            name={
+              `disability.location.${key}` as FieldPath<PrimarySurveyType>
+            }
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value as boolean}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <FormLabel className="font-normal capitalize">
+                  {key === 'abdomen' ? 'Abdomen' : key.split(/(?=[A-Z])/).join(' ')}
+                </FormLabel>
+              </FormItem>
+            )}
+          />
+        ))}
+      </div>
+    </div>
+            
             </AccordionContent>
           </AccordionItem>
 

@@ -82,6 +82,7 @@ export default function IntravenousTherapyForm() {
           isOptional: false,
         },
       },
+      EmployeeID: prf_from_store?.EmployeeID || "P123456",
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {

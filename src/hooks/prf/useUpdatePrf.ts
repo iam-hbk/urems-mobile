@@ -1,12 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/lib/store";
 import { PRF_FORM } from "@/interfaces/prf-form";
+import { UREM__ERP_API_BASE } from "@/lib/wretch";
 
 const updatePrfForm = async (updatedPrf: PRF_FORM) => {
   const payload: any = updatedPrf;
   payload.prfData = JSON.stringify(updatedPrf.prfData);
 
-  const response = await fetch(`https://urems-backend-production.up.railway.app/api/PrfForm/${payload.prfFormId}`, {
+  const response = await fetch(`${UREM__ERP_API_BASE}/api/PrfForm/${payload.prfFormId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

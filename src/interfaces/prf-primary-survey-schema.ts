@@ -131,11 +131,7 @@ const InitialGCSSchema = z.object({
 });
 
 const AVPUSchema = z.object({
-  // TODO: can only be A, V, P or U and should be radio button
-  A: z.boolean(),
-  V: z.boolean(),
-  P: z.boolean(),
-  U: z.boolean(),
+value: z.enum(['A', 'V', 'P', 'U'])
 });
 
 const SpinalSensationSchema = z.object({
@@ -143,9 +139,6 @@ const SpinalSensationSchema = z.object({
   pinsAndNeedles: z.boolean(),
   numbness: z.boolean(),
   none: z.boolean(),
-  fromNeck: z.boolean(), //TODO: this is a location and should become an attribute
-  nippleLine: z.boolean(), //TODO: this is a location and should become an attribute
-  abd: z.boolean(), //TODO: this is a location and should become an attribute
 });
 
 const SpinalSchema = z.object({
@@ -162,11 +155,18 @@ const SpinalSchema = z.object({
   sensation: SpinalSensationSchema,
 });
 
+const LocationSchema = z.object({
+  fromNeck: z.boolean(),
+  nippleLine: z.boolean(),
+  abdomen: z.boolean(), // Changed from 'abd'
+});
+
 const DisabilitySchema = z.object({
   initialGCS: InitialGCSSchema,
+  combative: z.boolean(),
   AVPU: AVPUSchema,
-  combative: z.boolean(), //TODO: show in the form as a different section. not under AVPU.
   spinal: SpinalSchema,
+  location: LocationSchema, //Add New Location field
 });
 
 const PrimarySurveySchema = z.object({

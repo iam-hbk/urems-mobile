@@ -2,7 +2,10 @@ import wretch from "wretch";
 import QueryStringAddon from "wretch/addons/queryString";
 import { WretchError } from "wretch/resolver";
 
-const api = wretch("https://urems-backend-production.up.railway.app/api")
+
+export const UREM__ERP_API_BASE: string = "http://localhost:7089"
+
+const api = wretch(`${UREM__ERP_API_BASE}/api`)
   .catcher(400, (error: WretchError) => {
     console.error("Bad request:", error.message);
     throw new Error("Bad request: " + error.message);

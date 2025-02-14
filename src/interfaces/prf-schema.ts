@@ -342,24 +342,52 @@ export const DiagnosisSchema = z.object({
   priority: z.enum(["1", "2", "3", "4"], {
     required_error: "You need to select a priority.",
   }),
+  // 
+  // these are from mechanism of injury
+  // 
+  allergicReaction: z.object({
+    occurred: z.boolean(),
+    symptoms: z.array(
+      z.enum(["Stridor", "Wheezes", "Erythema", "Pruritus", "Urticaria"]),
+    ),
+    location: z.array(z.enum(["Abd", "Head", "Limbs", "Torso"])),
+  }),
+  poisoning: z.boolean(),
+  symptoms: z.array(
+    z.enum([
+      "Abdominal Pain",
+      "Altered LOC",
+      "Bradycardia",
+      "Secretions",
+      "Diaphoresis",
+      "Hypotension",
+      "Incontinence",
+      "Miosis",
+      "Seizures",
+      "Vomiting",
+    ]),
+  ),
 });
 
 export type DiagnosisType = z.infer<typeof DiagnosisSchema>;
 
 export const MechanismOfInjurySchema = z.object({
-  vehicleType: z.enum([
-    "MVA",
-    "MBA",
-    "PVA",
-    "Bus",
-    "Cyclist",
-    "Taxi",
-    "Train",
-    "Truck",
-  ]),
+  vehicleType: z.object({
+    occured: z.boolean(),
+    vehicleTypesSelection: z.enum([
+      "MVA",
+      "MBA",
+      "PVA",
+      "Bus",
+      "Cyclist",
+      "Taxi",
+      "Train",
+      "Truck",
+    ])
+  }),
   impactType: z.array(
     z.enum(["Frontal Impact", "Rear", "Rollover", "T - Boned", "Vehicle Spun"]),
-  ),
+  ).nonempty(),
   speed: z.enum(["<60km/h", "60-100km/h", ">120km/h"]),
   personType: z.enum(["Driver", "Passenger", "Unknown"]),
   safetyFeatures: z.array(z.enum(["Airbags", "Restrained"])),
@@ -404,7 +432,7 @@ export const MechanismOfInjurySchema = z.object({
     occurred: z.boolean(),
     bsa: z.enum(["<15%", ">15%"]),
     confinedSpace: z.boolean(),
-    duration: z.string(),
+    duration: z.string().default(""),
     type: z.array(
       z.enum([
         "Chemical",
@@ -417,29 +445,33 @@ export const MechanismOfInjurySchema = z.object({
       ]),
     ),
   }),
-  allergicReaction: z.object({
-    occurred: z.boolean(),
-    symptoms: z.array(
-      z.enum(["Stridor", "Wheezes", "Erythema", "Pruritus", "Urticaria"]),
-    ),
-    location: z.array(z.enum(["Abd", "Head", "Limbs", "Torso"])),
-  }),
-  poisoning: z.boolean(),
-  symptoms: z.array(
-    z.enum([
-      "Abdominal Pain",
-      "Altered LOC",
-      "Bradycardia",
-      "Secretions",
-      "Diaphoresis",
-      "Hypotension",
-      "Incontinence",
-      "Miosis",
-      "Seizures",
-      "Vomiting",
-    ]),
-  ),
+
+  // this needs to be removed and moved to diagnosis
+
+  // allergicReaction: z.object({
+  //   occurred: z.boolean(),
+  //   symptoms: z.array(
+  //     z.enum(["Stridor", "Wheezes", "Erythema", "Pruritus", "Urticaria"]),
+  //   ),
+  //   location: z.array(z.enum(["Abd", "Head", "Limbs", "Torso"])),
+  // }),
+  // poisoning: z.boolean(),
+  // symptoms: z.array(
+  //   z.enum([
+  //     "Abdominal Pain",
+  //     "Altered LOC",
+  //     "Bradycardia",
+  //     "Secretions",
+  //     "Diaphoresis",
+  //     "Hypotension",
+  //     "Incontinence",
+  //     "Miosis",
+  //     "Seizures",
+  //     "Vomiting",
+  //   ]),
+  // ),
 });
+
 export type MechanismOfInjuryType = z.infer<typeof MechanismOfInjurySchema>;
 
 export const ProceduresSchema = z.object({
@@ -992,6 +1024,7 @@ export const PRFFormDataSchema = z.object({
   }).optional(),
 });
 
+
 // Define the full form schema
 export const PRFFormSchema = z.object({
   prfFormId: z.string().optional(),
@@ -999,4 +1032,6 @@ export const PRFFormSchema = z.object({
   prfData: PRFFormDataSchema,
   createdAt: z.union([z.string(), z.date()]).optional(),
   isCompleted: z.boolean().default(false).optional(),
+  EmployeeID: z.string(), // added employee and crew IDs
+  CrewID: z.string().default("CrewID").optional(), // this can be optional for now
 });

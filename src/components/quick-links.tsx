@@ -103,7 +103,7 @@ export default function QuickLinks({ prf }: { prf: PRF_FORM }) {
   };
 
   return (
-    <nav className="w-full rounded-lg border p-4">
+    <nav className="w-full rounded-lg border p-4 ">
       <div className="flex flex-wrap items-start gap-2">
         <div className="grid max-w-[calc(100%-3rem)] flex-grow grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-5">
           {visibleItems.map((item) => {

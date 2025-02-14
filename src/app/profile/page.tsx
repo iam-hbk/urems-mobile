@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -14,6 +14,9 @@ import {
   PhoneIcon,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { UREM__ERP_API_BASE } from "@/lib/wretch";
+import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
+import LoadingComponent from "@/components/loading";
 
 interface ContactDetails {
   cellNumber: string;
@@ -64,7 +67,7 @@ interface VehicleDto {
   vehicleTypeID: number;
 }
 
-interface EmployeeData {
+export interface EmployeeData {
   employeeNumber: number;
   employeeType: EmployeeType;
   person: Person;
@@ -72,7 +75,9 @@ interface EmployeeData {
 }
 
 export default function EmployeeProfile() {
+  const { zsSetEmployee } = useZuStandEmployeeStore()
   const [activeTab, setActiveTab] = useState("personal");
+
   const {
     data: employeeData,
     isLoading,
@@ -81,7 +86,7 @@ export default function EmployeeProfile() {
     queryKey: ["employeeData", "2"],
     queryFn: async () => {
       const response = await fetch(
-        "https://urems-backend-production.up.railway.app/api/Employee/EmployeeWithDetails/2",
+        `${UREM__ERP_API_BASE}/api/Employee/EmployeeWithDetails/2`,
       );
       if (!response.ok) {
         throw new Error("Network response was not ok");
@@ -89,6 +94,14 @@ export default function EmployeeProfile() {
       return response.json();
     },
   });
+
+  useEffect(() => {
+    if (employeeData) {
+      console.log(employeeData);
+      zsSetEmployee(employeeData);
+    }
+  }, [employeeData, zsSetEmployee]);
+
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -98,12 +111,7 @@ export default function EmployeeProfile() {
   };
 
   if (isLoading) {
-    return (
-      <p className="flex flex-row items-center justify-center">
-        <Loader className="mr-2 h-4 w-4 animate-spin" /> Setting up your
-        profile...
-      </p>
-    );
+    return (<LoadingComponent message="Setting up your profile..." />);
   }
   if (error) {
     return <p>Error: {error.message}</p>;
@@ -111,6 +119,7 @@ export default function EmployeeProfile() {
   if (!employeeData) {
     return <p>No data found</p>;
   }
+
 
   return (
     <div className="container mx-auto p-6">
