@@ -252,8 +252,7 @@ export default function IntravenousTherapyForm() {
               ))}
             </AccordionContent>
           </AccordionItem>
-
-          <div className="flex-row items-center space-x-4 lg:flex">
+          <div className="flex flex-row items-end space-x-4 lg:flex">
             <FormField
               control={form.control}
               name="weight"
@@ -261,13 +260,18 @@ export default function IntravenousTherapyForm() {
                 <FormItem className="max-w-xs">
                   <FormLabel>Weight (kg)</FormLabel>
                   <FormControl>
-                    <Input {...field} type="text" />
+                    <Input
+                      {...field}
+                      type="number"
+                      className="max-w-24"
+                      placeholder="0"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <div className="flex space-x-4">
+            <div className="my-4 flex w-fit space-x-4">
               <FormField
                 control={form.control}
                 name="pawperTape"
