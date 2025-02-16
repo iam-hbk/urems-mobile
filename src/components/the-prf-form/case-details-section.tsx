@@ -10,12 +10,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Dialog as AreaDialog } from "react-aria-components";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { format } from "date-fns";
 import React from "react";
-import { optional, z } from "zod";
+import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -32,14 +33,14 @@ import { useStore } from "@/lib/store";
 import { PRF_FORM } from "@/interfaces/prf-form";
 import { useCreatePrf } from "@/hooks/prf/useCreatePrf";
 import { useRouter } from "next/navigation";
-import { create } from "domain";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { cn } from "@/lib/utils";
 import { Calendar } from "../ui/calendar";
 import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
 import { CaseDetailsSchema } from "@/interfaces/prf-schema";
 import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 import { useZuStandCrewStore } from "@/lib/zuStand/crew";
+import { DatePicker, Group, Popover } from "react-aria-components";
+import { DateInput } from "../ui/datefield-rac";
+import { CalendarDate, parseDate } from "@internationalized/date";
 
 export type CaseDetailsType = z.infer<typeof CaseDetailsSchema>;
 
@@ -68,15 +69,18 @@ const PRFEditSummary = ({
       rv: initialData?.prfData.case_details?.data.rv || "",
       dodNumber: initialData?.prfData.case_details?.data.dodNumber || "",
       ambulance: initialData?.prfData.case_details?.data.ambulance || "",
-      dateOfCase: action === "create" ? new Date() : initialData?.prfData.case_details?.data.dateOfCase
-        ? new Date(initialData?.prfData.case_details?.data.dateOfCase)
-        : new Date(),
+      dateOfCase:
+        action === "create"
+          ? new Date()
+          : initialData?.prfData.case_details?.data.dateOfCase
+            ? new Date(initialData?.prfData.case_details?.data.dateOfCase)
+            : new Date(),
     },
   });
   // ZuStand-SM
-  const { zsEmployee } = useZuStandEmployeeStore()
+  const { zsEmployee } = useZuStandEmployeeStore();
   const { zsCrewID } = useZuStandCrewStore();
-  // 
+  //
   const onSubmit = async (values: z.infer<typeof CaseDetailsSchema>) => {
     // if there is valid employee info
     if (!zsEmployee) {
@@ -150,10 +154,8 @@ const PRFEditSummary = ({
       return;
     }
     const prf: PRF_FORM = {
-      prfData: {
-
-      },
-      EmployeeID: zsEmployee?.employeeNumber.toString()
+      prfData: {},
+      EmployeeID: zsEmployee?.employeeNumber.toString(),
     };
     if (action === "create") {
       createPrfQuery.mutate(prf, {
@@ -178,8 +180,6 @@ const PRFEditSummary = ({
   const onClear = () => {
     form.reset();
   };
-
-
 
   return (
     <Dialog>
@@ -252,32 +252,41 @@ const PRFEditSummary = ({
                 name="dateOfCase"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Date of Case</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-[240px] pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {format(field.value, "PPP")}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          defaultMonth={field.value}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <FormLabel>
+                      Date of Case
+                      <span className="text-xs text-muted-foreground">
+                        (mm/dd/yyyy)
+                      </span>
+                    </FormLabel>
+                    <FormControl>
+                      <DatePicker
+                        value={
+                          field.value
+                            ? new CalendarDate(
+                                field.value.getFullYear(),
+                                field.value.getMonth() + 1,
+                                field.value.getDate(),
+                              )
+                            : null
+                        }
+                        onChange={(date) => {
+                          if (date) {
+                            const jsDate = new Date(
+                              date.year,
+                              date.month - 1,
+                              date.day,
+                            );
+                            field.onChange(jsDate);
+                          }
+                        }}
+                      >
+                        <div className="flex">
+                          <Group className="w-full">
+                            <DateInput className="pe-9" />
+                          </Group>
+                        </div>
+                      </DatePicker>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

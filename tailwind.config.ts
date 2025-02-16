@@ -51,6 +51,13 @@ const config = {
   			card: {
   				DEFAULT: 'hsl(var(--card))',
   				foreground: 'hsl(var(--card-foreground))'
+  			},
+  			chart: {
+  				'1': 'hsl(var(--chart-1))',
+  				'2': 'hsl(var(--chart-2))',
+  				'3': 'hsl(var(--chart-3))',
+  				'4': 'hsl(var(--chart-4))',
+  				'5': 'hsl(var(--chart-5))'
   			}
   		},
   		borderRadius: {
@@ -59,7 +66,6 @@ const config = {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		keyframes: {
-
   			shake1: {
   				'0%, 100%': {
   					transform: 'translate(0, 0)'
@@ -110,15 +116,18 @@ const config = {
   				}
   			}
   		},
-		animation: {
-			'accordion-down': 'accordion-down 0.2s ease-out',
-			'accordion-up': 'accordion-up 0.2s ease-out',
-			shake1: 'shake1 1.5s ease-in-out infinite',
-			shake2: 'shake2 1.2s ease-in-out infinite',
-			shake3: 'shake3 1.9s ease-in-out infinite'
-		},
+  		animation: {
+  			'accordion-down': 'accordion-down 0.2s ease-out',
+  			'accordion-up': 'accordion-up 0.2s ease-out',
+  			shake1: 'shake1 1.5s ease-in-out infinite',
+  			shake2: 'shake2 1.2s ease-in-out infinite',
+  			shake3: 'shake3 1.9s ease-in-out infinite'
+  		},
   		fontFamily: {
-  			sans: ["var(--font-sans)", ...fontFamily.sans]
+  			sans: [
+  				'var(--font-sans)',
+                    ...fontFamily.sans
+                ]
   		},
   		scale: {
   			'-1': '-1'
