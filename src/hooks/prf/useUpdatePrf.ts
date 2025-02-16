@@ -4,28 +4,47 @@ import { PRF_FORM } from "@/interfaces/prf-form";
 import { UREM__ERP_API_BASE } from "@/lib/wretch";
 
 const updatePrfForm = async (updatedPrf: PRF_FORM) => {
-  const payload: any = updatedPrf;
-  payload.prfData = JSON.stringify(updatedPrf.prfData);
+  try {
+    // Create a clean payload without any undefined values
+    const cleanPayload = {
+      prfFormId: updatedPrf.prfFormId,
+      patientId: updatedPrf.patientId,
+      EmployeeID: updatedPrf.EmployeeID || "P123456",
+      CrewID: updatedPrf.CrewID,
+      isCompleted: updatedPrf.isCompleted ?? false,
+      prfData: JSON.stringify(updatedPrf.prfData)
+    };
 
-  const response = await fetch(`${UREM__ERP_API_BASE}/api/PrfForm/${payload.prfFormId}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload),
-  });
+    console.log("Sending", cleanPayload);
 
-  if (response.status === 204) {
-    // No content, return null or an empty object
-    return null;
-  } else if (response.ok) {
-    const data = await response.json();
-    console.log("Data From Network Request -> ", data);
-    return data;
-  } else {
-    // Handle non-2xx status codes
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Failed to update PRF form');
+    const response = await fetch(`${UREM__ERP_API_BASE}/api/PrfForm/${cleanPayload.prfFormId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(cleanPayload),
+    });
+
+    if (response.status === 204) {
+      // Return the original data since the server returned no content
+      return {
+        ...updatedPrf,
+        prfData: updatedPrf.prfData // Keep the original parsed prfData
+      };
+    } else if (response.ok) {
+      const data = await response.json();
+      console.log("Data From Network Request -> ", data);
+      return {
+        ...data,
+        prfData: typeof data.prfData === 'string' ? JSON.parse(data.prfData) : data.prfData
+      };
+    } else {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to update PRF form');
+    }
+  } catch (error) {
+    console.error('Error updating PRF form:', error);
+    throw error;
   }
 };
 
@@ -37,15 +56,8 @@ export const useUpdatePrf = () => {
     mutationFn: updatePrfForm,
     onSuccess: (data) => {
       if (data) {
-        // Process data only if it's not null
-        const processedData: PRF_FORM = {
-          ...data,
-          prfData: JSON.parse(data.prfData as string),
-        };
-        console.log("Sending", processedData);
-        updatePrfInStore(processedData);
+        updatePrfInStore(data);
       }
-
       queryClient.invalidateQueries({
         queryKey: ["prfForms"],
       });

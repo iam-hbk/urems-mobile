@@ -12,6 +12,9 @@ import LoadingComponent from "@/components/loading";
 import { apiGetCrewEmployeeID } from "@/lib/api/crew-apis";
 import { TypeCrew } from "@/interfaces/crew";
 import { useZuStandCrewStore } from "@/lib/zuStand/crew";
+import { DataTable } from "@/components/prf-table/data-table";
+import { columns } from "@/components/prf-table/columns";
+import { ViewToggle } from "@/components/prf-table/view-toggle";
 
 //
 export default function Home() {
@@ -19,6 +22,7 @@ export default function Home() {
     message: "Loading",
     status: false,
   });
+  const [view, setView] = useState<"table" | "summary">("table");
   const { data: prfs_, error, isLoading } = usePrfForms();
   const { zsSetEmployee } = useZuStandEmployeeStore(); // to use employee information
   const { zsSetCrewID } = useZuStandCrewStore();
@@ -102,23 +106,23 @@ export default function Home() {
         <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
           Dashboard
         </h1>
-        <div>
+        <div className="flex items-center gap-4">
+          <ViewToggle view={view} onViewChange={setView} />
           <PRFEditSummary buttonTitle="Create a new Patient Report Form" />
-          {/* <Button></Button> */}
         </div>
       </div>
       <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight text-muted-foreground">
         Recent PRFs
       </h3>
-      {/* <div>
-        <TimePicker />
-        <canvas className="border" id="cd_sign_admin_canvas" width="600" height="300"></canvas>
-      </div> */}
-      <section className="flex w-full flex-col flex-wrap items-center justify-center gap-4 p-2 lg:flex-row">
-        {prfs_.map((prf) => (
-          <PRF_Summary patientRecord={prf} key={prf.prfFormId} />
-        ))}
-      </section>
+      {view === "table" ? (
+        <DataTable columns={columns} data={prfs_} />
+      ) : (
+        <section className="flex w-full flex-col flex-wrap items-center justify-center gap-4 p-2 lg:flex-row">
+          {prfs_.map((prf) => (
+            <PRF_Summary patientRecord={prf} key={prf.prfFormId} />
+          ))}
+        </section>
+      )}
     </main>
   );
 }
