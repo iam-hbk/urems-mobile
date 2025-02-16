@@ -60,107 +60,74 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
   // SM
   const { zsEmployee } = useZuStandEmployeeStore();
   const prfId = usePathname().split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId,
-  );
+  console.log("PRF ID from pathname:", prfId); // Debug log
+
+  const prf_from_store = useStore((state) => {
+    console.log("All PRF forms in store:", state.prfForms); // Debug log
+    return state.prfForms.find(
+      (prf) => String(prf.prfFormId) === String(prfId),
+    );
+  });
+  
+  console.log("Found PRF from store:", prf_from_store); // Debug log
 
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
   const form = useForm<z.infer<typeof PatientDetailsSchema>>({
     resolver: zodResolver(PatientDetailsSchema),
-    defaultValues: {
-      age:
-        Number(prf_from_store?.prfData.patient_details?.data.age) || undefined,
-      ageUnit: prf_from_store?.prfData.patient_details?.data.ageUnit || "years",
-      gender: prf_from_store?.prfData.patient_details?.data.gender || undefined,
-      patientName:
-        prf_from_store?.prfData.patient_details?.data.patientName || "",
-      id: prf_from_store?.prfData.patient_details?.data.id || "",
-      patientSurname:
-        prf_from_store?.prfData.patient_details?.data.patientSurname || "",
-      passport: prf_from_store?.prfData.patient_details?.data.passport || "",
+    mode: "onBlur",
+    defaultValues: prf_from_store?.prfData.patient_details?.data ?? {
+      age: undefined,
+      ageUnit: "years",
+      gender: undefined,
+      patientName: "",
+      id: "",
+      patientSurname: "",
+      passport: "",
       nextOfKin: {
-        name:
-          prf_from_store?.prfData.patient_details?.data.nextOfKin.name || "",
-        relationToPatient:
-          prf_from_store?.prfData.patient_details?.data.nextOfKin
-            .relationToPatient || "",
-        email:
-          prf_from_store?.prfData.patient_details?.data.nextOfKin.email || "",
-        physicalAddress:
-          prf_from_store?.prfData.patient_details?.data.nextOfKin
-            .physicalAddress || "",
-        phoneNo:
-          prf_from_store?.prfData.patient_details?.data.nextOfKin.phoneNo || "",
-        alternatePhoneNo:
-          prf_from_store?.prfData.patient_details?.data.nextOfKin
-            .alternatePhoneNo || "",
-        otherNOKPhoneNo:
-          prf_from_store?.prfData.patient_details?.data.nextOfKin
-            .otherNOKPhoneNo || "",
+        name: "",
+        relationToPatient: "",
+        email: "",
+        physicalAddress: "",
+        phoneNo: "",
+        alternatePhoneNo: "",
+        otherNOKPhoneNo: "",
       },
       medicalAid: {
-        name:
-          prf_from_store?.prfData.patient_details?.data.medicalAid.name || "",
-        number:
-          prf_from_store?.prfData.patient_details?.data.medicalAid.number || "",
-        principalMember:
-          prf_from_store?.prfData.patient_details?.data.medicalAid
-            .principalMember || "",
-        authNo:
-          prf_from_store?.prfData.patient_details?.data.medicalAid.authNo || "",
+        name: "",
+        number: "",
+        principalMember: "",
+        authNo: "",
       },
       employer: {
-        name: prf_from_store?.prfData.patient_details?.data.employer.name || "",
-        workPhoneNo:
-          prf_from_store?.prfData.patient_details?.data.employer.workPhoneNo ||
-          "",
-        workAddress:
-          prf_from_store?.prfData.patient_details?.data.employer.workAddress ||
-          "",
+        name: "",
+        workPhoneNo: "",
+        workAddress: "",
       },
       unableToObtainInformation: {
-        status: prf_from_store?.prfData.patient_details?.data.unableToObtainInformation?.status || false,
-        estimatedAge: prf_from_store?.prfData.patient_details?.data.unableToObtainInformation?.estimatedAge || undefined,
-        notes: prf_from_store?.prfData.patient_details?.data.unableToObtainInformation?.notes || "",
+        status: false,
+        estimatedAge: undefined,
+        notes: "",
       },
       pastHistory: {
-        allergies: prf_from_store?.prfData.patient_details?.data.pastHistory?.allergies || "",
-        medication: prf_from_store?.prfData.patient_details?.data.pastHistory?.medication || "",
-        medicalHx: prf_from_store?.prfData.patient_details?.data.pastHistory?.medicalHx || "",
-        lastMeal: prf_from_store?.prfData.patient_details?.data.pastHistory?.lastMeal || "",
-        cva: prf_from_store?.prfData.patient_details?.data.pastHistory?.cva ?? false,
-        epilepsy: prf_from_store?.prfData.patient_details?.data.pastHistory?.epilepsy ?? false,
-        cardiac: prf_from_store?.prfData.patient_details?.data.pastHistory?.cardiac ?? false,
-        byPass: prf_from_store?.prfData.patient_details?.data.pastHistory?.byPass ?? false,
-        dmOneOrTwo: prf_from_store?.prfData.patient_details?.data.pastHistory?.dmOneOrTwo ?? false,
-        HPT: prf_from_store?.prfData.patient_details?.data.pastHistory?.HPT ?? false,
-        asthma: prf_from_store?.prfData.patient_details?.data.pastHistory?.asthma ?? false,
-        copd: prf_from_store?.prfData.patient_details?.data.pastHistory?.copd ?? false,
+        allergies: "",
+        medication: "",
+        medicalHx: "",
+        lastMeal: "",
+        cva: false,
+        epilepsy: false,
+        cardiac: false,
+        byPass: false,
+        dmOneOrTwo: false,
+        HPT: false,
+        asthma: false,
+        copd: false,
       },
     },
   });
 
   // Watch the unableToObtainInformation.status field
   const unableToObtainInfo = form.watch("unableToObtainInformation.status");
-
-  // Update validation rules when unableToObtainInfo changes
-  React.useEffect(() => {
-    if (unableToObtainInfo) {
-      // Clear validation errors for optional fields
-      form.clearErrors([
-        "age",
-        "gender",
-        "patientName",
-        "patientSurname",
-        "id",
-        "passport"
-      ]);
-    }
-
-    // Trigger revalidation
-    form.trigger();
-  }, [unableToObtainInfo, form]);
 
   // Add this state for the toggle
   const [useDateOfBirth, setUseDateOfBirth] = React.useState(false);

@@ -60,6 +60,7 @@ const PRFEditSummary = ({
   const updatePrfQuery = useUpdatePrf();
   const { zsEmployee } = useZuStandEmployeeStore();
   const { zsCrewID, zsVehicle } = useZuStandCrewStore();
+  const dialogCloseRef = React.useRef<HTMLButtonElement>(null);
   const form = useForm<z.infer<typeof CaseDetailsSchema>>({
     resolver: zodResolver(CaseDetailsSchema),
     defaultValues: {
@@ -68,25 +69,27 @@ const PRFEditSummary = ({
       base: initialData?.prfData.case_details?.data.base || "",
       province: initialData?.prfData.case_details?.data.province || "",
       rescueUnit: initialData?.prfData.case_details?.data.rescueUnit || "",
-      vehicle: initialData?.prfData.case_details?.data.vehicle || 
-        (zsVehicle ? {
-          id: zsVehicle.vehicleId,
-          name: zsVehicle.vehicleName,
-          license: zsVehicle.vehicleLicense,
-          registrationNumber: zsVehicle.vehicleRegistrationNumber,
-        } : {
-          id: 0,
-          name: "",
-          license: "",
-          registrationNumber: "",
-        }),
+      vehicle:
+        initialData?.prfData.case_details?.data.vehicle ||
+        (zsVehicle
+          ? {
+              id: zsVehicle.vehicleId,
+              name: zsVehicle.vehicleName,
+              license: zsVehicle.vehicleLicense,
+              registrationNumber: zsVehicle.vehicleRegistrationNumber,
+            }
+          : {
+              id: 0,
+              name: "",
+              license: "",
+              registrationNumber: "",
+            }),
       dateOfCase:
         action === "create"
           ? new Date()
           : initialData?.prfData.case_details?.data.dateOfCase
             ? new Date(initialData?.prfData.case_details?.data.dateOfCase)
             : new Date(),
-      dodNumber: initialData?.prfData.case_details?.data.dodNumber || "",
     },
   });
 
@@ -122,6 +125,7 @@ const PRFEditSummary = ({
           });
 
           router.push(`/edit-prf/${data?.prfFormId}`);
+          dialogCloseRef.current?.click();
         },
         onError: (error) => {
           toast.error("An error occurred", {
@@ -139,6 +143,7 @@ const PRFEditSummary = ({
           });
 
           router.push(`/edit-prf/${data?.prfFormId}`);
+          dialogCloseRef.current?.click();
         },
         onError: (error) => {
           toast.error("An error occurred", {
@@ -309,19 +314,7 @@ const PRFEditSummary = ({
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="dodNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>DOD Number</FormLabel>
-                    <FormControl>
-                      <Input placeholder="DOD Number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+
               <div className="col-span-2">
                 <FormField
                   control={form.control}
@@ -332,35 +325,55 @@ const PRFEditSummary = ({
                       <FormControl>
                         <div className="grid grid-cols-3 gap-4">
                           <div className="space-y-2">
-                            <FormLabel className="text-sm">Vehicle Name</FormLabel>
-                            <Input 
-                              placeholder="Vehicle Name" 
+                            <FormLabel className="text-sm">
+                              Vehicle Name
+                            </FormLabel>
+                            <Input
+                              placeholder="Vehicle Name"
                               value={field.value.name}
-                              onChange={(e) => field.onChange({ ...field.value, name: e.target.value })}
+                              onChange={(e) =>
+                                field.onChange({
+                                  ...field.value,
+                                  name: e.target.value,
+                                })
+                              }
                             />
                           </div>
                           <div className="space-y-2">
                             <FormLabel className="text-sm">License</FormLabel>
-                            <Input 
-                              placeholder="License" 
+                            <Input
+                              placeholder="License"
                               value={field.value.license}
-                              onChange={(e) => field.onChange({ ...field.value, license: e.target.value })}
+                              onChange={(e) =>
+                                field.onChange({
+                                  ...field.value,
+                                  license: e.target.value,
+                                })
+                              }
                             />
                           </div>
                           <div className="space-y-2">
-                            <FormLabel className="text-sm">Registration Number</FormLabel>
-                            <Input 
-                              placeholder="Registration Number" 
+                            <FormLabel className="text-sm">
+                              Registration Number
+                            </FormLabel>
+                            <Input
+                              placeholder="Registration Number"
                               value={field.value.registrationNumber}
-                              onChange={(e) => field.onChange({ ...field.value, registrationNumber: e.target.value })}
+                              onChange={(e) =>
+                                field.onChange({
+                                  ...field.value,
+                                  registrationNumber: e.target.value,
+                                })
+                              }
                             />
                           </div>
                         </div>
                       </FormControl>
                       <FormMessage />
                       {zsVehicle && field.value.id !== zsVehicle.vehicleId && (
-                        <p className="text-xs text-muted-foreground mt-2">
-                          Note: This vehicle differs from your assigned vehicle ({zsVehicle.vehicleName})
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          Note: This vehicle differs from your assigned vehicle
+                          ({zsVehicle.vehicleName})
                         </p>
                       )}
                     </FormItem>
@@ -371,7 +384,7 @@ const PRFEditSummary = ({
 
             <DialogFooter>
               <Button disabled={form.formState.isDirty === false} type="submit">
-                {createPrfQuery.isPending ? (
+                {createPrfQuery.isPending || updatePrfQuery.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving
                   </>
@@ -391,6 +404,7 @@ const PRFEditSummary = ({
             </DialogFooter>
           </form>
         </Form>
+        <DialogClose ref={dialogCloseRef} className="hidden" />
       </DialogContent>
     </Dialog>
   );
