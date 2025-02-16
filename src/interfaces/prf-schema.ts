@@ -353,8 +353,7 @@ export const IntravenousTherapySchema = z.object({
     p1Unstable: z.boolean(),
   }),
   weight: z.string().min(1, "Weight is required"),
-  pawperTape: z.boolean(),
-  broselowTape: z.boolean(),
+  weightMeasurementType: z.enum(["estimated", "pawper", "broselow"]),
 });
 const MedicationSchema = z.object({
   medicine: z.string().min(1, "Medicine is required"),
