@@ -28,6 +28,8 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { SecondarySurveySchema } from "@/interfaces/prf-schema";
+import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
+
 type SecondarySurveyType = z.infer<typeof SecondarySurveySchema>;
 
 type SecondarySurveyFormProps = {
@@ -44,9 +46,11 @@ export default function SecondarySurveyForm({
 
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
+  const { zsEmployee } = useZuStandEmployeeStore();
 
   const form = useForm<SecondarySurveyType>({
     resolver: zodResolver(SecondarySurveySchema),
+    values: prf_from_store?.prfData?.secondary_survey?.data,
     defaultValues: prf_from_store?.prfData?.secondary_survey?.data || {
       scalp: {
         abrasion: false,
@@ -54,7 +58,8 @@ export default function SecondarySurveyForm({
         bruising: false,
         burns: false,
         deepWound: false,
-        GSW: false,
+        GunShotWound: false,
+        PenetratingWound: false,
         oedema: false,
         laceration: false,
         largeWound: false,
@@ -65,7 +70,8 @@ export default function SecondarySurveyForm({
         crepitus: false,
         deformity: false,
         fracture: false,
-        GSW: false,
+        GunShotWound: false,
+        PenetratingWound: false,
         frontal: false,
         occipital: false,
         parietal: false,
@@ -86,7 +92,8 @@ export default function SecondarySurveyForm({
         deepWound: false,
         epistaxis: false,
         guarding: false,
-        GSW: false,
+        GunShotWound: false,
+        PenetratingWound: false,
         laceration: false,
         largeWound: false,
         orbitalInjury: false,
@@ -109,7 +116,8 @@ export default function SecondarySurveyForm({
         crepitus: false,
         deformity: false,
         guarding: false,
-        GSW: false,
+        GunShotWound: false,
+        PenetratingWound: false,
         oedema: false,
         penetratingWound: false,
         sciaticPain: false,
@@ -126,7 +134,8 @@ export default function SecondarySurveyForm({
         flailSegment: false,
         guardingPalpation: false,
         guardingDepthOfBreathing: false,
-        GSW: false,
+        GunShotWound: false,
+        PenetratingWound: false,
         laceration: false,
         oedema: false,
         stabWound: false,
@@ -139,7 +148,8 @@ export default function SecondarySurveyForm({
         burns: false,
         distended: false,
         evisceration: false,
-        GSW: false,
+        GunShotWound: false,
+        PenetratingWound: false,
         guarding: false,
         hernia: false,
         laceration: false,
@@ -153,8 +163,9 @@ export default function SecondarySurveyForm({
       pelvis: {
         crepitus: false,
         deformity: false,
+        GunShotWound: false,
+        PenetratingWound: false,
         guarding: false,
-        GSW: false,
         incontinence: false,
         openWound: false,
         openBook: false,
@@ -167,7 +178,8 @@ export default function SecondarySurveyForm({
         crepitus: false,
         bruising: false,
         deformity: false,
-        GSW: false,
+        GunShotWound: false,
+        PenetratingWound: false,
         guarding: false,
         laceration: false,
         oedema: false,
@@ -179,7 +191,8 @@ export default function SecondarySurveyForm({
         crepitus: false,
         bruising: false,
         deformity: false,
-        GSW: false,
+        GunShotWound: false,
+        PenetratingWound: false,
         guarding: false,
         laceration: false,
         oedema: false,
@@ -191,7 +204,8 @@ export default function SecondarySurveyForm({
         crepitus: false,
         bruising: false,
         deformity: false,
-        GSW: false,
+        GunShotWound: false,
+        PenetratingWound: false,
         guarding: false,
         laceration: false,
         oedema: false,
@@ -203,7 +217,8 @@ export default function SecondarySurveyForm({
         crepitus: false,
         bruising: false,
         deformity: false,
-        GSW: false,
+        GunShotWound: false,
+        PenetratingWound: false,
         guarding: false,
         laceration: false,
         oedema: false,
@@ -227,6 +242,7 @@ export default function SecondarySurveyForm({
           isOptional: false,
         },
       },
+      EmployeeID: zsEmployee?.employeeNumber.toString() || "",
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
@@ -258,7 +274,7 @@ export default function SecondarySurveyForm({
           onSubmit={form.handleSubmit(onSubmit)}
           className="flex flex-col space-y-8"
         >
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-between">
             <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
               Secondary Survey
             </h3>
