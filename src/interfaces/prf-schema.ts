@@ -96,12 +96,31 @@ export const CaseDetailsSchema = z.object({
   base: z.string().min(2, "Base is required").max(50),
   province: z.string().min(2, "Province is required").max(50),
   rescueUnit: z.string().min(2, "Rescue Unit is required").max(50),
-  rv: z.string().min(2, "RV is required").max(50),
+  vehicle: z.object({
+    id: z.number({
+      required_error: "Vehicle ID is required",
+      invalid_type_error: "Vehicle ID must be a number"
+    }),
+    name: z.string({
+      required_error: "Vehicle name is required",
+      invalid_type_error: "Vehicle name must be a string"
+    }).min(2, "Vehicle name must be at least 2 characters"),
+    license: z.string({
+      required_error: "Vehicle license is required",
+      invalid_type_error: "Vehicle license must be a string"
+    }).min(2, "Vehicle license must be at least 2 characters"),
+    registrationNumber: z.string({
+      required_error: "Vehicle registration number is required",
+      invalid_type_error: "Vehicle registration number must be a string"
+    }).min(2, "Vehicle registration number must be at least 2 characters"),
+  }, {
+    required_error: "Vehicle information is required",
+    invalid_type_error: "Invalid vehicle information format"
+  }),
   dateOfCase: z.date({
     required_error: "A date of birth is required.",
   }),
   dodNumber: z.string().optional(),
-  ambulance: z.string().min(2, "Ambulance is required").max(50),
 });
 
 export const TransportationSchema = z.object({
