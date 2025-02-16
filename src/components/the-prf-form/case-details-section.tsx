@@ -58,6 +58,8 @@ const PRFEditSummary = ({
   const router = useRouter();
   const createPrfQuery = useCreatePrf();
   const updatePrfQuery = useUpdatePrf();
+  const { zsEmployee } = useZuStandEmployeeStore();
+  const { zsCrewID, zsVehicle } = useZuStandCrewStore();
   const form = useForm<z.infer<typeof CaseDetailsSchema>>({
     resolver: zodResolver(CaseDetailsSchema),
     defaultValues: {
@@ -66,23 +68,29 @@ const PRFEditSummary = ({
       base: initialData?.prfData.case_details?.data.base || "",
       province: initialData?.prfData.case_details?.data.province || "",
       rescueUnit: initialData?.prfData.case_details?.data.rescueUnit || "",
-      rv: initialData?.prfData.case_details?.data.rv || "",
-      dodNumber: initialData?.prfData.case_details?.data.dodNumber || "",
-      ambulance: initialData?.prfData.case_details?.data.ambulance || "",
+      vehicle: initialData?.prfData.case_details?.data.vehicle || 
+        (zsVehicle ? {
+          id: zsVehicle.vehicleId,
+          name: zsVehicle.vehicleName,
+          license: zsVehicle.vehicleLicense,
+          registrationNumber: zsVehicle.vehicleRegistrationNumber,
+        } : {
+          id: 0,
+          name: "",
+          license: "",
+          registrationNumber: "",
+        }),
       dateOfCase:
         action === "create"
           ? new Date()
           : initialData?.prfData.case_details?.data.dateOfCase
             ? new Date(initialData?.prfData.case_details?.data.dateOfCase)
             : new Date(),
+      dodNumber: initialData?.prfData.case_details?.data.dodNumber || "",
     },
   });
-  // ZuStand-SM
-  const { zsEmployee } = useZuStandEmployeeStore();
-  const { zsCrewID } = useZuStandCrewStore();
-  //
+
   const onSubmit = async (values: z.infer<typeof CaseDetailsSchema>) => {
-    // if there is valid employee info
     if (!zsEmployee) {
       toast.error("No Employee Information Found", {
         duration: 3000,
@@ -104,8 +112,6 @@ const PRFEditSummary = ({
       EmployeeID: zsEmployee?.employeeNumber.toString(),
       CrewID: zsCrewID?.toString(),
     };
-
-    // console.log("form data here...", prf);
 
     if (action === "create") {
       createPrfQuery.mutate(prf, {
@@ -145,7 +151,6 @@ const PRFEditSummary = ({
   };
 
   const onSkipForNow = async () => {
-    // if there is valid employee info
     if (!zsEmployee) {
       toast.error("No Employee Information Found", {
         duration: 3000,
@@ -223,12 +228,12 @@ const PRFEditSummary = ({
               />
               <FormField
                 control={form.control}
-                name="rv"
+                name="base"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>RV</FormLabel>
+                    <FormLabel>Base</FormLabel>
                     <FormControl>
-                      <Input placeholder="RV" {...field} />
+                      <Input placeholder="Base" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -236,12 +241,25 @@ const PRFEditSummary = ({
               />
               <FormField
                 control={form.control}
-                name="base"
+                name="province"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Base</FormLabel>
+                    <FormLabel>Province</FormLabel>
                     <FormControl>
-                      <Input placeholder="Base" {...field} />
+                      <Input placeholder="Province" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="rescueUnit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Rescue Unit</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Rescue Unit" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -293,19 +311,6 @@ const PRFEditSummary = ({
               />
               <FormField
                 control={form.control}
-                name="province"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Province</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Province" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
                 name="dodNumber"
                 render={({ field }) => (
                   <FormItem>
@@ -317,32 +322,51 @@ const PRFEditSummary = ({
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="rescueUnit"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Rescue Unit</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Rescue Unit" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="ambulance"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Ambulance</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ambulance" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="col-span-2">
+                <FormField
+                  control={form.control}
+                  name="vehicle"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Vehicle Information</FormLabel>
+                      <FormControl>
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="space-y-2">
+                            <FormLabel className="text-sm">Vehicle Name</FormLabel>
+                            <Input 
+                              placeholder="Vehicle Name" 
+                              value={field.value.name}
+                              onChange={(e) => field.onChange({ ...field.value, name: e.target.value })}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <FormLabel className="text-sm">License</FormLabel>
+                            <Input 
+                              placeholder="License" 
+                              value={field.value.license}
+                              onChange={(e) => field.onChange({ ...field.value, license: e.target.value })}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <FormLabel className="text-sm">Registration Number</FormLabel>
+                            <Input 
+                              placeholder="Registration Number" 
+                              value={field.value.registrationNumber}
+                              onChange={(e) => field.onChange({ ...field.value, registrationNumber: e.target.value })}
+                            />
+                          </div>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                      {zsVehicle && field.value.id !== zsVehicle.vehicleId && (
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Note: This vehicle differs from your assigned vehicle ({zsVehicle.vehicleName})
+                        </p>
+                      )}
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
 
             <DialogFooter>
