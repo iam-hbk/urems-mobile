@@ -15,6 +15,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Accordion,
   AccordionContent,
   AccordionItem,
@@ -22,7 +29,7 @@ import {
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { Loader2, Plus, Trash2, X } from "lucide-react";
+import { Loader2, Plus, Trash2, X, AlertCircle } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
@@ -30,6 +37,12 @@ import { PRF_FORM } from "@/interfaces/prf-form";
 import { toast } from "sonner";
 import { IntravenousTherapySchema } from "@/interfaces/prf-schema";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export type IntravenousTherapyType = z.infer<typeof IntravenousTherapySchema>;
 
@@ -48,10 +61,10 @@ export default function IntravenousTherapyForm() {
         {
           fluid: "",
           volume: "",
-          admin: "",
+          admin: "10dropper",
           rate: "",
           time: "",
-          jelco: "",
+          jelco: "20G",
           site: "",
           volumeAdministered: "",
         },
@@ -60,6 +73,7 @@ export default function IntravenousTherapyForm() {
         drugRoute: false,
         fluidBolus: false,
         p1Unstable: false,
+        p1Stable: false,
       },
       weight: "",
       weightMeasurementType: "estimated",
@@ -165,15 +179,15 @@ export default function IntravenousTherapyForm() {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="weight"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      {form.watch("weightMeasurementType") === "estimated" 
-                        ? "Estimated Weight (kg)" 
+                      {form.watch("weightMeasurementType") === "estimated"
+                        ? "Estimated Weight (kg)"
                         : "Measured Weight (kg)"}
                     </FormLabel>
                     <FormControl>
@@ -195,30 +209,34 @@ export default function IntravenousTherapyForm() {
           <div className="rounded-lg border p-4 shadow-sm">
             <h4 className="mb-4 text-lg font-medium">Reason for IV Access</h4>
             <div className="space-y-2">
-              {["drugRoute", "fluidBolus", "p1Unstable"].map((fieldName) => (
-                <FormField
-                  key={fieldName}
-                  control={form.control}
-                  name={
-                    `motivationForIV.${fieldName}` as FieldPath<IntravenousTherapyType>
-                  }
-                  render={({ field }) => (
-                    <FormItem className="flex items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value as boolean}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormLabel className="text-sm font-normal">
-                        {fieldName === "drugRoute" && "Drug Administration Route"}
-                        {fieldName === "fluidBolus" && "Fluid Bolus Required"}
-                        {fieldName === "p1Unstable" && "Priority 1 Unstable Patient"}
-                      </FormLabel>
-                    </FormItem>
-                  )}
-                />
-              ))}
+              {["drugRoute", "fluidBolus", "p1Unstable", "p1Stable"].map(
+                (fieldName) => (
+                  <FormField
+                    key={fieldName}
+                    control={form.control}
+                    name={
+                      `motivationForIV.${fieldName}` as FieldPath<IntravenousTherapyType>
+                    }
+                    render={({ field }) => (
+                      <FormItem className="flex items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value as boolean}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="text-sm font-normal">
+                          {fieldName === "drugRoute" &&
+                            "Drug Administration Route"}
+                          {fieldName === "fluidBolus" && "Fluid Bolus Required"}
+                          {fieldName === "p1Unstable" && "P1 Unstable Patient"}
+                          {fieldName === "p1Stable" && "P1 Stable Patient"}
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                ),
+              )}
             </div>
           </div>
 
@@ -234,10 +252,10 @@ export default function IntravenousTherapyForm() {
                   append({
                     fluid: "",
                     volume: "",
-                    admin: "",
+                    admin: "10dropper",
                     rate: "",
                     time: "",
-                    jelco: "",
+                    jelco: "20G",
                     site: "",
                     volumeAdministered: "",
                   })
@@ -246,13 +264,14 @@ export default function IntravenousTherapyForm() {
                 <Plus className="mr-2 h-4 w-4" /> Add Entry
               </Button>
             </div>
-            
+
             <div className="space-y-4">
               {fields.map((field, index) => (
                 <div
                   key={field.id}
                   className={cn("rounded-md border p-4 transition-all", {
-                    "border-destructive": form.formState.errors?.therapyDetails?.[index],
+                    "border-destructive":
+                      form.formState.errors?.therapyDetails?.[index],
                   })}
                 >
                   <div className="mb-2 flex items-center justify-between">
@@ -267,18 +286,50 @@ export default function IntravenousTherapyForm() {
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
-                  
+
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     {[
-                      { name: "fluid", label: "IV Fluid Type" },
-                      { name: "volume", label: "Volume (ml)" },
-                      { name: "admin", label: "Administration" },
-                      { name: "rate", label: "Rate" },
-                      { name: "time", label: "Time" },
-                      { name: "jelco", label: "Jelco Size" },
-                      { name: "site", label: "Insertion Site" },
-                      { name: "volumeAdministered", label: "Volume Given (ml)" },
-                    ].map(({ name, label }) => (
+                      { name: "fluid", label: "IV Fluid Type", type: "text" },
+                      { name: "volume", label: "Volume (ml)", type: "text" },
+                      {
+                        name: "admin",
+                        label: "Administration Set",
+                        type: "select",
+                        options: [
+                          { value: "10dropper", label: "10 Dropper" },
+                          { value: "20dropper", label: "20 Dropper" },
+                          { value: "60dropper", label: "60 Dropper" },
+                          { value: "extensionSet", label: "Extension Set" },
+                          { value: "buretteSet", label: "Burette Set" },
+                          {
+                            value: "bloodAdminSet",
+                            label: "Blood Admin Set (High Cap)",
+                          },
+                        ],
+                      },
+                      { name: "rate", label: "Rate", type: "text" },
+                      { name: "time", label: "Time", type: "text" },
+                      {
+                        name: "jelco",
+                        label: "Jelco Size",
+                        type: "select",
+                        options: [
+                          { value: "14G", label: "14G" },
+                          { value: "16G", label: "16G" },
+                          { value: "18G", label: "18G" },
+                          { value: "20G", label: "20G" },
+                          { value: "22G", label: "22G" },
+                          { value: "24G", label: "24G" },
+                        ],
+                        tooltip: "Note: These values are placeholders pending confirmation"
+                      },
+                      { name: "site", label: "Insertion Site", type: "text" },
+                      {
+                        name: "volumeAdministered",
+                        label: "Volume Given (ml)",
+                        type: "text",
+                      },
+                    ].map(({ name, label, type, options, tooltip }) => (
                       <FormField
                         key={name}
                         control={form.control}
@@ -287,9 +338,48 @@ export default function IntravenousTherapyForm() {
                         }
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-sm">{label}</FormLabel>
+                            <FormLabel className="text-sm flex items-center gap-2">
+                              {label}
+                              {tooltip && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>{tooltip}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
+                            </FormLabel>
                             <FormControl>
-                              <Input {...field} className="w-full" />
+                              {type === "select" ? (
+                                <Select
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value as string}
+                                >
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {options?.map((option) => (
+                                      <SelectItem
+                                        key={option.value}
+                                        value={option.value}
+                                      >
+                                        {option.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              ) : (
+                                <Input
+                                  {...field}
+                                  value={field.value as string}
+                                  className="w-full"
+                                />
+                              )}
                             </FormControl>
                             <FormMessage />
                           </FormItem>
