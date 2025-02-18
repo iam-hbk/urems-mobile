@@ -15,6 +15,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Accordion,
   AccordionContent,
   AccordionItem,
@@ -22,13 +29,20 @@ import {
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { Loader2, Plus, Trash2, X } from "lucide-react";
+import { Loader2, Plus, Trash2, X, AlertCircle } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
 import { PRF_FORM } from "@/interfaces/prf-form";
 import { toast } from "sonner";
 import { IntravenousTherapySchema } from "@/interfaces/prf-schema";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export type IntravenousTherapyType = z.infer<typeof IntravenousTherapySchema>;
 
@@ -47,10 +61,10 @@ export default function IntravenousTherapyForm() {
         {
           fluid: "",
           volume: "",
-          admin: "",
+          admin: "10dropper",
           rate: "",
           time: "",
-          jelco: "",
+          jelco: "20G",
           site: "",
           volumeAdministered: "",
         },
@@ -59,10 +73,10 @@ export default function IntravenousTherapyForm() {
         drugRoute: false,
         fluidBolus: false,
         p1Unstable: false,
+        p1Stable: false,
       },
       weight: "",
-      pawperTape: false,
-      broselowTape: false,
+      weightMeasurementType: "estimated",
     },
   });
 
@@ -119,81 +133,253 @@ export default function IntravenousTherapyForm() {
               Intravenous Therapy
             </h3>
           </div>
-          <AccordionItem value="intravenous-therapy">
-            <AccordionTrigger
-              className={cn({
-                "text-destructive":
-                  Object.keys(form.formState.errors).length > 0,
-              })}
-            >
-              <h4
-                className={cn(
-                  "col-span-full scroll-m-20 text-lg font-semibold tracking-tight",
-                  {
-                    "text-destructive":
-                      Object.keys(form.formState.errors).length > 0,
-                  },
+
+          {/* Weight Section */}
+          <div className="rounded-lg border p-4 shadow-sm">
+            <h4 className="mb-4 text-lg font-medium">Patient Weight</h4>
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="weightMeasurementType"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex flex-col space-y-2"
+                      >
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <RadioGroupItem value="estimated" />
+                          </FormControl>
+                          <FormLabel className="font-normal">
+                            Estimated Weight
+                          </FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <RadioGroupItem value="pawper" />
+                          </FormControl>
+                          <FormLabel className="font-normal">
+                            PAWPER Tape (South African Standard)
+                          </FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <RadioGroupItem value="broselow" />
+                          </FormControl>
+                          <FormLabel className="font-normal">
+                            Broselow Tape (American Standard)
+                          </FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
+              />
+
+              <FormField
+                control={form.control}
+                name="weight"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {form.watch("weightMeasurementType") === "estimated"
+                        ? "Estimated Weight (kg)"
+                        : "Measured Weight (kg)"}
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="number"
+                        className="max-w-[120px]"
+                        placeholder="0"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Motivation for IV Section */}
+          <div className="rounded-lg border p-4 shadow-sm">
+            <h4 className="mb-4 text-lg font-medium">Reason for IV Access</h4>
+            <div className="space-y-2">
+              {["drugRoute", "fluidBolus", "p1Unstable", "p1Stable"].map(
+                (fieldName) => (
+                  <FormField
+                    key={fieldName}
+                    control={form.control}
+                    name={
+                      `motivationForIV.${fieldName}` as FieldPath<IntravenousTherapyType>
+                    }
+                    render={({ field }) => (
+                      <FormItem className="flex items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value as boolean}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="text-sm font-normal">
+                          {fieldName === "drugRoute" &&
+                            "Drug Administration Route"}
+                          {fieldName === "fluidBolus" && "Fluid Bolus Required"}
+                          {fieldName === "p1Unstable" && "P1 Unstable Patient"}
+                          {fieldName === "p1Stable" && "P1 Stable Patient"}
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                ),
+              )}
+            </div>
+          </div>
+
+          {/* IV Therapy Details Section */}
+          <div className="rounded-lg border p-4 shadow-sm">
+            <div className="mb-4 flex items-center justify-between">
+              <h4 className="text-lg font-medium">IV Therapy Details</h4>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  append({
+                    fluid: "",
+                    volume: "",
+                    admin: "10dropper",
+                    rate: "",
+                    time: "",
+                    jelco: "20G",
+                    site: "",
+                    volumeAdministered: "",
+                  })
+                }
               >
-                Intravenous Therapy Details
-              </h4>
-            </AccordionTrigger>
-            <AccordionContent className="space-y-4">
+                <Plus className="mr-2 h-4 w-4" /> Add Entry
+              </Button>
+            </div>
+
+            <div className="space-y-4">
               {fields.map((field, index) => (
                 <div
                   key={field.id}
-                  className={cn({
-                    "flex w-full flex-col rounded-md border px-4 transition-all delay-100 hover:border-primary":
-                      true,
+                  className={cn("rounded-md border p-4 transition-all", {
                     "border-destructive":
                       form.formState.errors?.therapyDetails?.[index],
                   })}
                 >
-                  <div className="flex flex-row items-center justify-start space-x-1 rounded-md">
-                    <h5
-                      className={cn({
-                        "font-bold": true,
-                        "text-destructive":
-                          form.formState.errors?.therapyDetails?.[index],
-                      })}
-                    >
-                      Therapy Entry {index + 1}
-                    </h5>
+                  <div className="mb-2 flex items-center justify-between">
+                    <h5 className="font-medium">Entry {index + 1}</h5>
                     <Button
                       type="button"
                       variant="ghost"
-                      size="icon"
+                      size="sm"
                       onClick={() => remove(index)}
-                      className="hover:text-destructive"
+                      className="h-8 w-8 p-0 hover:text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
-                  <div className="grid gap-3 pb-4 sm:grid-cols-4 lg:grid-cols-8">
+
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     {[
-                      "fluid",
-                      "volume",
-                      "admin",
-                      "rate",
-                      "time",
-                      "jelco",
-                      "site",
-                      "volumeAdministered",
-                    ].map((fieldName) => (
+                      { name: "fluid", label: "IV Fluid Type", type: "text" },
+                      { name: "volume", label: "Volume (ml)", type: "text" },
+                      {
+                        name: "admin",
+                        label: "Administration Set",
+                        type: "select",
+                        options: [
+                          { value: "10dropper", label: "10 Dropper" },
+                          { value: "20dropper", label: "20 Dropper" },
+                          { value: "60dropper", label: "60 Dropper" },
+                          { value: "extensionSet", label: "Extension Set" },
+                          { value: "buretteSet", label: "Burette Set" },
+                          {
+                            value: "bloodAdminSet",
+                            label: "Blood Admin Set (High Cap)",
+                          },
+                        ],
+                      },
+                      { name: "rate", label: "Rate", type: "text" },
+                      { name: "time", label: "Time", type: "text" },
+                      {
+                        name: "jelco",
+                        label: "Jelco Size",
+                        type: "select",
+                        options: [
+                          { value: "14G", label: "14G" },
+                          { value: "16G", label: "16G" },
+                          { value: "18G", label: "18G" },
+                          { value: "20G", label: "20G" },
+                          { value: "22G", label: "22G" },
+                          { value: "24G", label: "24G" },
+                        ],
+                        tooltip: "Note: These values are placeholders pending confirmation"
+                      },
+                      { name: "site", label: "Insertion Site", type: "text" },
+                      {
+                        name: "volumeAdministered",
+                        label: "Volume Given (ml)",
+                        type: "text",
+                      },
+                    ].map(({ name, label, type, options, tooltip }) => (
                       <FormField
-                        key={fieldName}
+                        key={name}
                         control={form.control}
                         name={
-                          `therapyDetails.${index}.${fieldName}` as FieldPath<IntravenousTherapyType>
+                          `therapyDetails.${index}.${name}` as FieldPath<IntravenousTherapyType>
                         }
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>
-                              {fieldName.charAt(0).toUpperCase() +
-                                fieldName.slice(1)}
+                            <FormLabel className="text-sm flex items-center gap-2">
+                              {label}
+                              {tooltip && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>{tooltip}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
                             </FormLabel>
                             <FormControl>
-                              <Input {...field} value={field.value as string} />
+                              {type === "select" ? (
+                                <Select
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value as string}
+                                >
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {options?.map((option) => (
+                                      <SelectItem
+                                        key={option.value}
+                                        value={option.value}
+                                      >
+                                        {option.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              ) : (
+                                <Input
+                                  {...field}
+                                  value={field.value as string}
+                                  className="w-full"
+                                />
+                              )}
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -203,105 +389,6 @@ export default function IntravenousTherapyForm() {
                   </div>
                 </div>
               ))}
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() =>
-                  append({
-                    fluid: "",
-                    volume: "",
-                    admin: "",
-                    rate: "",
-                    time: "",
-                    jelco: "",
-                    site: "",
-                    volumeAdministered: "",
-                  })
-                }
-                className="mt-2"
-              >
-                <Plus className="mr-2 h-4 w-4" /> Add Therapy
-              </Button>
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="motivation">
-            <AccordionTrigger>Motivation for IV</AccordionTrigger>
-            <AccordionContent className="space-y-4">
-              {["drugRoute", "fluidBolus", "p1Unstable"].map((fieldName) => (
-                <FormField
-                  key={fieldName}
-                  control={form.control}
-                  name={
-                    `motivationForIV.${fieldName}` as FieldPath<IntravenousTherapyType>
-                  }
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value as boolean}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormLabel className="capitalize">
-                        {fieldName.replace(/([A-Z])/g, " $1").trim()}
-                      </FormLabel>
-                    </FormItem>
-                  )}
-                />
-              ))}
-            </AccordionContent>
-          </AccordionItem>
-          <div className="flex flex-row items-end space-x-4 lg:flex">
-            <FormField
-              control={form.control}
-              name="weight"
-              render={({ field }) => (
-                <FormItem className="max-w-xs">
-                  <FormLabel>Weight (kg)</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      type="number"
-                      className="max-w-24"
-                      placeholder="0"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="my-4 flex w-fit space-x-4">
-              <FormField
-                control={form.control}
-                name="pawperTape"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormLabel>PAWPER Tape</FormLabel>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="broselowTape"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormLabel>Broselow Tape</FormLabel>
-                  </FormItem>
-                )}
-              />
             </div>
           </div>
 

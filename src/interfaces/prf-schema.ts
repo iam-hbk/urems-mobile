@@ -337,24 +337,44 @@ PenetratingWound: z.boolean(),
 export const IntravenousTherapySchema = z.object({
   therapyDetails: z.array(
     z.object({
-      fluid: z.string().min(1, "Fluid is required"),
-      volume: z.string().min(1, "Volume is required"),
-      admin: z.string().min(1, "Admin is required"),
+      fluid: z.string().min(1, "IV Fluid Type is required"),
+      volume: z.string().min(1, "Volume (ml) is required"),
+      admin: z.enum([
+        "10dropper",
+        "20dropper",
+        "60dropper",
+        "extensionSet",
+        "buretteSet",
+        "bloodAdminSet"
+      ], {
+        required_error: "Administration set is required",
+      }),
       rate: z.string().min(1, "Rate is required"),
       time: z.string().min(1, "Time is required"),
-      jelco: z.string().min(1, "Jelco is required"),
-      site: z.string().min(1, "Site is required"),
-      volumeAdministered: z.string().min(1, "Volume administered is required"),
+      jelco: z.enum([
+        "14G",
+        "16G",
+        "18G",
+        "20G",
+        "22G",
+        "24G",
+      ], {
+        required_error: "Jelco size is required",
+        description: "Note: These values are placeholders pending client confirmation"
+      }),
+      site: z.string().min(1, "Insertion Site is required"),
+      volumeAdministered: z.string().min(1, "Volume Given (ml) is required"),
     }),
+    { required_error: "At least one IV therapy entry is required" }
   ),
   motivationForIV: z.object({
     drugRoute: z.boolean(),
     fluidBolus: z.boolean(),
     p1Unstable: z.boolean(),
+    p1Stable: z.boolean(),
   }),
   weight: z.string().min(1, "Weight is required"),
-  pawperTape: z.boolean(),
-  broselowTape: z.boolean(),
+  weightMeasurementType: z.enum(["estimated", "pawper", "broselow"]),
 });
 const MedicationSchema = z.object({
   medicine: z.string().min(1, "Medicine is required"),

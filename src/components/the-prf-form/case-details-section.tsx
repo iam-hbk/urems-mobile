@@ -257,19 +257,7 @@ const PRFEditSummary = ({
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="rescueUnit"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Rescue Unit</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Rescue Unit" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+
               <FormField
                 control={form.control}
                 name="dateOfCase"
@@ -369,6 +357,19 @@ const PRFEditSummary = ({
                           </div>
                         </div>
                       </FormControl>
+                      <FormField
+                        control={form.control}
+                        name="rescueUnit"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Rescue Unit</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Rescue Unit" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                       <FormMessage />
                       {zsVehicle && field.value.id !== zsVehicle.vehicleId && (
                         <p className="mt-2 text-xs text-muted-foreground">
