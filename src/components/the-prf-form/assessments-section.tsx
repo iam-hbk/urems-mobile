@@ -28,15 +28,12 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { z } from "zod";
 import { AssessmentsSchema, AssessmentsType } from "@/interfaces/prf-schema";
-import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 export default function AssessmentForm() {
   const prfId = usePathname().split("/")[2];
   const prf_from_store = useStore((state) => state.prfForms).find(
     (prf) => prf.prfFormId == prfId,
   );
-
-  const { zsEmployee } = useZuStandEmployeeStore();
 
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
@@ -118,15 +115,6 @@ export default function AssessmentForm() {
   });
 
   function onSubmit(values: AssessmentsType) {
-
-    if (!zsEmployee) {
-      toast.error("No Employee Information Found", {
-        duration: 3000,
-        position: "top-right",
-      });
-      return;
-    }
-
     const prfUpdateValue: PRF_FORM = {
       prfFormId: prfId,
       prfData: {
@@ -137,7 +125,6 @@ export default function AssessmentForm() {
           isOptional: false,
         },
       },
-      EmployeeID: zsEmployee.employeeNumber.toString()
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
@@ -194,9 +181,9 @@ export default function AssessmentForm() {
                                   />
                                 </FormControl>
                                 <FormLabel className="font-normal">
-                                  {item.charAt(0).toUpperCase() +
-                                    item.slice(1).replace(/([A-Z])/g, " $1")}
-                                </FormLabel>
+                                    {item.charAt(0).toUpperCase() +
+                                      item.slice(1).replace(/([A-Z])/g, " $1")}
+                                  </FormLabel>
                               </FormItem>
                             )}
                           />
@@ -256,30 +243,30 @@ export default function AssessmentForm() {
                                   <Checkbox
                                     checked={field.value?.includes(
                                       item as
-                                      | "Brain tumour"
-                                      | "Bipolar"
-                                      | "Dementia"
-                                      | "Depression"
-                                      | "Epilepsy"
-                                      | "Hydrocephalus"
-                                      | "Multiple Sclerosis"
-                                      | "Parkinson's"
-                                      | "Previous: TBI"
-                                      | "Previous: TIA"
-                                      | "Previous: Stroke"
-                                      | "Quadriplegia"
-                                      | "Paraplegia"
-                                      | "Schizophrenia"
-                                      | "Syndrome",
+                                        | "Brain tumour"
+                                        | "Bipolar"
+                                        | "Dementia"
+                                        | "Depression"
+                                        | "Epilepsy"
+                                        | "Hydrocephalus"
+                                        | "Multiple Sclerosis"
+                                        | "Parkinson's"
+                                        | "Previous: TBI"
+                                        | "Previous: TIA"
+                                        | "Previous: Stroke"
+                                        | "Quadriplegia"
+                                        | "Paraplegia"
+                                        | "Schizophrenia"
+                                        | "Syndrome",
                                     )}
                                     onCheckedChange={(checked) => {
                                       return checked
                                         ? field.onChange([...field.value, item])
                                         : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== item,
-                                          ),
-                                        );
+                                            field.value?.filter(
+                                              (value) => value !== item,
+                                            ),
+                                          );
                                     }}
                                   />
                                 </FormControl>
@@ -351,24 +338,24 @@ export default function AssessmentForm() {
                                   <Checkbox
                                     checked={field.value?.includes(
                                       item as
-                                      | "Age"
-                                      | "↑BMI"
-                                      | "Diabetes"
-                                      | "Family Cardiac Hx"
-                                      | "Hypertension"
-                                      | "↑Cholesterol"
-                                      | "Previous Cardiac Event"
-                                      | "Smoker"
-                                      | "Stress",
+                                        | "Age"
+                                        | "↑BMI"
+                                        | "Diabetes"
+                                        | "Family Cardiac Hx"
+                                        | "Hypertension"
+                                        | "↑Cholesterol"
+                                        | "Previous Cardiac Event"
+                                        | "Smoker"
+                                        | "Stress",
                                     )}
                                     onCheckedChange={(checked) => {
                                       return checked
                                         ? field.onChange([...field.value, item])
                                         : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== item,
-                                          ),
-                                        );
+                                            field.value?.filter(
+                                              (value) => value !== item,
+                                            ),
+                                          );
                                     }}
                                   />
                                 </FormControl>
@@ -430,28 +417,28 @@ export default function AssessmentForm() {
                                   <Checkbox
                                     checked={field.value?.includes(
                                       item as
-                                      | "Cramping"
-                                      | "Cold Peripheries"
-                                      | "Confused"
-                                      | "Dysphagia"
-                                      | "Dizziness"
-                                      | "Dry Mucosa"
-                                      | "Hypotension"
-                                      | "Poor Skin Turgor"
-                                      | "Sunken Eyes"
-                                      | "Sunken Fontanelles"
-                                      | "Syncope"
-                                      | "Tachycardia"
-                                      | "Weak",
+                                        | "Cramping"
+                                        | "Cold Peripheries"
+                                        | "Confused"
+                                        | "Dysphagia"
+                                        | "Dizziness"
+                                        | "Dry Mucosa"
+                                        | "Hypotension"
+                                        | "Poor Skin Turgor"
+                                        | "Sunken Eyes"
+                                        | "Sunken Fontanelles"
+                                        | "Syncope"
+                                        | "Tachycardia"
+                                        | "Weak",
                                     )}
                                     onCheckedChange={(checked) => {
                                       return checked
                                         ? field.onChange([...field.value, item])
                                         : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== item,
-                                          ),
-                                        );
+                                            field.value?.filter(
+                                              (value) => value !== item,
+                                            ),
+                                          );
                                     }}
                                   />
                                 </FormControl>
@@ -510,23 +497,23 @@ export default function AssessmentForm() {
                                   <Checkbox
                                     checked={field.value?.includes(
                                       item as
-                                      | "Diaphoresis"
-                                      | "Chest Pain Not Increased by Deep Breathing"
-                                      | "Crushing Pain"
-                                      | "Radiating Pain"
-                                      | "Nausea"
-                                      | "Pale"
-                                      | "ECG Changes"
-                                      | "ST Elevation",
+                                        | "Diaphoresis"
+                                        | "Chest Pain Not Increased by Deep Breathing"
+                                        | "Crushing Pain"
+                                        | "Radiating Pain"
+                                        | "Nausea"
+                                        | "Pale"
+                                        | "ECG Changes"
+                                        | "ST Elevation",
                                     )}
                                     onCheckedChange={(checked) => {
                                       return checked
                                         ? field.onChange([...field.value, item])
                                         : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== item,
-                                          ),
-                                        );
+                                            field.value?.filter(
+                                              (value) => value !== item,
+                                            ),
+                                          );
                                     }}
                                   />
                                 </FormControl>

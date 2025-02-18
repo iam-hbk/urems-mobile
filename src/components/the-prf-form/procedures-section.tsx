@@ -27,15 +27,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../ui/accordion";
-import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 export default function ProceduresForm() {
   const prfId = usePathname().split("/")[2];
   const prf_from_store = useStore((state) => state.prfForms).find(
     (prf) => prf.prfFormId == prfId,
   );
-
-  const { zsEmployee } = useZuStandEmployeeStore();
 
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
@@ -46,15 +43,6 @@ export default function ProceduresForm() {
   });
 
   function onSubmit(values: ProceduresType) {
-
-    if (!zsEmployee) {
-      toast.error("No Employee Information Found", {
-        duration: 3000,
-        position: "top-right",
-      });
-      return;
-    }
-
     const prfUpdateValue: PRF_FORM = {
       prfFormId: prfId,
       prfData: {
@@ -65,8 +53,6 @@ export default function ProceduresForm() {
           isOptional: false,
         },
       },
-      EmployeeID: zsEmployee.employeeNumber.toString()
-
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {

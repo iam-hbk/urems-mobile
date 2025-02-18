@@ -29,6 +29,7 @@ import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { SecondarySurveySchema } from "@/interfaces/prf-schema";
 import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
+
 type SecondarySurveyType = z.infer<typeof SecondarySurveySchema>;
 
 type SecondarySurveyFormProps = {
@@ -228,14 +229,7 @@ export default function SecondarySurveyForm({
   });
 
   function onSubmit(values: SecondarySurveyType) {
-    if (!zsEmployee) {
-      toast.error("No Employee Information Found", {
-        duration: 3000,
-        position: "top-right",
-      });
-      return;
-    }
-
+    console.log("VALUES -> ", values);
     if (!form.formState.isDirty) return;
 
     const prfUpdateValue: PRF_FORM = {

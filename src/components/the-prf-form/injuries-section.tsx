@@ -22,7 +22,6 @@ import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
 import { PRF_FORM } from "@/interfaces/prf-form";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Label } from "../ui/label";
-import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 type Mark = InjuryType["injuries"][0];
 const SYMBOLS = {
@@ -49,8 +48,6 @@ export default function BodyDiagram() {
     (prf) => prf.prfFormId == prfId,
   );
 
-  const { zsEmployee } = useZuStandEmployeeStore();
-
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
 
@@ -74,15 +71,6 @@ export default function BodyDiagram() {
   });
 
   const onSubmit = (values: InjuryType) => {
-
-    if (!zsEmployee) {
-      toast.error("No Employee Information Found", {
-        duration: 3000,
-        position: "top-right",
-      });
-      return;
-    }
-
     const prfUpdateValue: PRF_FORM = {
       prfFormId: prfId,
       prfData: {
@@ -93,8 +81,8 @@ export default function BodyDiagram() {
           isOptional: false,
         },
       },
-      EmployeeID: zsEmployee.employeeNumber.toString()
     };
+    console.log("Submitting ->", prfUpdateValue);
 
     updatePrfQuery.mutate(prfUpdateValue, {
       onSuccess: (data) => {

@@ -29,17 +29,16 @@ import {
 } from "@/components/ui/form";
 import { toast } from "sonner";
 import { CalendarIcon, FileEdit, Loader2, MoveRight, Plus } from "lucide-react";
+import { useStore } from "@/lib/store";
 import { PRF_FORM } from "@/interfaces/prf-form";
 import { useCreatePrf } from "@/hooks/prf/useCreatePrf";
 import { useRouter } from "next/navigation";
-// import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-// import { cn } from "@/lib/utils";
-// import { Calendar } from "../ui/calendar";
+import { Calendar } from "../ui/calendar";
 import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
 import { CaseDetailsSchema } from "@/interfaces/prf-schema";
 import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 import { useZuStandCrewStore } from "@/lib/zuStand/crew";
-import { DatePicker, Group } from "react-aria-components";
+import { DatePicker, Group, Popover } from "react-aria-components";
 import { DateInput } from "../ui/datefield-rac";
 import { CalendarDate, parseDate } from "@internationalized/date";
 
@@ -74,17 +73,17 @@ const PRFEditSummary = ({
         initialData?.prfData.case_details?.data.vehicle ||
         (zsVehicle
           ? {
-            id: zsVehicle.vehicleId,
-            name: zsVehicle.vehicleName,
-            license: zsVehicle.vehicleLicense,
-            registrationNumber: zsVehicle.vehicleRegistrationNumber,
-          }
+              id: zsVehicle.vehicleId,
+              name: zsVehicle.vehicleName,
+              license: zsVehicle.vehicleLicense,
+              registrationNumber: zsVehicle.vehicleRegistrationNumber,
+            }
           : {
-            id: 0,
-            name: "",
-            license: "",
-            registrationNumber: "",
-          }),
+              id: 0,
+              name: "",
+              license: "",
+              registrationNumber: "",
+            }),
       dateOfCase:
         action === "create"
           ? new Date()
@@ -165,11 +164,8 @@ const PRFEditSummary = ({
       return;
     }
     const prf: PRF_FORM = {
-      prfData: {
-
-      },
+      prfData: {},
       EmployeeID: zsEmployee?.employeeNumber.toString(),
-      CrewID: zsCrewID?.toString(),
     };
     if (action === "create") {
       createPrfQuery.mutate(prf, {
@@ -290,10 +286,10 @@ const PRFEditSummary = ({
                         value={
                           field.value
                             ? new CalendarDate(
-                              field.value.getFullYear(),
-                              field.value.getMonth() + 1,
-                              field.value.getDate(),
-                            )
+                                field.value.getFullYear(),
+                                field.value.getMonth() + 1,
+                                field.value.getDate(),
+                              )
                             : null
                         }
                         onChange={(date) => {
