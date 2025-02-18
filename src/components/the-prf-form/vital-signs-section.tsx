@@ -162,13 +162,18 @@ const VitalSignsForm: React.FC = () => {
                           <FormLabel>Time</FormLabel>
                           <FormControl>
                             <Input
+                              onFocus={(e) => console.log(e.target.value)}
                               type="time"
                               {...field}
                               value={
-                                field.value !== null ||
+                                field.value !== null &&
                                 field.value !== undefined
                                   ? field.value?.toString()
-                                  : ""
+                                  : new Date().toLocaleTimeString("en-US", {
+                                      hour12: false,
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })
                               }
                             />
                           </FormControl>
@@ -452,15 +457,18 @@ const VitalSignsForm: React.FC = () => {
                         <FormItem>
                           <FormLabel>Perfusion</FormLabel>
                           <FormControl>
-                            <Input
-                              {...field}
-                              value={
-                                field.value !== null ||
-                                field.value !== undefined
-                                  ? field.value?.toString()
-                                  : ""
-                              }
-                            />
+                            <Select
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select Perfusion" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Good">Good</SelectItem>
+                                <SelectItem value="Poor">Poor</SelectItem>
+                                <SelectItem value="Absent">Absent</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -713,7 +721,7 @@ const VitalSignsForm: React.FC = () => {
                     pupilReaction: { left: "Normal", right: "Normal" },
                     pupilSize: { left: "", right: "" },
                     temperature: null,
-                    time: "",
+                    time: `${new Date().getHours()}:${new Date().getMinutes()}`,
                   })
                 }
               >

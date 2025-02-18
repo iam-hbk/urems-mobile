@@ -21,6 +21,14 @@ export const fetchPrfForm = async (id: string): Promise<PRF_FORM> => {
 
   return (await req.get(`/prfform/${id}`)) as Promise<PRF_FORM>;
 };
+
+const needsDoubleParsing = (prf: any): boolean => {
+  // Add your logic here to determine if a prf needs double parsing.
+  // For example, check for a specific property or pattern in prf.prfData.
+  // This is a placeholder - replace with your actual condition.
+  return typeof prf.prfData === "string" && prf.prfData.startsWith('"{\\"');
+};
+
 export const usePrfForms = () => {
   const setPrfForms = useStore((state) => state.setPrfForms);
 
@@ -29,17 +37,41 @@ export const usePrfForms = () => {
     queryFn: async () => {
       try {
         const data = await fetchPrfForms();
-        const processedData = data
-          .map((prf) => {
-            prf.prfData = JSON.parse(prf.prfData as string);
-            return prf;
-          })
-        // Filter out null values
+        const processedData = data.map((prf) => {
+          try {
+            if (needsDoubleParsing(prf)) {
+              // Double parse
+              const outerParsed = {
+                ...prf,
+                prfData: JSON.parse(prf.prfData as string),
+              };
+              return {
+                ...outerParsed,
+                prfData: JSON.parse(outerParsed.prfData as string),
+              };
+            } else {
+              // Single parse
+              return {
+                ...prf,
+                prfData: JSON.parse(prf.prfData as string),
+              };
+            }
+          } catch (parseError) {
+            console.error(
+              `Error parsing prfData for prfFormId ${prf.prfFormId}:`,
+              parseError,
+            );
+            return prf; // Return the original object on error
+          }
+        });
+
         setPrfForms(processedData); // Store in Zustand on success
-        return data;
+        console.log("*****************Processed data:", processedData);
+        return processedData;
       } catch (error) {
         const err = error as WretchError;
         toast.error(`Error fetching PRF forms -> ${err.json.title}`);
+        throw error; // Re-throw the error to let useQuery handle it
       }
     },
   });

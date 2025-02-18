@@ -97,16 +97,16 @@ export default function PRF_Summary({
               <div className="flex flex-wrap items-center gap-2">
                 <Heart className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
                 <span className="text-sm font-medium">Allergies:</span>
-                <span className="break-all text-sm">
+                {/* <span className="break-all text-sm">
                   {incident_information?.data.pastHistory.allergies || "-"}
-                </span>
+                </span> */}
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Brain className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
                 <span className="text-sm font-medium">Medical Hx:</span>
-                <span className="break-all text-sm">
+                {/* <span className="break-all text-sm">
                   {incident_information?.data.pastHistory.medicalHx || "-"}
-                </span>
+                </span> */}
               </div>
             </div>
           </div>

@@ -1,34 +1,102 @@
 import { z } from "zod";
 import { PrimarySurveySchema } from "./prf-primary-survey-schema";
 import { VitalSignsSchema } from "./prf-vital-signs-schema";
+
+type PatientDetailsContext = {
+  parent: {
+    unableToObtainInformation: {
+      status: boolean;
+    };
+  };
+};
+
 export const PatientDetailsSchema = z.object({
-  patientName: z.string().min(2).max(50),
-  patientSurname: z.string().min(2).max(50),
-  age: z.number().int().positive().min(1).max(200),
-  gender: z.enum(["male", "female"], {
-    required_error: "You need to select a gender.",
+  unableToObtainInformation: z.object({
+    status: z.boolean(),
+    estimatedAge: z.number().optional(),
+    notes: z.string(),
   }),
-  id: z.string().min(1).max(50),
-  passport: z.string().optional(),
+  age: z
+    .number()
+    .optional()
+    .superRefine((val, ctx) => {
+      const status = (ctx as any).parent?.unableToObtainInformation?.status;
+      if (!status && val === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Age is required when patient information is available",
+        });
+      }
+    }),
+  ageUnit: z.enum(["years", "months", "days"]),
+  gender: z
+    .enum(["male", "female"])
+    .optional()
+    .superRefine((val, ctx) => {
+      const status = (ctx as any).parent?.unableToObtainInformation?.status;
+      if (!status && !val) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Gender is required when patient information is available",
+        });
+      }
+    }),
+  patientName: z.string().superRefine((val, ctx) => {
+    const status = (ctx as any).parent?.unableToObtainInformation?.status;
+    if (!status && !val) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "Patient name is required when patient information is available",
+      });
+    }
+  }),
+  patientSurname: z.string().superRefine((val, ctx) => {
+    const status = (ctx as any).parent?.unableToObtainInformation?.status;
+    if (!status && !val) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "Patient surname is required when patient information is available",
+      });
+    }
+  }),
+  id: z.string(),
+  passport: z.string(),
+  // ------------------------------------
   nextOfKin: z.object({
-    name: z.string().min(2).max(50),
-    relationToPatient: z.string().min(2).max(50),
-    email: z.string().email(),
-    physicalAddress: z.string().min(2).max(100),
-    phoneNo: z.string().min(2).max(15),
+    name: z.string(),
+    relationToPatient: z.string(),
+    email: z.string().email().optional(),
+    physicalAddress: z.string(),
+    phoneNo: z.string(),
     alternatePhoneNo: z.string().optional(),
     otherNOKPhoneNo: z.string().optional(),
   }),
   medicalAid: z.object({
-    name: z.string().min(2).max(50),
-    number: z.string().min(1).max(50),
-    principalMember: z.string().min(2).max(50),
+    name: z.string(),
+    number: z.string(),
+    principalMember: z.string(),
     authNo: z.string().optional(),
   }),
   employer: z.object({
-    name: z.string().min(2).max(50),
-    workPhoneNo: z.string().min(2).max(15),
-    workAddress: z.string().min(2).max(100),
+    name: z.string(),
+    workPhoneNo: z.string(),
+    workAddress: z.string(),
+  }),
+  pastHistory: z.object({
+    allergies: z.string(),
+    medication: z.string(),
+    medicalHx: z.string(),
+    lastMeal: z.string(),
+    cva: z.boolean(),
+    epilepsy: z.boolean(),
+    cardiac: z.boolean(),
+    byPass: z.boolean(),
+    dmOneOrTwo: z.boolean(),
+    HPT: z.boolean(),
+    asthma: z.boolean(),
+    copd: z.boolean(),
   }),
 });
 export const CaseDetailsSchema = z.object({
@@ -36,12 +104,39 @@ export const CaseDetailsSchema = z.object({
   base: z.string().min(2, "Base is required").max(50),
   province: z.string().min(2, "Province is required").max(50),
   rescueUnit: z.string().min(2, "Rescue Unit is required").max(50),
-  rv: z.string().min(2, "RV is required").max(50),
+  vehicle: z.object(
+    {
+      id: z.number({
+        required_error: "Vehicle ID is required",
+        invalid_type_error: "Vehicle ID must be a number",
+      }),
+      name: z
+        .string({
+          required_error: "Vehicle name is required",
+          invalid_type_error: "Vehicle name must be a string",
+        })
+        .min(2, "Vehicle name must be at least 2 characters"),
+      license: z
+        .string({
+          required_error: "Vehicle license is required",
+          invalid_type_error: "Vehicle license must be a string",
+        })
+        .min(2, "Vehicle license must be at least 2 characters"),
+      registrationNumber: z
+        .string({
+          required_error: "Vehicle registration number is required",
+          invalid_type_error: "Vehicle registration number must be a string",
+        })
+        .min(2, "Vehicle registration number must be at least 2 characters"),
+    },
+    {
+      required_error: "Vehicle information is required",
+      invalid_type_error: "Invalid vehicle information format",
+    },
+  ),
   dateOfCase: z.date({
     required_error: "A date of birth is required.",
   }),
-  dodNumber: z.string().optional(),
-  ambulance: z.string().min(2, "Ambulance is required").max(50),
 });
 
 export const TransportationSchema = z.object({
@@ -62,20 +157,6 @@ export const IncidentInformationSchema = z.object({
   dispatchInfo: z.string().min(5),
   onArrival: z.string().min(5),
   chiefComplaint: z.string(),
-  pastHistory: z.object({
-    allergies: z.string(),
-    medication: z.string(),
-    medicalHx: z.string(),
-    lastMeal: z.string(),
-    cva: z.boolean(),
-    epilepsy: z.boolean(),
-    cardiac: z.boolean(),
-    byPass: z.boolean(),
-    dmOneOrTwo: z.boolean(),
-    HPT: z.boolean(),
-    asthma: z.boolean(),
-    copd: z.boolean(),
-  }),
 });
 export const SecondarySurveySchema = z.object({
   scalp: z.object({
@@ -84,7 +165,8 @@ export const SecondarySurveySchema = z.object({
     bruising: z.boolean(),
     burns: z.boolean(),
     deepWound: z.boolean(),
-    GSW: z.boolean(),
+    GunShotWound: z.boolean(),
+    PenetratingWound: z.boolean(),
     oedema: z.boolean(),
     laceration: z.boolean(),
     largeWound: z.boolean(),
@@ -95,7 +177,8 @@ export const SecondarySurveySchema = z.object({
     crepitus: z.boolean(),
     deformity: z.boolean(),
     fracture: z.boolean(),
-    GSW: z.boolean(),
+    GunShotWound: z.boolean(),
+    PenetratingWound: z.boolean(),
     frontal: z.boolean(),
     occipital: z.boolean(),
     parietal: z.boolean(),
@@ -116,7 +199,8 @@ export const SecondarySurveySchema = z.object({
     deepWound: z.boolean(),
     epistaxis: z.boolean(),
     guarding: z.boolean(),
-    GSW: z.boolean(),
+    GunShotWound: z.boolean(),
+PenetratingWound: z.boolean(),
     laceration: z.boolean(),
     largeWound: z.boolean(),
     orbitalInjury: z.boolean(),
@@ -139,7 +223,8 @@ export const SecondarySurveySchema = z.object({
     crepitus: z.boolean(),
     deformity: z.boolean(),
     guarding: z.boolean(),
-    GSW: z.boolean(),
+    GunShotWound: z.boolean(),
+PenetratingWound: z.boolean(),
     oedema: z.boolean(),
     penetratingWound: z.boolean(),
     sciaticPain: z.boolean(),
@@ -156,7 +241,8 @@ export const SecondarySurveySchema = z.object({
     flailSegment: z.boolean(),
     guardingPalpation: z.boolean(),
     guardingDepthOfBreathing: z.boolean(),
-    GSW: z.boolean(),
+    GunShotWound: z.boolean(),
+PenetratingWound: z.boolean(),
     laceration: z.boolean(),
     oedema: z.boolean(),
     stabWound: z.boolean(),
@@ -169,7 +255,8 @@ export const SecondarySurveySchema = z.object({
     burns: z.boolean(),
     distended: z.boolean(),
     evisceration: z.boolean(),
-    GSW: z.boolean(),
+    GunShotWound: z.boolean(),
+PenetratingWound: z.boolean(),
     guarding: z.boolean(),
     hernia: z.boolean(),
     laceration: z.boolean(),
@@ -184,7 +271,8 @@ export const SecondarySurveySchema = z.object({
     crepitus: z.boolean(),
     deformity: z.boolean(),
     guarding: z.boolean(),
-    GSW: z.boolean(),
+    GunShotWound: z.boolean(),
+    PenetratingWound: z.boolean(),
     incontinence: z.boolean(),
     openWound: z.boolean(),
     openBook: z.boolean(),
@@ -197,7 +285,8 @@ export const SecondarySurveySchema = z.object({
     crepitus: z.boolean(),
     bruising: z.boolean(),
     deformity: z.boolean(),
-    GSW: z.boolean(),
+    GunShotWound: z.boolean(),
+    PenetratingWound: z.boolean(),
     guarding: z.boolean(),
     laceration: z.boolean(),
     oedema: z.boolean(),
@@ -209,7 +298,8 @@ export const SecondarySurveySchema = z.object({
     crepitus: z.boolean(),
     bruising: z.boolean(),
     deformity: z.boolean(),
-    GSW: z.boolean(),
+    GunShotWound: z.boolean(),
+    PenetratingWound: z.boolean(),
     guarding: z.boolean(),
     laceration: z.boolean(),
     oedema: z.boolean(),
@@ -221,7 +311,8 @@ export const SecondarySurveySchema = z.object({
     crepitus: z.boolean(),
     bruising: z.boolean(),
     deformity: z.boolean(),
-    GSW: z.boolean(),
+    GunShotWound: z.boolean(),
+    PenetratingWound: z.boolean(),
     guarding: z.boolean(),
     laceration: z.boolean(),
     oedema: z.boolean(),
@@ -233,7 +324,8 @@ export const SecondarySurveySchema = z.object({
     crepitus: z.boolean(),
     bruising: z.boolean(),
     deformity: z.boolean(),
-    GSW: z.boolean(),
+    GunShotWound: z.boolean(),
+    PenetratingWound: z.boolean(),
     guarding: z.boolean(),
     laceration: z.boolean(),
     oedema: z.boolean(),
@@ -292,27 +384,64 @@ export type MedicationAdministeredType = z.infer<
 
 export const DiagnosisSchema = z.object({
   diagnosis: z.string().min(1, "Diagnosis is required"),
+  //TODO: add a toggle to chose between 1, 2, 3, 4 and colors [red, yellow,orange, green, blue]
   priority: z.enum(["1", "2", "3", "4"], {
     required_error: "You need to select a priority.",
   }),
+  //
+  // these are from mechanism of injury
+  //
+  allergicReaction: z.object({
+    occurred: z.boolean(),
+    symptoms: z.array(
+      z.enum(["Stridor", "Wheezes", "Erythema", "Pruritus", "Urticaria"]),
+    ),
+    location: z.array(z.enum(["Abd", "Head", "Limbs", "Torso"])),
+  }),
+  poisoning: z.boolean(),
+  symptoms: z.array(
+    z.enum([
+      "Abdominal Pain",
+      "Altered LOC",
+      "Bradycardia",
+      "Secretions",
+      "Diaphoresis",
+      "Hypotension",
+      "Incontinence",
+      "Miosis",
+      "Seizures",
+      "Vomiting",
+    ]),
+  ),
 });
 
 export type DiagnosisType = z.infer<typeof DiagnosisSchema>;
 
 export const MechanismOfInjurySchema = z.object({
-  vehicleType: z.enum([
-    "MVA",
-    "MBA",
-    "PVA",
-    "Bus",
-    "Cyclist",
-    "Taxi",
-    "Train",
-    "Truck",
-  ]),
-  impactType: z.array(
-    z.enum(["Frontal Impact", "Rear", "Rollover", "T - Boned", "Vehicle Spun"]),
-  ),
+  vehicleType: z.object({
+    occured: z.boolean(),
+    vehicleTypesSelection: z.enum([
+      "MVA",
+      "MBA",
+      "PVA",
+      "Bus",
+      "Cyclist",
+      "Taxi",
+      "Train",
+      "Truck",
+    ]),
+  }),
+  impactType: z
+    .array(
+      z.enum([
+        "Frontal Impact",
+        "Rear",
+        "Rollover",
+        "T - Boned",
+        "Vehicle Spun",
+      ]),
+    )
+    .nonempty(),
   speed: z.enum(["<60km/h", "60-100km/h", ">120km/h"]),
   personType: z.enum(["Driver", "Passenger", "Unknown"]),
   safetyFeatures: z.array(z.enum(["Airbags", "Restrained"])),
@@ -357,7 +486,7 @@ export const MechanismOfInjurySchema = z.object({
     occurred: z.boolean(),
     bsa: z.enum(["<15%", ">15%"]),
     confinedSpace: z.boolean(),
-    duration: z.string(),
+    duration: z.string().default(""),
     type: z.array(
       z.enum([
         "Chemical",
@@ -370,29 +499,33 @@ export const MechanismOfInjurySchema = z.object({
       ]),
     ),
   }),
-  allergicReaction: z.object({
-    occurred: z.boolean(),
-    symptoms: z.array(
-      z.enum(["Stridor", "Wheezes", "Erythema", "Pruritus", "Urticaria"]),
-    ),
-    location: z.array(z.enum(["Abd", "Head", "Limbs", "Torso"])),
-  }),
-  poisoning: z.boolean(),
-  symptoms: z.array(
-    z.enum([
-      "Abdominal Pain",
-      "Altered LOC",
-      "Bradycardia",
-      "Secretions",
-      "Diaphoresis",
-      "Hypotension",
-      "Incontinence",
-      "Miosis",
-      "Seizures",
-      "Vomiting",
-    ]),
-  ),
+
+  // this needs to be removed and moved to diagnosis
+
+  // allergicReaction: z.object({
+  //   occurred: z.boolean(),
+  //   symptoms: z.array(
+  //     z.enum(["Stridor", "Wheezes", "Erythema", "Pruritus", "Urticaria"]),
+  //   ),
+  //   location: z.array(z.enum(["Abd", "Head", "Limbs", "Torso"])),
+  // }),
+  // poisoning: z.boolean(),
+  // symptoms: z.array(
+  //   z.enum([
+  //     "Abdominal Pain",
+  //     "Altered LOC",
+  //     "Bradycardia",
+  //     "Secretions",
+  //     "Diaphoresis",
+  //     "Hypotension",
+  //     "Incontinence",
+  //     "Miosis",
+  //     "Seizures",
+  //     "Vomiting",
+  //   ]),
+  // ),
 });
+
 export type MechanismOfInjuryType = z.infer<typeof MechanismOfInjurySchema>;
 
 export const ProceduresSchema = z.object({
@@ -722,6 +855,83 @@ export const PatientHandoverSchema = z.object({
 export type PatientHandoverType = z.infer<typeof PatientHandoverSchema>;
 
 // --------------------------------------------
+export const PastMedicalHistorySchema = z.object({
+  allergies: z.array(
+    z.object({
+      allergen: z.string().min(1, "Allergen is required"),
+      reaction: z.string().min(1, "Reaction is required"),
+      severity: z.enum(["Mild", "Moderate", "Severe"]),
+    }),
+  ),
+  currentMedications: z.array(
+    z.object({
+      medication: z.string().min(1, "Medication name is required"),
+      dosage: z.string().min(1, "Dosage is required"),
+      frequency: z.string().min(1, "Frequency is required"),
+      lastTaken: z.string().optional(),
+    }),
+  ),
+  lastMeal: z.object({
+    time: z.string().min(1, "Time is required"),
+    description: z.string().optional(),
+  }),
+  medicalConditions: z.object({
+    cardiovascular: z.object({
+      hasCondition: z.boolean(),
+      conditions: z.array(
+        z.enum([
+          "Hypertension",
+          "Previous MI",
+          "Angina",
+          "Bypass Surgery",
+          "Pacemaker",
+          "Heart Failure",
+          "Arrhythmia",
+          "Other",
+        ]),
+      ),
+      details: z.string().optional(),
+    }),
+    respiratory: z.object({
+      hasCondition: z.boolean(),
+      conditions: z.array(
+        z.enum(["Asthma", "COPD", "Tuberculosis", "Sleep Apnea", "Other"]),
+      ),
+      details: z.string().optional(),
+    }),
+    neurological: z.object({
+      hasCondition: z.boolean(),
+      conditions: z.array(
+        z.enum(["CVA/Stroke", "Epilepsy", "TIA", "Seizures", "Other"]),
+      ),
+      details: z.string().optional(),
+    }),
+    endocrine: z.object({
+      hasCondition: z.boolean(),
+      conditions: z.array(
+        z.enum([
+          "Diabetes Type 1",
+          "Diabetes Type 2",
+          "Thyroid Disease",
+          "Other",
+        ]),
+      ),
+      details: z.string().optional(),
+    }),
+  }),
+  surgicalHistory: z.array(
+    z.object({
+      procedure: z.string().min(1, "Procedure is required"),
+      date: z.string().optional(),
+      complications: z.string().optional(),
+    }),
+  ),
+  familyHistory: z.array(z.string()).optional(),
+  additionalNotes: z.string().optional(),
+});
+
+export type PastMedicalHistoryType = z.infer<typeof PastMedicalHistorySchema>;
+
 export const PRFFormDataSchema = z.object({
   case_details: z
     .object({
@@ -863,6 +1073,13 @@ export const PRFFormDataSchema = z.object({
       data: z.string(),
     })
     .optional(),
+  past_medical_history: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: PastMedicalHistorySchema,
+    })
+    .optional(),
 });
 
 // Define the full form schema
@@ -872,4 +1089,6 @@ export const PRFFormSchema = z.object({
   prfData: PRFFormDataSchema,
   createdAt: z.union([z.string(), z.date()]).optional(),
   isCompleted: z.boolean().default(false).optional(),
+  EmployeeID: z.string(), // added employee and crew IDs
+  CrewID: z.string().default("CrewID").optional(), // this can be optional for now
 });
