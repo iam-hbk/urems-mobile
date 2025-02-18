@@ -137,7 +137,6 @@ export const CaseDetailsSchema = z.object({
   dateOfCase: z.date({
     required_error: "A date of birth is required.",
   }),
-  ambulance: z.string().optional() // avoid error on UI 
 });
 
 export const TransportationSchema = z.object({
@@ -158,10 +157,6 @@ export const IncidentInformationSchema = z.object({
   dispatchInfo: z.string().min(5),
   onArrival: z.string().min(5),
   chiefComplaint: z.string(),
-  // pastHistory: z.object({
-  //   allergies: z.string().optional(),
-  //   medicalHx: z.string().optional()
-  // }),
 });
 export const SecondarySurveySchema = z.object({
   scalp: z.object({
@@ -205,7 +200,7 @@ export const SecondarySurveySchema = z.object({
     epistaxis: z.boolean(),
     guarding: z.boolean(),
     GunShotWound: z.boolean(),
-    PenetratingWound: z.boolean(),
+PenetratingWound: z.boolean(),
     laceration: z.boolean(),
     largeWound: z.boolean(),
     orbitalInjury: z.boolean(),
@@ -229,7 +224,7 @@ export const SecondarySurveySchema = z.object({
     deformity: z.boolean(),
     guarding: z.boolean(),
     GunShotWound: z.boolean(),
-    PenetratingWound: z.boolean(),
+PenetratingWound: z.boolean(),
     oedema: z.boolean(),
     penetratingWound: z.boolean(),
     sciaticPain: z.boolean(),
@@ -247,7 +242,7 @@ export const SecondarySurveySchema = z.object({
     guardingPalpation: z.boolean(),
     guardingDepthOfBreathing: z.boolean(),
     GunShotWound: z.boolean(),
-    PenetratingWound: z.boolean(),
+PenetratingWound: z.boolean(),
     laceration: z.boolean(),
     oedema: z.boolean(),
     stabWound: z.boolean(),
@@ -261,7 +256,7 @@ export const SecondarySurveySchema = z.object({
     distended: z.boolean(),
     evisceration: z.boolean(),
     GunShotWound: z.boolean(),
-    PenetratingWound: z.boolean(),
+PenetratingWound: z.boolean(),
     guarding: z.boolean(),
     hernia: z.boolean(),
     laceration: z.boolean(),
@@ -938,125 +933,145 @@ export const PastMedicalHistorySchema = z.object({
 export type PastMedicalHistoryType = z.infer<typeof PastMedicalHistorySchema>;
 
 export const PRFFormDataSchema = z.object({
-  case_details: z.object({
-    isOptional: z.boolean().default(false),
-    isCompleted: z.boolean().default(false),
-    data: CaseDetailsSchema,
-  })
+  case_details: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: CaseDetailsSchema,
+    })
     .optional(),
-  patient_details: z.object({
-    isOptional: z.boolean().default(false),
-    isCompleted: z.boolean().default(false),
-    data: PatientDetailsSchema,
-  })
+  patient_details: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: PatientDetailsSchema,
+    })
     .optional(),
-  incident_information: z.object({
-    isOptional: z.boolean().default(false),
-    isCompleted: z.boolean().default(false),
-    data: IncidentInformationSchema,
-  })
+  incident_information: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: IncidentInformationSchema,
+    })
     .optional(),
-  transportation: z.object({
-    isOptional: z.boolean().default(false),
-    isCompleted: z.boolean().default(false),
-    data: TransportationSchema,
-  })
+  transportation: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: TransportationSchema,
+    })
     .optional(),
-  primary_survey: z.object({
-    isOptional: z.boolean().default(false),
-    isCompleted: z.boolean().default(false),
-    data: PrimarySurveySchema,
-  })
+  primary_survey: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: PrimarySurveySchema,
+    })
     .optional(),
-  secondary_survey: z.object({
-    isOptional: z.boolean().default(false),
-    isCompleted: z.boolean().default(false),
-    data: SecondarySurveySchema,
-  })
+  secondary_survey: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: SecondarySurveySchema,
+    })
     .optional(),
-  vital_signs: z.object({
-    isOptional: z.boolean().default(false),
-    isCompleted: z.boolean().default(false),
-    data: VitalSignsSchema.optional(),
-  })
+  vital_signs: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: VitalSignsSchema.optional(),
+    })
     .optional(),
-  intravenous_therapy: z.object({
-    isOptional: z.boolean().default(false),
-    isCompleted: z.boolean().default(false),
-    data: IntravenousTherapySchema,
-  })
+  intravenous_therapy: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: IntravenousTherapySchema,
+    })
     .optional(),
-  history_taking: z.object({
-    isOptional: z.boolean(),
-    isCompleted: z.boolean(),
-    data: z.string(),
-  })
+  history_taking: z
+    .object({
+      isOptional: z.boolean(),
+      isCompleted: z.boolean(),
+      data: z.string(),
+    })
     .optional(),
-  physical_exam: z.object({
-    isOptional: z.boolean(),
-    isCompleted: z.boolean(),
-    data: z.string(),
-  })
+  physical_exam: z
+    .object({
+      isOptional: z.boolean(),
+      isCompleted: z.boolean(),
+      data: z.string(),
+    })
     .optional(),
-  interventions: z.object({
-    isOptional: z.boolean().default(false),
-    isCompleted: z.boolean().default(false),
-    data: z.string(),
-  })
+  interventions: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: z.string(),
+    })
     .optional(),
-  diagnosis: z.object({
-    isOptional: z.boolean().default(false),
-    isCompleted: z.boolean().default(false),
-    data: DiagnosisSchema,
-  })
+  diagnosis: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: DiagnosisSchema,
+    })
     .optional(),
-  medication_administration: z.object({
-    isOptional: z.boolean().default(false),
-    isCompleted: z.boolean().default(false),
-    data: MedicationAdministeredSchema,
-  })
+  medication_administration: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: MedicationAdministeredSchema,
+    })
     .optional(),
-  mechanism_of_injury: z.object({
-    isOptional: z.boolean().default(false),
-    isCompleted: z.boolean().default(false),
-    data: MechanismOfInjurySchema,
-  })
+  mechanism_of_injury: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: MechanismOfInjurySchema,
+    })
     .optional(),
-  procedures: z.object({
-    isOptional: z.boolean().default(false),
-    isCompleted: z.boolean().default(false),
-    data: ProceduresSchema,
-  })
+  procedures: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: ProceduresSchema,
+    })
     .optional(),
-  respiratory_distress: z.object({
-    isOptional: z.boolean().default(false),
-    isCompleted: z.boolean().default(false),
-    data: RespiratoryDistressSchema,
-  })
+  respiratory_distress: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: RespiratoryDistressSchema,
+    })
     .optional(),
-  injuries: z.object({
-    isOptional: z.boolean().default(false),
-    isCompleted: z.boolean().default(false),
-    data: InjurySchema,
-  })
+  injuries: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: InjurySchema,
+    })
     .optional(),
-  assessments: z.object({
-    isOptional: z.boolean().default(false),
-    isCompleted: z.boolean().default(false),
-    data: AssessmentsSchema,
-  })
+  assessments: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: AssessmentsSchema,
+    })
     .optional(),
-  patient_handover: z.object({
-    isOptional: z.boolean().default(false),
-    isCompleted: z.boolean().default(false),
-    data: PatientHandoverSchema,
-  })
+  patient_handover: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: PatientHandoverSchema,
+    })
     .optional(),
-  notes: z.object({
-    isOptional: z.boolean(),
-    isCompleted: z.boolean(),
-    data: z.string(),
-  })
+  notes: z
+    .object({
+      isOptional: z.boolean(),
+      isCompleted: z.boolean(),
+      data: z.string(),
+    })
     .optional(),
   past_medical_history: z
     .object({

@@ -25,7 +25,6 @@ import { Loader2 } from "lucide-react";
 import { DiagnosisSchema, DiagnosisType } from "@/interfaces/prf-schema";
 import { Switch } from "../ui/switch";
 import { Checkbox } from "../ui/checkbox";
-import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 export default function DiagnosisForm() {
   const prfId = usePathname().split("/")[2];
@@ -33,7 +32,6 @@ export default function DiagnosisForm() {
     (prf) => prf.prfFormId == prfId,
   );
 
-  const { zsEmployee } = useZuStandEmployeeStore();
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
 
@@ -45,15 +43,6 @@ export default function DiagnosisForm() {
   });
 
   function onSubmit(values: DiagnosisType) {
-
-    if (!zsEmployee) {
-      toast.error("No Employee Information Found", {
-        duration: 3000,
-        position: "top-right",
-      });
-      return;
-    }
-
     const prfUpdateValue: PRF_FORM = {
       prfFormId: prfId,
       prfData: {
@@ -64,7 +53,6 @@ export default function DiagnosisForm() {
           isOptional: false,
         },
       },
-      EmployeeID: zsEmployee.employeeNumber.toString()
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {

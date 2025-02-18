@@ -28,7 +28,6 @@ import {
   MechanismOfInjuryType,
 } from "@/interfaces/prf-schema";
 import { Switch } from "../ui/switch";
-import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 export default function MechanismOfInjuryForm() {
   const prfId = usePathname().split("/")[2];
@@ -36,7 +35,6 @@ export default function MechanismOfInjuryForm() {
     (prf) => prf.prfFormId == prfId,
   );
 
-  const { zsEmployee } = useZuStandEmployeeStore();
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
 
@@ -48,15 +46,6 @@ export default function MechanismOfInjuryForm() {
   });
 
   function onSubmit(values: MechanismOfInjuryType) {
-
-    if (!zsEmployee) {
-      toast.error("No Employee Information Found", {
-        duration: 3000,
-        position: "top-right",
-      });
-      return;
-    }
-
     const prfUpdateValue: PRF_FORM = {
       prfFormId: prfId,
       prfData: {
@@ -67,7 +56,6 @@ export default function MechanismOfInjuryForm() {
           isOptional: false,
         },
       },
-      EmployeeID: zsEmployee.employeeNumber.toString()
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
