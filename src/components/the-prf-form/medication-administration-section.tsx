@@ -32,12 +32,14 @@ import {
   MedicationAdministeredSchema,
   MedicationAdministeredType,
 } from "@/interfaces/prf-schema";
+import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 export default function MedicationAdministeredForm() {
   const prfId = usePathname().split("/")[2];
   const prf_from_store = useStore((state) => state.prfForms).find(
     (prf) => prf.prfFormId == prfId,
   );
+  const { zsEmployee } = useZuStandEmployeeStore();
   const user = useStore((state) => state.user);
   console.log(user);
 
@@ -72,6 +74,15 @@ export default function MedicationAdministeredForm() {
   });
 
   function onSubmit(values: MedicationAdministeredType) {
+
+    if (!zsEmployee) {
+      toast.error("No Employee Information Found", {
+        duration: 3000,
+        position: "top-right",
+      });
+      return;
+    }
+
     const prfUpdateValue: PRF_FORM = {
       prfFormId: prfId,
       prfData: {
@@ -82,6 +93,7 @@ export default function MedicationAdministeredForm() {
           isOptional: false,
         },
       },
+      EmployeeID: zsEmployee.employeeNumber.toString()
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {

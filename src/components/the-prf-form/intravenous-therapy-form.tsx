@@ -29,6 +29,7 @@ import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
 import { PRF_FORM } from "@/interfaces/prf-form";
 import { toast } from "sonner";
 import { IntravenousTherapySchema } from "@/interfaces/prf-schema";
+import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 export type IntravenousTherapyType = z.infer<typeof IntravenousTherapySchema>;
 
@@ -38,6 +39,7 @@ export default function IntravenousTherapyForm() {
     (prf) => prf.prfFormId == prfId,
   );
 
+  const { zsEmployee } = useZuStandEmployeeStore();
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
   const form = useForm<IntravenousTherapyType>({
@@ -72,6 +74,15 @@ export default function IntravenousTherapyForm() {
   });
 
   function onSubmit(values: IntravenousTherapyType) {
+
+    if (!zsEmployee) {
+      toast.error("No Employee Information Found", {
+        duration: 3000,
+        position: "top-right",
+      });
+      return;
+    }
+
     const prfUpdateValue: PRF_FORM = {
       prfFormId: prfId,
       prfData: {
@@ -82,6 +93,7 @@ export default function IntravenousTherapyForm() {
           isOptional: false,
         },
       },
+      EmployeeID: zsEmployee.employeeNumber.toString()
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
