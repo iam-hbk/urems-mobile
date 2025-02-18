@@ -41,7 +41,9 @@ export const sectionDescriptions = [
   "Respiratory Distress Assessment",
   "Injuries",
   "Assessments",
+  "Past Medical History"
 ] as const;
+
 export const PRF_FORM_DATA_DISPLAY_NAMES: Record<
   keyof PRF_FORM_DATA,
   (typeof sectionDescriptions)[number]
@@ -66,4 +68,5 @@ export const PRF_FORM_DATA_DISPLAY_NAMES: Record<
   respiratory_distress: "Respiratory Distress Assessment",
   injuries: "Injuries",
   assessments: "Assessments",
+  past_medical_history: "Past Medical History"
 };
