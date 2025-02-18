@@ -13,8 +13,10 @@
 /.next/
 /out/
 
+
 .vscode
 .env
+
 
 # production
 /build

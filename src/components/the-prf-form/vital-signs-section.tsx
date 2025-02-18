@@ -41,6 +41,7 @@ import {
   VitalSignsType,
 } from "@/interfaces/prf-vital-signs-schema";
 import { z } from "zod";
+import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 // Big measures
 const VitalSignsSchemaWithData = z.object({
@@ -54,6 +55,7 @@ const VitalSignsForm: React.FC = () => {
   const prf_from_store = useStore((state) => state.prfForms).find(
     (prf) => prf.prfFormId == prfId,
   );
+  const { zsEmployee } = useZuStandEmployeeStore();
 
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
@@ -71,6 +73,15 @@ const VitalSignsForm: React.FC = () => {
   });
 
   function onSubmit(values: VitalSignsTypeWithData) {
+
+    if (!zsEmployee) {
+      toast.error("No Employee Information Found", {
+        duration: 3000,
+        position: "top-right",
+      });
+      return;
+    }
+
     const prfUpdateValue: PRF_FORM = {
       prfFormId: prfId,
       prfData: {
@@ -81,6 +92,7 @@ const VitalSignsForm: React.FC = () => {
           isOptional: false,
         },
       },
+      EmployeeID: zsEmployee.employeeNumber.toString()
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
@@ -167,13 +179,13 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null &&
-                                field.value !== undefined
+                                  field.value !== undefined
                                   ? field.value?.toString()
                                   : new Date().toLocaleTimeString("en-US", {
-                                      hour12: false,
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })
+                                    hour12: false,
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })
                               }
                             />
                           </FormControl>
@@ -348,7 +360,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                field.value !== undefined
+                                  field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }
@@ -393,7 +405,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                field.value !== undefined
+                                  field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }
@@ -416,7 +428,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                field.value !== undefined
+                                  field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }
@@ -627,7 +639,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                field.value !== undefined
+                                  field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }
@@ -650,7 +662,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                field.value !== undefined
+                                  field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }
