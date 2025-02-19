@@ -1,9 +1,8 @@
 "use client";
 
 import React from "react";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useFieldArray, FieldPath } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -14,21 +13,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   Accordion,
   AccordionContent,
@@ -48,241 +32,8 @@ import {
   MedicationAdministeredType,
 } from "@/interfaces/prf-schema";
 import { useZuStandCrewStore } from "@/lib/zuStand/crew";
-import { Separator } from "../ui/separator";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-} from "@/components/ui/command";
-import { Star, StarOff } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-
-interface CustomMedicationDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSubmit: (data: { medicine: string; dose: string; route: string }) => void;
-  initialValues?: {
-    medicine: string;
-    dose: string;
-    route: string;
-  };
-}
-
-function CustomMedicationDialog({
-  open,
-  onOpenChange,
-  onSubmit,
-  initialValues,
-}: CustomMedicationDialogProps) {
-  const [doseValue, doseUnit] = React.useMemo(() => {
-    if (!initialValues?.dose) return ["", "mg"];
-    const match = initialValues.dose.match(/^([\d.]+)(\w+)$/);
-    return match ? [match[1], match[2]] : ["", "mg"];
-  }, [initialValues?.dose]);
-
-  const customMedForm = useForm({
-    defaultValues: {
-      medicine: initialValues?.medicine || "",
-      doseValue: doseValue,
-      doseUnit: doseUnit,
-      route: initialValues?.route || "",
-    },
-    resolver: zodResolver(
-      z.object({
-        medicine: z.string().min(1, "Medicine name is required"),
-        doseValue: z.string().min(1, "Dose value is required"),
-        doseUnit: z.string().min(1, "Dose unit is required"),
-        route: z.string().min(1, "Route is required"),
-      }),
-    ),
-  });
-
-  // Reset form when initialValues change
-  React.useEffect(() => {
-    if (initialValues) {
-      customMedForm.reset({
-        medicine: initialValues.medicine,
-        doseValue: doseValue,
-        doseUnit: doseUnit,
-        route: initialValues.route,
-      });
-    }
-  }, [initialValues, doseValue, doseUnit]);
-
-  // Mock route options
-  const routeOptions = [
-    { value: "IV", label: "Intravenous (IV)" },
-    { value: "IM", label: "Intramuscular (IM)" },
-    { value: "SC", label: "Subcutaneous (SC)" },
-    { value: "PO", label: "Oral (PO)" },
-    { value: "SL", label: "Sublingual (SL)" },
-    { value: "PR", label: "Per Rectum (PR)" },
-    { value: "IN", label: "Intranasal (IN)" },
-    { value: "NEB", label: "Nebulization" },
-  ];
-
-  // Mock dose unit options
-  const doseUnitOptions = [
-    { value: "mg", label: "mg" },
-    { value: "ml", label: "ml" },
-    { value: "mcg", label: "mcg" },
-    { value: "g", label: "g" },
-    { value: "IU", label: "IU" },
-  ];
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Add Custom Medication</DialogTitle>
-          <DialogDescription>
-            Enter the details for a medication not in the vehicle inventory.
-          </DialogDescription>
-        </DialogHeader>
-        <Form {...customMedForm}>
-          <form
-            onSubmit={customMedForm.handleSubmit((data) => {
-              onSubmit({
-                medicine: data.medicine,
-                dose: `${data.doseValue}${data.doseUnit}`,
-                route: data.route,
-              });
-              customMedForm.reset();
-              onOpenChange(false);
-            })}
-            className="space-y-4"
-          >
-            <FormField
-              control={customMedForm.control}
-              name="medicine"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Medication Name</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="Enter medication name" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex gap-2">
-              <FormField
-                control={customMedForm.control}
-                name="doseValue"
-                render={({ field }) => (
-                  <FormItem className="flex-1">
-                    <FormLabel>Dose</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="number"
-                        placeholder="Enter dose value"
-                        min="0"
-                        step="any"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={customMedForm.control}
-                name="doseUnit"
-                render={({ field }) => (
-                  <FormItem className="w-[100px]">
-                    <FormLabel>Unit</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Unit" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {doseUnitOptions.map((unit) => (
-                          <SelectItem key={unit.value} value={unit.value}>
-                            {unit.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={customMedForm.control}
-              name="route"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Route</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select administration route" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {routeOptions.map((route) => (
-                        <SelectItem key={route.value} value={route.value}>
-                          {route.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => onOpenChange(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit">Add Medication</Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// Add hook for managing favorites
-function useFavoriteMedications() {
-  const [favorites, setFavorites] = React.useState<string[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('favoriteMedications');
-      return saved ? JSON.parse(saved) : [];
-    }
-    return [];
-  });
-
-  const toggleFavorite = React.useCallback((medicationId: string) => {
-    setFavorites((prev) => {
-      const newFavorites = prev.includes(medicationId)
-        ? prev.filter((id) => id !== medicationId)
-        : [...prev, medicationId];
-      
-      localStorage.setItem('favoriteMedications', JSON.stringify(newFavorites));
-      return newFavorites;
-    });
-  }, []);
-
-  return { favorites, toggleFavorite };
-}
+import { CustomMedicationDialog } from "./medication/custom-medication-dialog";
+import { MedicationSelect } from "./medication/medication-select";
 
 export default function MedicationAdministeredForm() {
   const [customMedDialogOpen, setCustomMedDialogOpen] = React.useState(false);
@@ -295,12 +46,13 @@ export default function MedicationAdministeredForm() {
       }
     | undefined
   >(undefined);
+
   const prfId = usePathname().split("/")[2];
   const prf_from_store = useStore((state) => state.prfForms).find(
     (prf) => prf.prfFormId == prfId,
   );
   const user = useStore((state) => state.user);
-  const { zsVehicle, zsUpdateMedicationStock } = useZuStandCrewStore();
+  const { zsUpdateMedicationStock } = useZuStandCrewStore();
 
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
@@ -333,8 +85,6 @@ export default function MedicationAdministeredForm() {
     name: "medications",
   });
 
-  const { favorites, toggleFavorite } = useFavoriteMedications();
-
   const handleCustomMedication = (data: {
     medicine: string;
     dose: string;
@@ -348,6 +98,18 @@ export default function MedicationAdministeredForm() {
       setEditingMedication(undefined);
     }
   };
+
+  const handleCustomMedicationOpen = React.useCallback((index: number, currentValue?: string) => {
+    setActiveIndex(index);
+    if (currentValue) {
+      setEditingMedication({
+        medicine: currentValue,
+        dose: form.getValues(`medications.${index}.dose`),
+        route: form.getValues(`medications.${index}.route`),
+      });
+    }
+    setCustomMedDialogOpen(true);
+  }, [form]);
 
   function onSubmit(values: MedicationAdministeredType) {
     // Update medication inventory
@@ -387,142 +149,6 @@ export default function MedicationAdministeredForm() {
       },
     });
   }
-
-  // Replace the Select FormField with this new component
-  const MedicationSelect = React.forwardRef<
-    HTMLDivElement,
-    {
-      value?: string;
-      onChange: (value: string) => void;
-      name: string;
-      index: number;
-    }
-  >(({ value, onChange, name, index }, ref) => {
-    const [isOpen, setIsOpen] = React.useState(false);
-    const [search, setSearch] = React.useState("");
-    const medications = zsVehicle?.inventory.medications || [];
-    const favoriteMedications = medications.filter((med) => favorites.includes(med.id));
-    const otherMedications = medications.filter((med) => !favorites.includes(med.id));
-
-    const handleMedicationSelect = React.useCallback((medication: typeof medications[0]) => {
-      onChange(medication.name);
-      form.setValue(`medications.${index}.medicationId`, medication.id);
-      form.setValue(`medications.${index}.dose`, medication.dose);
-      form.setValue(`medications.${index}.route`, medication.route);
-      setIsOpen(false);
-      setSearch("");
-    }, [onChange, index, form, setIsOpen, setSearch]);
-
-    const handleFavoriteClick = React.useCallback((e: React.MouseEvent, medicationId: string) => {
-      e.preventDefault();
-      e.stopPropagation();
-      toggleFavorite(medicationId);
-    }, [toggleFavorite]);
-
-    return (
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={isOpen}
-            className="w-full justify-between"
-          >
-            {value
-              ? medications.find((med) => med.name === value)?.name || value
-              : "Select medication..."}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[400px] p-0" align="start">
-          <Command shouldFilter={false}>
-            <CommandInput
-              placeholder="Search medications..."
-              value={search}
-              onValueChange={setSearch}
-            />
-            <CommandList>
-              <CommandEmpty>No medication found.</CommandEmpty>
-              {favoriteMedications.length > 0 && (
-                <CommandGroup heading="Favorites">
-                  {favoriteMedications
-                    .filter(med => 
-                      med.name.toLowerCase().includes(search.toLowerCase())
-                    )
-                    .map((med) => (
-                      <div key={med.id} className="flex items-center px-2 py-1.5">
-                        <CommandItem
-                          value={med.name}
-                          onSelect={() => handleMedicationSelect(med)}
-                          className="flex-1 cursor-pointer"
-                        >
-                          {med.name} ({med.currentStock} in stock)
-                        </CommandItem>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="ml-2 h-8 w-8"
-                          onClick={(e) => handleFavoriteClick(e, med.id)}
-                        >
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        </Button>
-                      </div>
-                    ))}
-                  <CommandSeparator />
-                </CommandGroup>
-              )}
-              <CommandGroup heading="All Medications">
-                {otherMedications
-                  .filter(med => 
-                    med.name.toLowerCase().includes(search.toLowerCase())
-                  )
-                  .map((med) => (
-                    <div key={med.id} className="flex items-center px-2 py-1.5">
-                      <CommandItem
-                        value={med.name}
-                        onSelect={() => handleMedicationSelect(med)}
-                        className="flex-1 cursor-pointer"
-                      >
-                        {med.name} ({med.currentStock} in stock)
-                      </CommandItem>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="ml-2 h-8 w-8"
-                        onClick={(e) => handleFavoriteClick(e, med.id)}
-                      >
-                        <StarOff className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                <CommandSeparator />
-                <CommandItem
-                  value="custom"
-                  onSelect={() => {
-                    setActiveIndex(index);
-                    if (value) {
-                      setEditingMedication({
-                        medicine: value,
-                        dose: form.getValues(`medications.${index}.dose`),
-                        route: form.getValues(`medications.${index}.route`),
-                      });
-                    }
-                    setCustomMedDialogOpen(true);
-                    setIsOpen(false);
-                    setSearch("");
-                  }}
-                >
-                  <span className="flex items-center gap-2">
-                    Custom Medication
-                    <Plus className="h-4 w-4" />
-                  </span>
-                </CommandItem>
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-    );
-  });
 
   return (
     <Accordion
@@ -617,6 +243,7 @@ export default function MedicationAdministeredForm() {
                               onChange={field.onChange}
                               name={field.name}
                               index={index}
+                              onCustomMedication={handleCustomMedicationOpen}
                             />
                           </FormControl>
                           <FormMessage />
