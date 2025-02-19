@@ -49,6 +49,17 @@ import {
 } from "@/interfaces/prf-schema";
 import { useZuStandCrewStore } from "@/lib/zuStand/crew";
 import { Separator } from "../ui/separator";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@/components/ui/command";
+import { Star, StarOff } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface CustomMedicationDialogProps {
   open: boolean;
@@ -249,6 +260,30 @@ function CustomMedicationDialog({
   );
 }
 
+// Add hook for managing favorites
+function useFavoriteMedications() {
+  const [favorites, setFavorites] = React.useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('favoriteMedications');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+
+  const toggleFavorite = React.useCallback((medicationId: string) => {
+    setFavorites((prev) => {
+      const newFavorites = prev.includes(medicationId)
+        ? prev.filter((id) => id !== medicationId)
+        : [...prev, medicationId];
+      
+      localStorage.setItem('favoriteMedications', JSON.stringify(newFavorites));
+      return newFavorites;
+    });
+  }, []);
+
+  return { favorites, toggleFavorite };
+}
+
 export default function MedicationAdministeredForm() {
   const [customMedDialogOpen, setCustomMedDialogOpen] = React.useState(false);
   const [activeIndex, setActiveIndex] = React.useState<number | null>(null);
@@ -297,6 +332,8 @@ export default function MedicationAdministeredForm() {
     control: form.control,
     name: "medications",
   });
+
+  const { favorites, toggleFavorite } = useFavoriteMedications();
 
   const handleCustomMedication = (data: {
     medicine: string;
@@ -350,6 +387,142 @@ export default function MedicationAdministeredForm() {
       },
     });
   }
+
+  // Replace the Select FormField with this new component
+  const MedicationSelect = React.forwardRef<
+    HTMLDivElement,
+    {
+      value?: string;
+      onChange: (value: string) => void;
+      name: string;
+      index: number;
+    }
+  >(({ value, onChange, name, index }, ref) => {
+    const [isOpen, setIsOpen] = React.useState(false);
+    const [search, setSearch] = React.useState("");
+    const medications = zsVehicle?.inventory.medications || [];
+    const favoriteMedications = medications.filter((med) => favorites.includes(med.id));
+    const otherMedications = medications.filter((med) => !favorites.includes(med.id));
+
+    const handleMedicationSelect = React.useCallback((medication: typeof medications[0]) => {
+      onChange(medication.name);
+      form.setValue(`medications.${index}.medicationId`, medication.id);
+      form.setValue(`medications.${index}.dose`, medication.dose);
+      form.setValue(`medications.${index}.route`, medication.route);
+      setIsOpen(false);
+      setSearch("");
+    }, [onChange, index, form, setIsOpen, setSearch]);
+
+    const handleFavoriteClick = React.useCallback((e: React.MouseEvent, medicationId: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleFavorite(medicationId);
+    }, [toggleFavorite]);
+
+    return (
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={isOpen}
+            className="w-full justify-between"
+          >
+            {value
+              ? medications.find((med) => med.name === value)?.name || value
+              : "Select medication..."}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[400px] p-0" align="start">
+          <Command shouldFilter={false}>
+            <CommandInput
+              placeholder="Search medications..."
+              value={search}
+              onValueChange={setSearch}
+            />
+            <CommandList>
+              <CommandEmpty>No medication found.</CommandEmpty>
+              {favoriteMedications.length > 0 && (
+                <CommandGroup heading="Favorites">
+                  {favoriteMedications
+                    .filter(med => 
+                      med.name.toLowerCase().includes(search.toLowerCase())
+                    )
+                    .map((med) => (
+                      <div key={med.id} className="flex items-center px-2 py-1.5">
+                        <CommandItem
+                          value={med.name}
+                          onSelect={() => handleMedicationSelect(med)}
+                          className="flex-1 cursor-pointer"
+                        >
+                          {med.name} ({med.currentStock} in stock)
+                        </CommandItem>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="ml-2 h-8 w-8"
+                          onClick={(e) => handleFavoriteClick(e, med.id)}
+                        >
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        </Button>
+                      </div>
+                    ))}
+                  <CommandSeparator />
+                </CommandGroup>
+              )}
+              <CommandGroup heading="All Medications">
+                {otherMedications
+                  .filter(med => 
+                    med.name.toLowerCase().includes(search.toLowerCase())
+                  )
+                  .map((med) => (
+                    <div key={med.id} className="flex items-center px-2 py-1.5">
+                      <CommandItem
+                        value={med.name}
+                        onSelect={() => handleMedicationSelect(med)}
+                        className="flex-1 cursor-pointer"
+                      >
+                        {med.name} ({med.currentStock} in stock)
+                      </CommandItem>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="ml-2 h-8 w-8"
+                        onClick={(e) => handleFavoriteClick(e, med.id)}
+                      >
+                        <StarOff className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                <CommandSeparator />
+                <CommandItem
+                  value="custom"
+                  onSelect={() => {
+                    setActiveIndex(index);
+                    if (value) {
+                      setEditingMedication({
+                        medicine: value,
+                        dose: form.getValues(`medications.${index}.dose`),
+                        route: form.getValues(`medications.${index}.route`),
+                      });
+                    }
+                    setCustomMedDialogOpen(true);
+                    setIsOpen(false);
+                    setSearch("");
+                  }}
+                >
+                  <span className="flex items-center gap-2">
+                    Custom Medication
+                    <Plus className="h-4 w-4" />
+                  </span>
+                </CommandItem>
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    );
+  });
 
   return (
     <Accordion
@@ -438,81 +611,14 @@ export default function MedicationAdministeredForm() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Medicine</FormLabel>
-                          <Select
-                            onValueChange={(value) => {
-                              const selectedMed =
-                                zsVehicle?.inventory.medications.find(
-                                  (m) => m.id === value,
-                                );
-                              if (selectedMed) {
-                                form.setValue(
-                                  `medications.${index}.medicine`,
-                                  selectedMed.name,
-                                );
-                                form.setValue(
-                                  `medications.${index}.medicationId`,
-                                  selectedMed.id,
-                                );
-                                form.setValue(
-                                  `medications.${index}.dose`,
-                                  selectedMed.dose,
-                                );
-                                form.setValue(
-                                  `medications.${index}.route`,
-                                  selectedMed.route,
-                                );
-                              } else if (value === "custom") {
-                                setActiveIndex(index);
-                                // If editing existing custom medication, pass its values
-                                if (field.value && !selectedMed) {
-                                  setEditingMedication({
-                                    medicine: field.value,
-                                    dose: form.getValues(
-                                      `medications.${index}.dose`,
-                                    ),
-                                    route: form.getValues(
-                                      `medications.${index}.route`,
-                                    ),
-                                  });
-                                }
-                                setCustomMedDialogOpen(true);
-                              }
-                            }}
-                            value={
-                              field.value
-                                ? zsVehicle?.inventory.medications.find(
-                                    (m) => m.name === field.value,
-                                  )?.id || "custom"
-                                : ""
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select medication">
-                                {field.value || "Select medication"}
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              {zsVehicle?.inventory.medications.map((med) => (
-                                <SelectItem key={med.id} value={med.id}>
-                                  {med.name} ({med.currentStock} in stock)
-                                </SelectItem>
-                              ))}
-                              <Separator className="my-2" />
-                              <SelectItem value="custom">
-                                {field.value &&
-                                !zsVehicle?.inventory.medications.find(
-                                  (m) => m.name === field.value,
-                                ) ? (
-                                  field.value
-                                ) : (
-                                  <span className="flex items-center gap-2">
-                                    Custom Medication
-                                    <Plus className="h-4 w-4" />
-                                  </span>
-                                )}
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <FormControl>
+                            <MedicationSelect
+                              value={field.value}
+                              onChange={field.onChange}
+                              name={field.name}
+                              index={index}
+                            />
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
