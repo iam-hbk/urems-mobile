@@ -21,15 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Accordion } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { Loader2, Plus, Trash2, X, AlertCircle } from "lucide-react";
+import { Loader2, Plus, Trash2, AlertCircle } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
@@ -43,6 +38,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { TimePicker } from "@/components/ui/time-picker";
+import { useZuStandCrewStore } from "@/lib/zuStand/crew";
 
 export type IntravenousTherapyType = z.infer<typeof IntravenousTherapySchema>;
 
@@ -51,22 +48,31 @@ export default function IntravenousTherapyForm() {
   const prf_from_store = useStore((state) => state.prfForms).find(
     (prf) => prf.prfFormId == prfId,
   );
+  const { zsVehicle, zsUpdateFluidStock } = useZuStandCrewStore();
 
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
   const form = useForm<IntravenousTherapyType>({
     resolver: zodResolver(IntravenousTherapySchema),
+    values: prf_from_store?.prfData?.intravenous_therapy?.data,
     defaultValues: prf_from_store?.prfData?.intravenous_therapy?.data || {
       therapyDetails: [
         {
           fluid: "",
-          volume: "",
+          fluidId: undefined,
+          volume: 0,
           admin: "10dropper",
           rate: "",
-          time: "",
+          time: {
+            value: new Date().toLocaleTimeString("en-GB", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            unknown: false,
+          },
           jelco: "20G",
-          site: "",
-          volumeAdministered: "",
+          site: "Right Antecubital",
+          volumeAdministered: 0,
         },
       ],
       motivationForIV: {
@@ -86,6 +92,14 @@ export default function IntravenousTherapyForm() {
   });
 
   function onSubmit(values: IntravenousTherapyType) {
+    // Update vehicle inventory for each therapy detail
+    values.therapyDetails.forEach((therapy) => {
+      if (therapy.fluidId) {
+        // Only update stock if it's a fluid from inventory
+        zsUpdateFluidStock(therapy.fluidId, Math.ceil(therapy.volumeAdministered / therapy.volume));
+      }
+    });
+
     const prfUpdateValue: PRF_FORM = {
       prfFormId: prfId,
       prfData: {
@@ -251,13 +265,20 @@ export default function IntravenousTherapyForm() {
                 onClick={() =>
                   append({
                     fluid: "",
-                    volume: "",
+                    fluidId: undefined,
+                    volume: 0,
                     admin: "10dropper",
                     rate: "",
-                    time: "",
+                    time: {
+                      value: new Date().toLocaleTimeString("en-GB", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }),
+                      unknown: false,
+                    },
                     jelco: "20G",
-                    site: "",
-                    volumeAdministered: "",
+                    site: "Right Antecubital",
+                    volumeAdministered: 0,
                   })
                 }
               >
@@ -288,104 +309,211 @@ export default function IntravenousTherapyForm() {
                   </div>
 
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    {[
-                      { name: "fluid", label: "IV Fluid Type", type: "text" },
-                      { name: "volume", label: "Volume (ml)", type: "text" },
-                      {
-                        name: "admin",
-                        label: "Administration Set",
-                        type: "select",
-                        options: [
-                          { value: "10dropper", label: "10 Dropper" },
-                          { value: "20dropper", label: "20 Dropper" },
-                          { value: "60dropper", label: "60 Dropper" },
-                          { value: "extensionSet", label: "Extension Set" },
-                          { value: "buretteSet", label: "Burette Set" },
-                          {
-                            value: "bloodAdminSet",
-                            label: "Blood Admin Set (High Cap)",
-                          },
-                        ],
-                      },
-                      { name: "rate", label: "Rate", type: "text" },
-                      { name: "time", label: "Time", type: "text" },
-                      {
-                        name: "jelco",
-                        label: "Jelco Size",
-                        type: "select",
-                        options: [
-                          { value: "14G", label: "14G" },
-                          { value: "16G", label: "16G" },
-                          { value: "18G", label: "18G" },
-                          { value: "20G", label: "20G" },
-                          { value: "22G", label: "22G" },
-                          { value: "24G", label: "24G" },
-                        ],
-                        tooltip: "Note: These values are placeholders pending confirmation"
-                      },
-                      { name: "site", label: "Insertion Site", type: "text" },
-                      {
-                        name: "volumeAdministered",
-                        label: "Volume Given (ml)",
-                        type: "text",
-                      },
-                    ].map(({ name, label, type, options, tooltip }) => (
-                      <FormField
-                        key={name}
-                        control={form.control}
-                        name={
-                          `therapyDetails.${index}.${name}` as FieldPath<IntravenousTherapyType>
-                        }
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm flex items-center gap-2">
-                              {label}
-                              {tooltip && (
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger>
-                                      <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>{tooltip}</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              )}
-                            </FormLabel>
-                            <FormControl>
-                              {type === "select" ? (
-                                <Select
-                                  onValueChange={field.onChange}
-                                  defaultValue={field.value as string}
-                                >
-                                  <SelectTrigger className="w-full">
-                                    <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {options?.map((option) => (
-                                      <SelectItem
-                                        key={option.value}
-                                        value={option.value}
-                                      >
-                                        {option.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              ) : (
-                                <Input
-                                  {...field}
-                                  value={field.value as string}
-                                  className="w-full"
-                                />
-                              )}
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    ))}
+                    {/* Fluid Selection */}
+                    <FormField
+                      control={form.control}
+                      name={`therapyDetails.${index}.fluid`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>IV Fluid Type</FormLabel>
+                          <Select
+                            onValueChange={(value) => {
+                              const selectedFluid = zsVehicle?.inventory.fluids.find(
+                                (f) => f.id === value
+                              );
+                              if (selectedFluid) {
+                                form.setValue(`therapyDetails.${index}.fluid`, selectedFluid.name);
+                                form.setValue(`therapyDetails.${index}.fluidId`, selectedFluid.id);
+                                form.setValue(`therapyDetails.${index}.volume`, selectedFluid.volume);
+                              } else if (value === "custom") {
+                                // Handle custom fluid entry
+                                const customFluid = window.prompt("Enter custom fluid name:");
+                                if (customFluid) {
+                                  form.setValue(`therapyDetails.${index}.fluid`, customFluid);
+                                  form.setValue(`therapyDetails.${index}.fluidId`, undefined);
+                                  // Let user input volume for custom fluid
+                                  const customVolume = window.prompt("Enter fluid volume (ml):");
+                                  form.setValue(`therapyDetails.${index}.volume`, Number(customVolume) || 0);
+                                }
+                              }
+                            }}
+                            value={field.value ? (zsVehicle?.inventory.fluids.find(f => f.name === field.value)?.id || "custom") : ""}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select fluid type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="custom">Custom Fluid</SelectItem>
+                              {zsVehicle?.inventory.fluids.map((fluid) => (
+                                <SelectItem key={fluid.id} value={fluid.id}>
+                                  {fluid.name} ({fluid.currentStock} in stock)
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Volume */}
+                    <FormField
+                      control={form.control}
+                      name={`therapyDetails.${index}.volume`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Volume (ml)</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="number"
+                              onChange={(e) => field.onChange(Number(e.target.value))}
+                              value={field.value}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Admin Set */}
+                    <FormField
+                      control={form.control}
+                      name={`therapyDetails.${index}.admin`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Administration Set</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select admin set" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="10dropper">10 Dropper</SelectItem>
+                              <SelectItem value="20dropper">20 Dropper</SelectItem>
+                              <SelectItem value="60dropper">60 Dropper</SelectItem>
+                              <SelectItem value="extensionSet">Extension Set</SelectItem>
+                              <SelectItem value="buretteSet">Burette Set</SelectItem>
+                              <SelectItem value="bloodAdminSet">Blood Admin Set</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Rate */}
+                    <FormField
+                      control={form.control}
+                      name={`therapyDetails.${index}.rate`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Rate</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Time */}
+                    <FormField
+                      control={form.control}
+                      name={`therapyDetails.${index}.time`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Time</FormLabel>
+                          <FormControl>
+                            <TimePicker
+                              name={`therapyDetails.${index}.time`}
+                              showUnknownOption
+                              className="w-full"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Jelco */}
+                    <FormField
+                      control={form.control}
+                      name={`therapyDetails.${index}.jelco`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Jelco Size</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select jelco size" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {["14G", "16G", "18G", "20G", "22G", "24G"].map((size) => (
+                                <SelectItem key={size} value={size}>
+                                  {size}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Site */}
+                    <FormField
+                      control={form.control}
+                      name={`therapyDetails.${index}.site`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Insertion Site</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select insertion site" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[
+                                "Right Antecubital",
+                                "Left Antecubital",
+                                "Right Hand",
+                                "Left Hand",
+                                "Right Forearm",
+                                "Left Forearm",
+                                "Right Foot",
+                                "Left Foot",
+                                "Right External Jugular",
+                                "Left External Jugular",
+                                "Scalp"
+                              ].map((site) => (
+                                <SelectItem key={site} value={site}>
+                                  {site}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Volume Administered */}
+                    <FormField
+                      control={form.control}
+                      name={`therapyDetails.${index}.volumeAdministered`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Volume Given (ml)</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="number"
+                              onChange={(e) => field.onChange(Number(e.target.value))}
+                              value={field.value}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </div>
               ))}

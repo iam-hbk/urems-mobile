@@ -200,7 +200,7 @@ export const SecondarySurveySchema = z.object({
     epistaxis: z.boolean(),
     guarding: z.boolean(),
     GunShotWound: z.boolean(),
-PenetratingWound: z.boolean(),
+    PenetratingWound: z.boolean(),
     laceration: z.boolean(),
     largeWound: z.boolean(),
     orbitalInjury: z.boolean(),
@@ -224,7 +224,7 @@ PenetratingWound: z.boolean(),
     deformity: z.boolean(),
     guarding: z.boolean(),
     GunShotWound: z.boolean(),
-PenetratingWound: z.boolean(),
+    PenetratingWound: z.boolean(),
     oedema: z.boolean(),
     penetratingWound: z.boolean(),
     sciaticPain: z.boolean(),
@@ -242,7 +242,7 @@ PenetratingWound: z.boolean(),
     guardingPalpation: z.boolean(),
     guardingDepthOfBreathing: z.boolean(),
     GunShotWound: z.boolean(),
-PenetratingWound: z.boolean(),
+    PenetratingWound: z.boolean(),
     laceration: z.boolean(),
     oedema: z.boolean(),
     stabWound: z.boolean(),
@@ -256,7 +256,7 @@ PenetratingWound: z.boolean(),
     distended: z.boolean(),
     evisceration: z.boolean(),
     GunShotWound: z.boolean(),
-PenetratingWound: z.boolean(),
+    PenetratingWound: z.boolean(),
     guarding: z.boolean(),
     hernia: z.boolean(),
     laceration: z.boolean(),
@@ -335,45 +335,39 @@ PenetratingWound: z.boolean(),
 });
 
 export const IntravenousTherapySchema = z.object({
-  therapyDetails: z.array(
-    z.object({
-      fluid: z.string().min(1, "IV Fluid Type is required"),
-      volume: z.string().min(1, "Volume (ml) is required"),
-      admin: z.enum([
-        "10dropper",
-        "20dropper",
-        "60dropper",
-        "extensionSet",
-        "buretteSet",
-        "bloodAdminSet"
-      ], {
-        required_error: "Administration set is required",
-      }),
-      rate: z.string().min(1, "Rate is required"),
-      time: z.string().min(1, "Time is required"),
-      jelco: z.enum([
-        "14G",
-        "16G",
-        "18G",
-        "20G",
-        "22G",
-        "24G",
-      ], {
-        required_error: "Jelco size is required",
-        description: "Note: These values are placeholders pending client confirmation"
-      }),
-      site: z.string().min(1, "Insertion Site is required"),
-      volumeAdministered: z.string().min(1, "Volume Given (ml) is required"),
+  therapyDetails: z.array(z.object({
+    fluid: z.string().min(1, "Fluid type is required"),
+    fluidId: z.string().optional(), // Optional because custom fluids won't have an ID
+    volume: z.number().min(0, "Volume must be a positive number"),
+    admin: z.enum(["10dropper", "20dropper", "60dropper", "extensionSet", "buretteSet", "bloodAdminSet"]),
+    rate: z.string().min(1, "Rate is required"),
+    time: z.object({
+      value: z.string(),
+      unknown: z.boolean(),
     }),
-    { required_error: "At least one IV therapy entry is required" }
-  ),
+    jelco: z.enum(["14G", "16G", "18G", "20G", "22G", "24G"]),
+    site: z.enum([
+      "Right Antecubital",
+      "Left Antecubital",
+      "Right Hand",
+      "Left Hand",
+      "Right Forearm",
+      "Left Forearm",
+      "Right Foot",
+      "Left Foot",
+      "Right External Jugular",
+      "Left External Jugular",
+      "Scalp"
+    ]),
+    volumeAdministered: z.number().min(0, "Volume administered must be a positive number"),
+  })),
   motivationForIV: z.object({
     drugRoute: z.boolean(),
     fluidBolus: z.boolean(),
     p1Unstable: z.boolean(),
     p1Stable: z.boolean(),
   }),
-  weight: z.string().min(1, "Weight is required"),
+  weight: z.string(),
   weightMeasurementType: z.enum(["estimated", "pawper", "broselow"]),
 });
 const MedicationSchema = z.object({
