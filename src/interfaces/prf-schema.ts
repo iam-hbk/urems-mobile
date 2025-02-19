@@ -372,6 +372,7 @@ export const IntravenousTherapySchema = z.object({
 });
 const MedicationSchema = z.object({
   medicine: z.string().min(1, "Medicine is required"),
+  medicationId: z.string().optional(), // Optional because custom medications won't have an ID
   dose: z.string().min(1, "Dose is required"),
   route: z.string().min(1, "Route is required"),
   time: z.string().min(1, "Time is required"),

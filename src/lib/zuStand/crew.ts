@@ -8,8 +8,17 @@ interface FluidItem {
   currentStock: number; // number of units in stock
 }
 
+interface MedicationItem {
+  id: string;
+  name: string;
+  dose: string;
+  route: string;
+  currentStock: number;
+}
+
 interface VehicleInventory {
   fluids: FluidItem[];
+  medications: MedicationItem[];
 }
 
 interface Vehicle {
@@ -29,7 +38,62 @@ interface useZuStandCrewStoreItems {
   zsSetVehicle: (vehicle: Vehicle) => void;
   zsClearCrewID: () => void;
   zsUpdateFluidStock: (fluidId: string, volumeUsed: number) => void;
+  zsUpdateMedicationStock: (medicationId: string, unitsUsed: number) => void;
 }
+
+// Mock data for initial vehicle inventory
+const mockVehicleInventory: VehicleInventory = {
+  fluids: [
+    {
+      id: "ns-1000",
+      name: "Normal Saline 1000ml",
+      volume: 1000,
+      currentStock: 10,
+    },
+    {
+      id: "rl-1000",
+      name: "Ringers Lactate 1000ml",
+      volume: 1000,
+      currentStock: 8,
+    },
+    {
+      id: "d5w-500",
+      name: "D5W 500ml",
+      volume: 500,
+      currentStock: 12,
+    },
+  ],
+  medications: [
+    {
+      id: "adr-1mg",
+      name: "Adrenaline",
+      dose: "1mg/1ml",
+      route: "IM/IV",
+      currentStock: 10,
+    },
+    {
+      id: "asp-300",
+      name: "Aspirin",
+      dose: "300mg",
+      route: "PO",
+      currentStock: 20,
+    },
+    {
+      id: "gtn-400",
+      name: "GTN Spray",
+      dose: "400mcg/dose",
+      route: "SL",
+      currentStock: 5,
+    },
+    {
+      id: "morph-10",
+      name: "Morphine",
+      dose: "10mg/1ml",
+      route: "IM/IV",
+      currentStock: 8,
+    },
+  ],
+};
 
 // Mock vehicle data
 const mockVehicle: Vehicle = {
@@ -39,62 +103,55 @@ const mockVehicle: Vehicle = {
   vehicleRegistrationNumber: "REG123456",
   VINNumber: "VIN123456789",
   vehicleTypeID: 1,
-  inventory: {
-    fluids: [
-      {
-        id: "ns-1000",
-        name: "Normal Saline 1000ml",
-        volume: 1000,
-        currentStock: 10,
-      },
-      {
-        id: "rl-1000",
-        name: "Ringers Lactate 1000ml",
-        volume: 1000,
-        currentStock: 8,
-      },
-      {
-        id: "d5w-500",
-        name: "D5W 500ml",
-        volume: 500,
-        currentStock: 12,
-      },
-    ],
-  }
+  inventory: mockVehicleInventory,
 };
 
-export const useZuStandCrewStore = create<useZuStandCrewStoreItems>()(
-  // persist(
-  (set, get) => ({
-    zsCrewID: null,
-    zsVehicle: mockVehicle, // Initialize with mock data
-    zsSetCrewID: (val: number) => set({ zsCrewID: val }),
-    zsSetVehicle: (vehicle: Vehicle) => set({ 
-      zsVehicle: {
-        ...vehicle,
-        inventory: vehicle.inventory || mockVehicle.inventory,
-      } 
-    }),
-    zsClearCrewID: () => set({ zsCrewID: null }),
-    zsUpdateFluidStock: (fluidId: string, volumeUsed: number) => {
-      const currentVehicle = get().zsVehicle;
-      if (!currentVehicle) return;
+export const useZuStandCrewStore = create<useZuStandCrewStoreItems>()((set, get) => ({
+  zsCrewID: null,
+  zsVehicle: mockVehicle,
+  zsSetCrewID: (val: number) => set({ zsCrewID: val }),
+  zsSetVehicle: (vehicle: Vehicle) => set({ 
+    zsVehicle: {
+      ...vehicle,
+      inventory: vehicle.inventory || mockVehicleInventory,
+    } 
+  }),
+  zsClearCrewID: () => set({ zsCrewID: null }),
+  zsUpdateFluidStock: (fluidId: string, volumeUsed: number) => {
+    const currentVehicle = get().zsVehicle;
+    if (!currentVehicle) return;
 
-      set({
-        zsVehicle: {
-          ...currentVehicle,
-          inventory: {
-            ...currentVehicle.inventory,
-            fluids: currentVehicle.inventory.fluids.map(fluid => 
-              fluid.id === fluidId 
-                ? { ...fluid, currentStock: Math.max(0, fluid.currentStock - volumeUsed) }
-                : fluid
-            ),
-          },
+    set({
+      zsVehicle: {
+        ...currentVehicle,
+        inventory: {
+          ...currentVehicle.inventory,
+          fluids: currentVehicle.inventory.fluids.map(fluid => 
+            fluid.id === fluidId 
+              ? { ...fluid, currentStock: Math.max(0, fluid.currentStock - volumeUsed) }
+              : fluid
+          ),
         },
-      });
-    },
-  })
-  // ,  )
-)
+      },
+    });
+  },
+  zsUpdateMedicationStock: (medicationId: string, unitsUsed: number) => {
+    const currentVehicle = get().zsVehicle;
+    if (!currentVehicle) return;
+
+    set({
+      zsVehicle: {
+        ...currentVehicle,
+        inventory: {
+          ...currentVehicle.inventory,
+          medications: currentVehicle.inventory.medications.map(med => 
+            med.id === medicationId 
+              ? { ...med, currentStock: Math.max(0, med.currentStock - unitsUsed) }
+              : med
+          ),
+        },
+      },
+    });
+  },
+}));
 
