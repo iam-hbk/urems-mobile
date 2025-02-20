@@ -372,19 +372,35 @@ export const IntravenousTherapySchema = z.object({
 });
 const MedicationSchema = z.object({
   medicine: z.string().min(1, "Medicine is required"),
+  medicationId: z.string().optional(), // Optional because custom medications won't have an ID
   dose: z.string().min(1, "Dose is required"),
   route: z.string().min(1, "Route is required"),
-  time: z.string().min(1, "Time is required"),
+  time: z.object({
+    value: z.string().min(1, "Time is required"),
+    unknown: z.boolean(),
+  }),
   hpcsa: z.string().min(1, "HPCSA is required"),
   name: z.string().min(1, "Name is required"),
   signature: z.string().min(1, "Signature is required"),
 });
 
+type ConsultationContext = {
+  parent: {
+    consulted: boolean;
+  };
+};
+
 const ConsultationSchema = z.object({
   consulted: z.boolean(),
-  practitioner: z.string().optional(),
-  hpcsa: z.string().optional(),
-  summaryOfConsult: z.string().optional(),
+  practitioner: z.string(),
+  hpcsa: z.string(),
+  summaryOfConsult: z.string(),
+}).refine((data) => {
+  if (!data.consulted) return true;
+  return !!data.practitioner && !!data.hpcsa && !!data.summaryOfConsult;
+}, {
+  message: "Practitioner name, HPCSA number, and consultation summary are required when consulted is checked",
+  path: ["consulted"], // shows error on the consulted checkbox
 });
 
 export const MedicationAdministeredSchema = z.object({
