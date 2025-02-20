@@ -34,9 +34,20 @@ import {
 import { useZuStandCrewStore } from "@/lib/zuStand/crew";
 import { CustomMedicationDialog } from "./medication/custom-medication-dialog";
 import { MedicationSelect } from "./medication/medication-select";
+import { TimePicker } from "@/components/ui/time-picker";
+import { SignatureField } from "@/components/signature-field";
+import { SignaturePreview } from "@/components/signature-preview";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function MedicationAdministeredForm() {
   const [customMedDialogOpen, setCustomMedDialogOpen] = React.useState(false);
+  const [signatureModalOpen, setSignatureModalOpen] = React.useState(false);
   const [activeIndex, setActiveIndex] = React.useState<number | null>(null);
   const [editingMedication, setEditingMedication] = React.useState<
     | {
@@ -65,7 +76,13 @@ export default function MedicationAdministeredForm() {
           medicationId: undefined,
           dose: "",
           route: "",
-          time: "",
+          time: {
+            value: new Date().toLocaleTimeString("en-GB", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            unknown: false,
+          },
           hpcsa: user?.hpcsaNumber || "",
           name: user?.name || "",
           signature: user?.signature || "",
@@ -99,17 +116,61 @@ export default function MedicationAdministeredForm() {
     }
   };
 
-  const handleCustomMedicationOpen = React.useCallback((index: number, currentValue?: string) => {
-    setActiveIndex(index);
-    if (currentValue) {
-      setEditingMedication({
-        medicine: currentValue,
-        dose: form.getValues(`medications.${index}.dose`),
-        route: form.getValues(`medications.${index}.route`),
-      });
-    }
-    setCustomMedDialogOpen(true);
-  }, [form]);
+  const handleCustomMedicationOpen = React.useCallback(
+    (index: number, currentValue?: string) => {
+      setActiveIndex(index);
+      if (currentValue) {
+        setEditingMedication({
+          medicine: currentValue,
+          dose: form.getValues(`medications.${index}.dose`),
+          route: form.getValues(`medications.${index}.route`),
+        });
+      }
+      setCustomMedDialogOpen(true);
+    },
+    [form],
+  );
+
+  const handleAddMedication = React.useCallback(() => {
+    append({
+      medicine: "",
+      medicationId: undefined,
+      dose: "",
+      route: "",
+      time: {
+        value: new Date().toLocaleTimeString("en-GB", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        unknown: false,
+      },
+      hpcsa: user?.hpcsaNumber || "",
+      name: user?.name || "",
+      signature: user?.signature || "",
+    });
+  }, [append, user]);
+
+  const handleEditSignature = React.useCallback(
+    (index: number) => (event: React.MouseEvent) => {
+      event.preventDefault();
+      setActiveIndex(index);
+      setSignatureModalOpen(true);
+    },
+    [],
+  );
+
+  const handleSaveSignature = React.useCallback(
+    (signature: string) => {
+      if (activeIndex !== null) {
+        form.setValue(`medications.${activeIndex}.signature`, signature, {
+          shouldDirty: true,
+        });
+        setSignatureModalOpen(false);
+        setActiveIndex(null);
+      }
+    },
+    [form, activeIndex],
+  );
 
   function onSubmit(values: MedicationAdministeredType) {
     // Update medication inventory
@@ -229,7 +290,7 @@ export default function MedicationAdministeredForm() {
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
-                  <div className="grid gap-3 pb-4 sm:grid-cols-3 lg:grid-cols-7">
+                  <div className="grid gap-3 pb-4 sm:grid-cols-3">
                     {/* Medication Selection */}
                     <FormField
                       control={form.control}
@@ -289,7 +350,11 @@ export default function MedicationAdministeredForm() {
                         <FormItem>
                           <FormLabel>Time</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <TimePicker
+                              name={`medications.${index}.time`}
+                              showUnknownOption
+                              className="w-full"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -332,9 +397,12 @@ export default function MedicationAdministeredForm() {
                       name={`medications.${index}.signature`}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Signature</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <SignaturePreview
+                              label="Signature"
+                              value={field.value}
+                              onEdit={handleEditSignature(index)}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -346,18 +414,7 @@ export default function MedicationAdministeredForm() {
               <Button
                 type="button"
                 variant="secondary"
-                onClick={() =>
-                  append({
-                    medicine: "",
-                    medicationId: undefined,
-                    dose: "",
-                    route: "",
-                    time: "",
-                    hpcsa: user?.hpcsaNumber || "",
-                    name: user?.name || "",
-                    signature: user?.signature || "",
-                  })
-                }
+                onClick={handleAddMedication}
                 className="mt-2"
               >
                 <Plus className="mr-2 h-4 w-4" /> Add Medication
@@ -376,7 +433,15 @@ export default function MedicationAdministeredForm() {
                     <FormControl>
                       <Checkbox
                         checked={field.value}
-                        onCheckedChange={field.onChange}
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked);
+                          if (!checked) {
+                            // Clear consultation fields when unchecked
+                            form.setValue("consultation.practitioner", "");
+                            form.setValue("consultation.hpcsa", "");
+                            form.setValue("consultation.summaryOfConsult", "");
+                          }
+                        }}
                       />
                     </FormControl>
                     <FormLabel>Consulted</FormLabel>
@@ -384,15 +449,19 @@ export default function MedicationAdministeredForm() {
                 )}
               />
               {form.watch("consultation.consulted") && (
-                <>
+                <div className="grid gap-4">
                   <FormField
                     control={form.control}
                     name="consultation.practitioner"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Practitioner</FormLabel>
+                        <FormLabel>Practitioner Name *</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input 
+                            {...field} 
+                            placeholder="Enter practitioner's name"
+                            required
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -403,9 +472,13 @@ export default function MedicationAdministeredForm() {
                     name="consultation.hpcsa"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>HPCSA</FormLabel>
+                        <FormLabel>HPCSA Number *</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input 
+                            {...field} 
+                            placeholder="Enter HPCSA number"
+                            required
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -416,15 +489,20 @@ export default function MedicationAdministeredForm() {
                     name="consultation.summaryOfConsult"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Summary of Consult</FormLabel>
+                        <FormLabel>Summary of Consultation *</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Textarea 
+                            {...field}
+                            placeholder="Enter consultation summary"
+                            className="min-h-[120px]"
+                            required
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                </>
+                </div>
               )}
             </AccordionContent>
           </AccordionItem>
@@ -444,6 +522,18 @@ export default function MedicationAdministeredForm() {
           </Button>
         </form>
       </Form>
+      <Dialog open={signatureModalOpen} onOpenChange={setSignatureModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Signature</DialogTitle>
+          </DialogHeader>
+          <SignatureField
+            label="Signature"
+            onSave={handleSaveSignature}
+            onCancel={() => setSignatureModalOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </Accordion>
   );
 }

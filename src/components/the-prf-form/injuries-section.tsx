@@ -81,6 +81,7 @@ export default function BodyDiagram() {
           isOptional: false,
         },
       },
+      EmployeeID: prf_from_store?.EmployeeID || "2",
     };
     console.log("Submitting ->", prfUpdateValue);
 
