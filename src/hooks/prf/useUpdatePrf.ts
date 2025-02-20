@@ -9,7 +9,7 @@ const updatePrfForm = async (updatedPrf: PRF_FORM) => {
     const cleanPayload = {
       prfFormId: updatedPrf.prfFormId,
       patientId: updatedPrf.patientId,
-      EmployeeID: updatedPrf.EmployeeID || "P123456",
+      EmployeeID: updatedPrf.EmployeeID || "2",
       CrewID: updatedPrf.CrewID,
       isCompleted: updatedPrf.isCompleted ?? false,
       prfData: JSON.stringify(updatedPrf.prfData)
