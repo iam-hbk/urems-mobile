@@ -24,7 +24,7 @@ interface StoreState {
 
 // Hardcoded paramedic user
 const DEFAULT_USER: User = {
-  id: "P123456",
+  id: "2",
   name: "Heritier Kaumbu",
   email: "heritier.kaumbu@ems.com",
   hpcsaNumber: "HP123456",

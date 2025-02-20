@@ -69,7 +69,7 @@ const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
         },
         ...prf_from_store?.prfData,
       },
-      EmployeeID: prf_from_store?.EmployeeID || "P123456",
+      EmployeeID: prf_from_store?.EmployeeID || "2",
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {

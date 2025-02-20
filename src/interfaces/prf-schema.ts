@@ -335,32 +335,43 @@ export const SecondarySurveySchema = z.object({
 });
 
 export const IntravenousTherapySchema = z.object({
-  therapyDetails: z.array(z.object({
-    fluid: z.string().min(1, "Fluid type is required"),
-    fluidId: z.string().optional(), // Optional because custom fluids won't have an ID
-    volume: z.number().min(0, "Volume must be a positive number"),
-    admin: z.enum(["10dropper", "20dropper", "60dropper", "extensionSet", "buretteSet", "bloodAdminSet"]),
-    rate: z.string().min(1, "Rate is required"),
-    time: z.object({
-      value: z.string(),
-      unknown: z.boolean(),
+  therapyDetails: z.array(
+    z.object({
+      fluid: z.string().min(1, "Fluid type is required"),
+      fluidId: z.string().optional(), // Optional because custom fluids won't have an ID
+      volume: z.number().min(0, "Volume must be a positive number"),
+      admin: z.enum([
+        "10dropper",
+        "20dropper",
+        "60dropper",
+        "extensionSet",
+        "buretteSet",
+        "bloodAdminSet",
+      ]),
+      rate: z.string().min(1, "Rate is required"),
+      time: z.object({
+        value: z.string(),
+        unknown: z.boolean(),
+      }),
+      jelco: z.enum(["14G", "16G", "18G", "20G", "22G", "24G"]),
+      site: z.enum([
+        "Right Antecubital",
+        "Left Antecubital",
+        "Right Hand",
+        "Left Hand",
+        "Right Forearm",
+        "Left Forearm",
+        "Right Foot",
+        "Left Foot",
+        "Right External Jugular",
+        "Left External Jugular",
+        "Scalp",
+      ]),
+      volumeAdministered: z
+        .number()
+        .min(0, "Volume administered must be a positive number"),
     }),
-    jelco: z.enum(["14G", "16G", "18G", "20G", "22G", "24G"]),
-    site: z.enum([
-      "Right Antecubital",
-      "Left Antecubital",
-      "Right Hand",
-      "Left Hand",
-      "Right Forearm",
-      "Left Forearm",
-      "Right Foot",
-      "Left Foot",
-      "Right External Jugular",
-      "Left External Jugular",
-      "Scalp"
-    ]),
-    volumeAdministered: z.number().min(0, "Volume administered must be a positive number"),
-  })),
+  ),
   motivationForIV: z.object({
     drugRoute: z.boolean(),
     fluidBolus: z.boolean(),
@@ -390,18 +401,24 @@ type ConsultationContext = {
   };
 };
 
-const ConsultationSchema = z.object({
-  consulted: z.boolean(),
-  practitioner: z.string(),
-  hpcsa: z.string(),
-  summaryOfConsult: z.string(),
-}).refine((data) => {
-  if (!data.consulted) return true;
-  return !!data.practitioner && !!data.hpcsa && !!data.summaryOfConsult;
-}, {
-  message: "Practitioner name, HPCSA number, and consultation summary are required when consulted is checked",
-  path: ["consulted"], // shows error on the consulted checkbox
-});
+const ConsultationSchema = z
+  .object({
+    consulted: z.boolean(),
+    practitioner: z.string(),
+    hpcsa: z.string(),
+    summaryOfConsult: z.string(),
+  })
+  .refine(
+    (data) => {
+      if (!data.consulted) return true;
+      return !!data.practitioner && !!data.hpcsa && !!data.summaryOfConsult;
+    },
+    {
+      message:
+        "Practitioner name, HPCSA number, and consultation summary are required when consulted is checked",
+      path: ["consulted"], // shows error on the consulted checkbox
+    },
+  );
 
 export const MedicationAdministeredSchema = z.object({
   medications: z.array(MedicationSchema),
@@ -449,7 +466,7 @@ export type DiagnosisType = z.infer<typeof DiagnosisSchema>;
 
 export const MechanismOfInjurySchema = z.object({
   vehicleType: z.object({
-    occured: z.boolean(),
+    occured: z.boolean().optional(),
     vehicleTypesSelection: z.enum([
       "MVA",
       "MBA",
@@ -459,7 +476,8 @@ export const MechanismOfInjurySchema = z.object({
       "Taxi",
       "Train",
       "Truck",
-    ]),
+      "Aircraft"
+    ]).optional(),
   }),
   impactType: z
     .array(
@@ -469,25 +487,25 @@ export const MechanismOfInjurySchema = z.object({
         "Rollover",
         "T - Boned",
         "Vehicle Spun",
-      ]),
+      ])
     )
-    .nonempty(),
-  speed: z.enum(["<60km/h", "60-100km/h", ">120km/h"]),
-  personType: z.enum(["Driver", "Passenger", "Unknown"]),
-  safetyFeatures: z.array(z.enum(["Airbags", "Restrained"])),
+    .optional(),
+  speed: z.enum(["<60km/h", "60-100km/h", ">120km/h"]).optional(),
+  personType: z.enum(["Driver", "Passenger", "Unknown"]).optional(),
+  safetyFeatures: z.array(z.enum(["Airbags", "Restrained"])).optional(),
   incidentDetails: z.array(
-    z.enum(["?↓LOC", "Multiple Patients", "P1", "or P4", "on Scene"]),
-  ),
+    z.enum(["?↓LOC", "Multiple Patients", "P1", "or P4", "on Scene"])
+  ).optional(),
   extractionMethod: z.enum([
     "Ejected",
     "Removed by Bystander",
     "Extricated by EMS",
     "Self-Extricated",
-  ]),
-  helmetRemoval: z.enum(["EMS", "Self", "Bystander", "No Helmet"]),
+  ]).optional(),
+  helmetRemoval: z.enum(["EMS", "Self", "Bystander", "No Helmet"]).optional(),
   violenceType: z.array(
-    z.enum(["Assault", "Stabbing", "Rape", "Strangulation", "Armed Robbery"]),
-  ),
+    z.enum(["Assault", "Stabbing", "Rape", "Strangulation", "Armed Robbery"])
+  ).optional(),
   otherIncidents: z.array(
     z.enum([
       "Industrial Accident",
@@ -495,27 +513,27 @@ export const MechanismOfInjurySchema = z.object({
       "Limited Patient Access",
       "Self-Inflicted Wounds",
       "Suicidal Tendencies",
-    ]),
-  ),
+    ])
+  ).optional(),
   falls: z.object({
-    type: z.array(z.enum(["Bed", "Same Level", ">3m", ">10m"])),
-    weaponType: z.array(z.enum(["GSW", "AR", "Handgun", "Rifle"])),
-  }),
+    type: z.array(z.enum(["Bed", "Same Level", ">3m", ">10m"])).optional(),
+    weaponType: z.array(z.enum(["Gun Shot Wound", "AR", "Handgun", "Rifle"])).optional(),
+  }).optional(),
   entrapment: z.object({
-    occurred: z.boolean(),
-    duration: z.enum(["<30 Mins", "30mins-1hr", "1-2hr", ">2hr", "Unknown"]),
-  }),
-  crushInjury: z.boolean(),
+    occurred: z.boolean().optional(),
+    duration: z.enum(["<30 Mins", "30mins-1hr", "1-2hr", ">2hr", "Unknown"]).optional(),
+  }).optional(),
+  crushInjury: z.boolean().optional(),
   drowning: z.object({
-    occurred: z.boolean(),
-    duration: z.enum(["< 5min", "5 - 10min", "> 10min", "Unknown"]),
-    type: z.array(z.enum(["Cold Water", "River / Dam", "Flood", "Pool"])),
-    bystanderCPR: z.boolean(),
-  }),
+    occurred: z.boolean().optional(),
+    duration: z.enum(["< 5min", "5 - 10min", "> 10min", "Unknown"]).optional(),
+    type: z.array(z.enum(["Cold Water", "River / Dam", "Flood", "Pool"])).optional(),
+    bystanderCPR: z.boolean().optional(),
+  }).optional(),
   burns: z.object({
-    occurred: z.boolean(),
-    bsa: z.enum(["<15%", ">15%"]),
-    confinedSpace: z.boolean(),
+    occurred: z.boolean().optional(),
+    bsa: z.enum(["<15%", ">15%"]).optional(),
+    confinedSpace: z.boolean().optional(),
     duration: z.string().default(""),
     type: z.array(
       z.enum([
@@ -526,34 +544,9 @@ export const MechanismOfInjurySchema = z.object({
         "Steam",
         "Smoke Inhalation",
         "Thermal",
-      ]),
-    ),
-  }),
-
-  // this needs to be removed and moved to diagnosis
-
-  // allergicReaction: z.object({
-  //   occurred: z.boolean(),
-  //   symptoms: z.array(
-  //     z.enum(["Stridor", "Wheezes", "Erythema", "Pruritus", "Urticaria"]),
-  //   ),
-  //   location: z.array(z.enum(["Abd", "Head", "Limbs", "Torso"])),
-  // }),
-  // poisoning: z.boolean(),
-  // symptoms: z.array(
-  //   z.enum([
-  //     "Abdominal Pain",
-  //     "Altered LOC",
-  //     "Bradycardia",
-  //     "Secretions",
-  //     "Diaphoresis",
-  //     "Hypotension",
-  //     "Incontinence",
-  //     "Miosis",
-  //     "Seizures",
-  //     "Vomiting",
-  //   ]),
-  // ),
+      ])
+    ).optional(),
+  }).optional(),
 });
 
 export type MechanismOfInjuryType = z.infer<typeof MechanismOfInjurySchema>;
