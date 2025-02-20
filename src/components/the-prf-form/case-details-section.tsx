@@ -10,11 +10,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Dialog as AreaDialog } from "react-aria-components";
 import { Button } from "../ui/button";
-import { Label } from "../ui/label";
 import { Input } from "../ui/input";
-import { format } from "date-fns";
 import React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -28,19 +25,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
-import { CalendarIcon, FileEdit, Loader2, MoveRight, Plus } from "lucide-react";
-import { useStore } from "@/lib/store";
+import { FileEdit, Loader2, MoveRight, Plus } from "lucide-react";
 import { PRF_FORM } from "@/interfaces/prf-form";
 import { useCreatePrf } from "@/hooks/prf/useCreatePrf";
 import { useRouter } from "next/navigation";
-import { Calendar } from "../ui/calendar";
 import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
 import { CaseDetailsSchema } from "@/interfaces/prf-schema";
 import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 import { useZuStandCrewStore } from "@/lib/zuStand/crew";
-import { DatePicker, Group, Popover } from "react-aria-components";
+import { DatePicker, Group } from "react-aria-components";
 import { DateInput } from "../ui/datefield-rac";
-import { CalendarDate, parseDate } from "@internationalized/date";
+import { CalendarDate } from "@internationalized/date";
 
 export type CaseDetailsType = z.infer<typeof CaseDetailsSchema>;
 

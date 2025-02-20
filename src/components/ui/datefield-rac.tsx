@@ -22,7 +22,9 @@ const DateField = <T extends DateValueRac>({
 }: DateFieldProps<T>) => {
   return (
     <DateFieldRac
-      className={composeRenderProps(className, (className) => cn("space-y-2", className))}
+      className={composeRenderProps(className, (className) =>
+        cn("space-y-2", className),
+      )}
       {...props}
     >
       {children}
@@ -37,7 +39,9 @@ const TimeField = <T extends TimeValueRac>({
 }: TimeFieldProps<T>) => {
   return (
     <TimeFieldRac
-      className={composeRenderProps(className, (className) => cn("space-y-2", className))}
+      className={composeRenderProps(className, (className) =>
+        cn("space-y-2", className),
+      )}
       {...props}
     >
       {children}
@@ -65,15 +69,24 @@ const dateInputStyle =
 interface DateInputProps extends DateInputPropsRac {
   className?: string;
   unstyled?: boolean;
+  label?: string;
+  "aria-label"?: string;
 }
 
-const DateInput = ({ className, unstyled = false, ...props }: Omit<DateInputProps, "children">) => {
+const DateInput = ({
+  className,
+  unstyled = false,
+  label,
+  "aria-label": ariaLabel,
+  ...props
+}: Omit<DateInputProps, "children">) => {
   return (
     <DateInputRac
       className={composeRenderProps(className, (className) =>
         cn(!unstyled && dateInputStyle, className),
       )}
       {...props}
+      aria-label={ariaLabel || label}
     >
       {(segment) => <DateSegment segment={segment} />}
     </DateInputRac>

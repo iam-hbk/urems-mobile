@@ -766,7 +766,7 @@ export const AssessmentsSchema = z.object({
     paraGravida: z.string(),
     discharge: z.boolean(),
     pvBleeding: z.boolean(),
-    lastDrVisit: z.string(),
+    lastDrVisit: z.date(),
     gestation: z.string(),
   }),
   painAssessment: z.object({
