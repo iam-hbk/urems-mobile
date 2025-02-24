@@ -58,12 +58,12 @@ const PRFEditSummary = ({
   const dialogCloseRef = React.useRef<HTMLButtonElement>(null);
   const form = useForm<z.infer<typeof CaseDetailsSchema>>({
     resolver: zodResolver(CaseDetailsSchema),
+    // values: initialData?.prfData.case_details?.data,
     defaultValues: {
       regionDistrict:
         initialData?.prfData.case_details?.data.regionDistrict || "",
       base: initialData?.prfData.case_details?.data.base || "",
       province: initialData?.prfData.case_details?.data.province || "",
-      rescueUnit: initialData?.prfData.case_details?.data.rescueUnit || "",
       vehicle:
         initialData?.prfData.case_details?.data.vehicle ||
         (zsVehicle
@@ -352,19 +352,6 @@ const PRFEditSummary = ({
                           </div>
                         </div>
                       </FormControl>
-                      <FormField
-                        control={form.control}
-                        name="rescueUnit"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Rescue Unit</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Rescue Unit" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
                       <FormMessage />
                       {zsVehicle && field.value.id !== zsVehicle.vehicleId && (
                         <p className="mt-2 text-xs text-muted-foreground">

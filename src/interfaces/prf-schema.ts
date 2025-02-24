@@ -103,7 +103,6 @@ export const CaseDetailsSchema = z.object({
   regionDistrict: z.string().min(2, "Region/District is required").max(50),
   base: z.string().min(2, "Base is required").max(50),
   province: z.string().min(2, "Province is required").max(50),
-  rescueUnit: z.string().min(2, "Rescue Unit is required").max(50),
   vehicle: z.object(
     {
       id: z.number({
