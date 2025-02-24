@@ -53,6 +53,7 @@ export default function DiagnosisForm() {
           isOptional: false,
         },
       },
+      EmployeeID: prf_from_store?.EmployeeID || "2",
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
@@ -340,6 +341,9 @@ export default function DiagnosisForm() {
           type="submit"
           disabled={!form.formState.isDirty}
           className="w-full sm:w-auto"
+          onClick={() => {
+            
+          }}
         >
           {form.formState.isSubmitting || updatePrfQuery.isPending ? (
             <>
