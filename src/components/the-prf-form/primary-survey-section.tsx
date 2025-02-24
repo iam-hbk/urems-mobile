@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Field, FieldError, FieldPath, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,8 @@ import { PrimarySurveySchema } from "@/interfaces/prf-primary-survey-schema";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { usePrfForm } from "@/hooks/prf/usePrfForms";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+
 type PrimarySurveyType = z.infer<typeof PrimarySurveySchema>;
 
 type PrimarySurveyFormProps = {
@@ -71,14 +73,20 @@ export default function PrimarySurveyForm({
   const prf_from_store = useStore((state) => state.prfForms).find(
     (prf) => prf.prfFormId == prfId,
   );
-
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
+
+  // Initialize assessment type based on which field has data
+  const [assessmentType, setAssessmentType] = useState<"GCS" | "AVPU">(() => {
+    if (prf_from_store?.prfData?.primary_survey?.data?.disability?.AVPU?.value) {
+      return "AVPU";
+    }
+    return "GCS";
+  });
 
   const form = useForm<PrimarySurveyType>({
     resolver: zodResolver(PrimarySurveySchema),
     defaultValues: prf_from_store?.prfData?.primary_survey?.data || {
-      //   currentPrf?.prfData?.primary_survey?.data ||
       airway: {
         clear: false,
         maintained: false,
@@ -143,8 +151,7 @@ export default function PrimarySurveyForm({
       disability: {
         initialGCS: { total: "", motor: "", verbal: "", eyes: "" },
         combative: false,
-        AVPU: { value: undefined},
-        
+        AVPU: { value: "A" },
         spinal: {
           motorFunction: { normal: false, guarding: false, loss: false },
           sensation: {
@@ -563,126 +570,152 @@ export default function PrimarySurveyForm({
             </AccordionTrigger>
             <AccordionContent className="space-y-4 p-4">
               <div className="space-y-2">
-                <h5 className="font-bold">Initial GCS</h5>
-                <div className="grid gap-4 px-4 sm:grid-cols-2 lg:grid-cols-4">
-                  {Object.keys(
-                    PrimarySurveySchema.shape.disability.shape.initialGCS.shape,
-                  ).map((key) => (
-                    <FormField
-                      key={key}
-                      control={form.control}
-                      name={
-                        `disability.initialGCS.${key}` as FieldPath<PrimarySurveyType>
-                      }
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="capitalize">
-                            {key.split(/(?=[A-Z])/).join(" ")}
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder={
-                                key === "verbal"
-                                  ? "1-5 or T"
-                                  : key === "motor"
-                                    ? "1-6"
-                                    : key === "eyes"
-                                      ? "1-4"
-                                      : "Total GCS"
-                              }
-                              disabled={key === "total"}
-                              {...field}
-                              value={
-                                key === "total"
-                                  ? calculateTotal(
-                                      form.watch("disability.initialGCS.motor"),
-                                      form.watch(
-                                        "disability.initialGCS.verbal",
-                                      ),
-                                      form.watch("disability.initialGCS.eyes"),
-                                    )
-                                  : (field.value as string)
-                              }
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                if (key === "total") return; // Prevent manual changes to total
-                                // Allow only numbers and 'T' for verbal
-                                if (key === "verbal") {
-                                  if (
-                                    value === "T" ||
-                                    value === "" ||
-                                    (/^\d+$/.test(value) &&
-                                      parseInt(value) <= 5)
-                                  ) {
-                                    field.onChange(value);
-                                  }
-                                }
-                                // Allow only numbers within range for others
-                                else {
-                                  if (value === "" || /^\d+$/.test(value)) {
-                                    field.onChange(value);
-                                  }
-                                }
-                              }}
-                            />
-                          </FormControl>
-                          {form.formState.errors.disability?.initialGCS?.[
-                            key as keyof typeof form.formState.errors.disability.initialGCS
-                          ] && (
-                            <p className="text-sm text-destructive">
-                              {
-                                (
-                                  form.formState.errors.disability
-                                    ?.initialGCS?.[
-                                    key as keyof typeof form.formState.errors.disability.initialGCS
-                                  ] as FieldError
-                                )?.message
-                              }
-                            </p>
-                          )}
-                        </FormItem>
-                      )}
-                    />
-                  ))}
+                <h5 className="font-bold">Assessment Type</h5>
+                <RadioGroup 
+                  value={assessmentType} 
+                  onValueChange={(value) => {
+                    const newType = value as "GCS" | "AVPU";
+                    setAssessmentType(newType);
+                    // Clear the values of the non-selected assessment type
+                    if (newType === "GCS") {
+                      form.setValue("disability.AVPU", { value: "A" });
+                    } else {
+                      form.setValue("disability.initialGCS", { total: "", motor: "", verbal: "", eyes: "" });
+                    }
+                  }}
+                  className="flex space-x-4"
+                >
+                  <FormItem className="flex items-center space-x-2">
+                    <FormControl>
+                      <RadioGroupItem value="GCS" />
+                    </FormControl>
+                    <FormLabel className="font-normal">GCS</FormLabel>
+                  </FormItem>
+                  <FormItem className="flex items-center space-x-2">
+                    <FormControl>
+                      <RadioGroupItem value="AVPU" />
+                    </FormControl>
+                    <FormLabel className="font-normal">AVPU</FormLabel>
+                  </FormItem>
+                </RadioGroup>
+              </div>
+
+              {/* Combative Section */}
+              <div className="space-y-2">
+                <h5 className="font-bold">Combative</h5>
+                <div className="grid grid-cols-1 px-2">
+                  <FormField
+                    control={form.control}
+                    name="disability.combative"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value as boolean}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal">Combative</FormLabel>
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </div>
 
-               {/* Combative Section */}
-    <div className="space-y-2">
-      <h5 className="font-bold">Combative</h5>
-      <div className="grid grid-cols-1 px-2">
-        <FormField
-          control={form.control}
-          name="disability.combative"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-              <FormControl>
-                <Checkbox
-                  checked={field.value as boolean}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <FormLabel className="font-normal">Combative</FormLabel>
-            </FormItem>
-          )}
-        />
-      </div>
-    </div>
-
-              <div className="space-y-2">
-                  {/* AVPU Radio Group */}    
-              <FormField 
-                control={form.control} 
-                name="disability.AVPU.value" 
-                render={({ field }) => ( 
-                  <AVPURadioGroup 
-                  value={field.value} 
-                  onChange={field.onChange} 
-                  disabled={form.formState.isSubmitting} 
-                  /> 
-                  )}
-              /> 
+              {assessmentType === "GCS" ? (
+                <div className="space-y-2">
+                  <h5 className="font-bold">Initial GCS</h5>
+                  <div className="grid gap-4 px-4 sm:grid-cols-2 lg:grid-cols-4">
+                    {Object.keys(
+                      PrimarySurveySchema.shape.disability.shape.initialGCS.shape,
+                    ).map((key) => (
+                      <FormField
+                        key={key}
+                        control={form.control}
+                        name={
+                          `disability.initialGCS.${key}` as FieldPath<PrimarySurveyType>
+                        }
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="capitalize">
+                              {key.split(/(?=[A-Z])/).join(" ")}
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder={
+                                  key === "verbal"
+                                    ? "1-5 or T"
+                                    : key === "motor"
+                                      ? "1-6"
+                                      : key === "eyes"
+                                        ? "1-4"
+                                        : "Total GCS"
+                                }
+                                disabled={key === "total"}
+                                {...field}
+                                value={
+                                  key === "total"
+                                    ? calculateTotal(
+                                        form.watch("disability.initialGCS.motor"),
+                                        form.watch("disability.initialGCS.verbal"),
+                                        form.watch("disability.initialGCS.eyes"),
+                                      )
+                                    : (field.value as string)
+                                }
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  if (key === "total") return;
+                                  if (key === "verbal") {
+                                    if (
+                                      value === "T" ||
+                                      value === "" ||
+                                      (/^\d+$/.test(value) && parseInt(value) <= 5)
+                                    ) {
+                                      field.onChange(value);
+                                    }
+                                  } else {
+                                    if (value === "" || /^\d+$/.test(value)) {
+                                      field.onChange(value);
+                                    }
+                                  }
+                                }}
+                              />
+                            </FormControl>
+                            {form.formState.errors.disability?.initialGCS?.[
+                              key as keyof typeof form.formState.errors.disability.initialGCS
+                            ] && (
+                              <p className="text-sm text-destructive">
+                                {
+                                  (
+                                    form.formState.errors.disability?.initialGCS?.[
+                                      key as keyof typeof form.formState.errors.disability.initialGCS
+                                    ] as FieldError
+                                  )?.message
+                                }
+                              </p>
+                            )}
+                          </FormItem>
+                        )}
+                      />
+                    ))}
+                  </div>
                 </div>
+              ) : (
+                <div className="space-y-2">
+                  <h5 className="font-bold">AVPU Assessment</h5>
+                  <FormField 
+                    control={form.control} 
+                    name="disability.AVPU.value" 
+                    render={({ field }) => ( 
+                      <AVPURadioGroup 
+                        value={field.value} 
+                        onChange={field.onChange} 
+                        disabled={form.formState.isSubmitting} 
+                      /> 
+                    )}
+                  /> 
+                </div>
+              )}
 
               <div className="space-y-2">
                 <h5 className="font-bold">Spinal</h5>
@@ -749,34 +782,33 @@ export default function PrimarySurveyForm({
                   </div>
                 </div>
               </div>
-          <div className="space-y-2">
-      <h5 className="font-bold">Location</h5>
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-        {Object.keys(PrimarySurveySchema.shape.disability.shape.location.shape).map((key) => (
-          <FormField
-            key={key}
-            control={form.control}
-            name={
-              `disability.location.${key}` as FieldPath<PrimarySurveyType>
-            }
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value as boolean}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <FormLabel className="font-normal capitalize">
-                  {key === 'abdomen' ? 'Abdomen' : key.split(/(?=[A-Z])/).join(' ')}
-                </FormLabel>
-              </FormItem>
-            )}
-          />
-        ))}
-      </div>
-    </div>
-            
+              <div className="space-y-2">
+                <h5 className="font-bold">Location</h5>
+                <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+                  {Object.keys(PrimarySurveySchema.shape.disability.shape.location.shape).map((key) => (
+                    <FormField
+                      key={key}
+                      control={form.control}
+                      name={
+                        `disability.location.${key}` as FieldPath<PrimarySurveyType>
+                      }
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value as boolean}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormLabel className="font-normal capitalize">
+                            {key === 'abdomen' ? 'Abdomen' : key.split(/(?=[A-Z])/).join(' ')}
+                          </FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
             </AccordionContent>
           </AccordionItem>
 
