@@ -33,10 +33,10 @@ function Layout({
   return (
     <div className="flex w-full flex-col items-center overflow-auto">
       {/* Command Palette */}
-      <CommandPalette 
-        prf={prf} 
-        open={showCommandPalette} 
-        onOpenChange={setShowCommandPalette} 
+      <CommandPalette
+        prf={prf}
+        open={showCommandPalette}
+        onOpenChange={setShowCommandPalette}
       />
 
       {/* Header */}
@@ -65,25 +65,25 @@ function Layout({
           </div>
 
           {/* left side of the components */}
-          <div className="mt-[1rem] flex items-center sm:mt-[0rem]">
+          <div className="mt-[1rem] flex items-center gap-2 sm:mt-[0rem]">
+            {/* toogle between showing the quicks links and not, to provider user with more view */}
+            <Button
+              variant={"outline"}
+              onClick={() => setShowQuickLinks(!showQuickLinks)}
+            >
+              {showQuickLinks ? <EyeOffIcon size={20} /> : <Eye size={20} />}
+              <span className="ml-[0.5rem]">Quick Links</span>
+            </Button>
             {/* Command palette button */}
             <Button
-              className="mr-[0.5rem] flex items-center text-[0.89rem]"
+              variant={"outline"}
               onClick={() => setShowCommandPalette(true)}
             >
               <Search size={20} />
               <span className="ml-[0.5rem]">Search (⌘K)</span>
             </Button>
 
-            {/* toogle between showing the quicks links and not, to provider user with more view */}
-            <Button
-              className="mr-[0.5rem] flex items-center text-[0.89rem]"
-              onClick={() => setShowQuickLinks(!showQuickLinks)}
-            >
-              {showQuickLinks ? <EyeOffIcon size={20} /> : <Eye size={20} />}
-              <span className="ml-[0.5rem]">Quick Links</span>
-            </Button>
-            {/*  */}
+            {/* Stepper View */}
             {!!prf && (
               <StepperView prf={prf} triggerTitle="View Progress"></StepperView>
             )}

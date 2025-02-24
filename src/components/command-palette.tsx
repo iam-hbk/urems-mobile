@@ -2,8 +2,16 @@
 
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandShortcut } from "@/components/ui/command";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandShortcut,
+} from "@/components/ui/command";
 import { PRF_FORM, PRF_FORM_DATA_DISPLAY_NAMES } from "@/interfaces/prf-form";
 import { useRouter } from "next/navigation";
 import { iconMap } from "./quick-links";
@@ -15,7 +23,11 @@ interface CommandPaletteProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function CommandPalette({ prf, open, onOpenChange }: CommandPaletteProps) {
+export function CommandPalette({
+  prf,
+  open,
+  onOpenChange,
+}: CommandPaletteProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
 
@@ -40,29 +52,45 @@ export function CommandPalette({ prf, open, onOpenChange }: CommandPaletteProps)
   }, [open]);
 
   const sections = Object.keys(PRF_FORM_DATA_DISPLAY_NAMES).map((key) => ({
-    title: PRF_FORM_DATA_DISPLAY_NAMES[key as keyof typeof PRF_FORM_DATA_DISPLAY_NAMES],
-    href: key === "case_details" 
-      ? `/edit-prf/${prf?.prfFormId}/#` 
-      : `/edit-prf/${prf?.prfFormId}/${key.replace(/_/g, "-")}`,
+    title:
+      PRF_FORM_DATA_DISPLAY_NAMES[
+        key as keyof typeof PRF_FORM_DATA_DISPLAY_NAMES
+      ],
+    href:
+      key === "case_details"
+        ? `/edit-prf/${prf?.prfFormId}/#`
+        : `/edit-prf/${prf?.prfFormId}/${key.replace(/_/g, "-")}`,
     icon: iconMap[key as keyof typeof iconMap],
-    keywords: [key.replace(/_/g, " "), PRF_FORM_DATA_DISPLAY_NAMES[key as keyof typeof PRF_FORM_DATA_DISPLAY_NAMES]],
+    keywords: [
+      key.replace(/_/g, " "),
+      PRF_FORM_DATA_DISPLAY_NAMES[
+        key as keyof typeof PRF_FORM_DATA_DISPLAY_NAMES
+      ],
+    ],
   }));
 
   const filteredSections = sections.filter((section) => {
     if (!search) return true;
-    
+
     return section.keywords.some((keyword) =>
-      keyword.toLowerCase().includes(search.toLowerCase())
+      keyword.toLowerCase().includes(search.toLowerCase()),
     );
   });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 sm:max-w-[550px]">
+      <DialogContent
+        className="p-0 sm:max-w-[550px]"
+        aria-describedby={undefined}
+      >
+        <DialogTitle className="sr-only">Search PRF Sections</DialogTitle>
         <Command className="rounded-lg border shadow-md" shouldFilter={false}>
-          <div className="flex items-center border-b px-3" cmdk-input-wrapper="">
-            <CommandInput 
-              placeholder="Type a command or search..." 
+          <div
+            className="flex items-center border-b px-3"
+            cmdk-input-wrapper=""
+          >
+            <CommandInput
+              placeholder="Type a command or search..."
               value={search}
               onValueChange={setSearch}
             />
@@ -93,4 +121,4 @@ export function CommandPalette({ prf, open, onOpenChange }: CommandPaletteProps)
       </DialogContent>
     </Dialog>
   );
-} 
+}
