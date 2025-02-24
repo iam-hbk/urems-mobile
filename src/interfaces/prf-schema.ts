@@ -438,15 +438,19 @@ export const DiagnosisSchema = z.object({
     }),
     z.enum(["red", "yellow", "orange", "green", "blue"], {
       required_error: "You need to select a priority color.",
-    })
+    }),
   ]),
-  allergicReaction: z.object({
-    occurred: z.boolean().optional(),
-    symptoms: z.array(
-      z.enum(["Stridor", "Wheezes", "Erythema", "Pruritus", "Urticaria"]),
-    ).optional(),
-    location: z.array(z.enum(["Abd", "Head", "Limbs", "Torso"])).optional(),
-  }).optional(),
+  allergicReaction: z
+    .object({
+      occurred: z.boolean().optional(),
+      symptoms: z
+        .array(
+          z.enum(["Stridor", "Wheezes", "Erythema", "Pruritus", "Urticaria"]),
+        )
+        .optional(),
+      location: z.array(z.enum(["Abd", "Head", "Limbs", "Torso"])).optional(),
+    })
+    .optional(),
   poisoning: z.boolean(),
   symptoms: z.array(
     z.enum([
@@ -469,17 +473,19 @@ export type DiagnosisType = z.infer<typeof DiagnosisSchema>;
 export const MechanismOfInjurySchema = z.object({
   vehicleType: z.object({
     occured: z.boolean().optional(),
-    vehicleTypesSelection: z.enum([
-      "MVA",
-      "MBA",
-      "PVA",
-      "Bus",
-      "Cyclist",
-      "Taxi",
-      "Train",
-      "Truck",
-      "Aircraft"
-    ]).optional(),
+    vehicleTypesSelection: z
+      .enum([
+        "MVA",
+        "MBA",
+        "PVA",
+        "Bus",
+        "Cyclist",
+        "Taxi",
+        "Train",
+        "Truck",
+        "Aircraft",
+      ])
+      .optional(),
   }),
   impactType: z
     .array(
@@ -489,66 +495,90 @@ export const MechanismOfInjurySchema = z.object({
         "Rollover",
         "T - Boned",
         "Vehicle Spun",
-      ])
+      ]),
     )
     .optional(),
   speed: z.enum(["<60km/h", "60-100km/h", ">120km/h"]).optional(),
   personType: z.enum(["Driver", "Passenger", "Unknown"]).optional(),
   safetyFeatures: z.array(z.enum(["Airbags", "Restrained"])).optional(),
-  incidentDetails: z.array(
-    z.enum(["?↓LOC", "Multiple Patients", "P1", "or P4", "on Scene"])
-  ).optional(),
-  extractionMethod: z.enum([
-    "Ejected",
-    "Removed by Bystander",
-    "Extricated by EMS",
-    "Self-Extricated",
-  ]).optional(),
-  helmetRemoval: z.enum(["EMS", "Self", "Bystander", "No Helmet"]).optional(),
-  violenceType: z.array(
-    z.enum(["Assault", "Stabbing", "Rape", "Strangulation", "Armed Robbery"])
-  ).optional(),
-  otherIncidents: z.array(
-    z.enum([
-      "Industrial Accident",
-      "Sports Injury",
-      "Limited Patient Access",
-      "Self-Inflicted Wounds",
-      "Suicidal Tendencies",
+  incidentDetails: z
+    .array(z.enum(["?↓LOC", "Multiple Patients", "P1", "or P4", "on Scene"]))
+    .optional(),
+  extractionMethod: z
+    .enum([
+      "Ejected",
+      "Removed by Bystander",
+      "Extricated by EMS",
+      "Self-Extricated",
     ])
-  ).optional(),
-  falls: z.object({
-    type: z.array(z.enum(["Bed", "Same Level", ">3m", ">10m"])).optional(),
-    weaponType: z.array(z.enum(["Gun Shot Wound", "AR", "Handgun", "Rifle"])).optional(),
-  }).optional(),
-  entrapment: z.object({
-    occurred: z.boolean().optional(),
-    duration: z.enum(["<30 Mins", "30mins-1hr", "1-2hr", ">2hr", "Unknown"]).optional(),
-  }).optional(),
-  crushInjury: z.boolean().optional(),
-  drowning: z.object({
-    occurred: z.boolean().optional(),
-    duration: z.enum(["< 5min", "5 - 10min", "> 10min", "Unknown"]).optional(),
-    type: z.array(z.enum(["Cold Water", "River / Dam", "Flood", "Pool"])).optional(),
-    bystanderCPR: z.boolean().optional(),
-  }).optional(),
-  burns: z.object({
-    occurred: z.boolean().optional(),
-    bsa: z.enum(["<15%", ">15%"]).optional(),
-    confinedSpace: z.boolean().optional(),
-    duration: z.string().default(""),
-    type: z.array(
+    .optional(),
+  helmetRemoval: z.enum(["EMS", "Self", "Bystander", "No Helmet"]).optional(),
+  violenceType: z
+    .array(
+      z.enum(["Assault", "Stabbing", "Rape", "Strangulation", "Armed Robbery"]),
+    )
+    .optional(),
+  otherIncidents: z
+    .array(
       z.enum([
-        "Chemical",
-        "Electrical",
-        "Flash",
-        "Lightning",
-        "Steam",
-        "Smoke Inhalation",
-        "Thermal",
-      ])
-    ).optional(),
-  }).optional(),
+        "Industrial Accident",
+        "Sports Injury",
+        "Limited Patient Access",
+        "Self-Inflicted Wounds",
+        "Suicidal Tendencies",
+      ]),
+    )
+    .optional(),
+  falls: z
+    .object({
+      type: z.array(z.enum(["Bed", "Same Level", ">3m", ">10m"])).optional(),
+      weaponType: z
+        .array(z.enum(["Gun Shot Wound", "AR", "Handgun", "Rifle"]))
+        .optional(),
+    })
+    .optional(),
+  entrapment: z
+    .object({
+      occurred: z.boolean().optional(),
+      duration: z
+        .enum(["<30 Mins", "30mins-1hr", "1-2hr", ">2hr", "Unknown"])
+        .optional(),
+    })
+    .optional(),
+  crushInjury: z.boolean().optional(),
+  drowning: z
+    .object({
+      occurred: z.boolean().optional(),
+      duration: z
+        .enum(["< 5min", "5 - 10min", "> 10min", "Unknown"])
+        .optional(),
+      type: z
+        .array(z.enum(["Cold Water", "River / Dam", "Flood", "Pool"]))
+        .optional(),
+      bystanderCPR: z.boolean().optional(),
+    })
+    .optional(),
+  burns: z
+    .object({
+      occurred: z.boolean().optional(),
+      bsa: z.enum(["<15%", ">15%"]).optional(),
+      confinedSpace: z.boolean().optional(),
+      duration: z.string().default(""),
+      type: z
+        .array(
+          z.enum([
+            "Chemical",
+            "Electrical",
+            "Flash",
+            "Lightning",
+            "Steam",
+            "Smoke Inhalation",
+            "Thermal",
+          ]),
+        )
+        .optional(),
+    })
+    .optional(),
 });
 
 export type MechanismOfInjuryType = z.infer<typeof MechanismOfInjurySchema>;
@@ -560,8 +590,8 @@ export const ProceduresSchema = z.object({
     depth: z.number().optional(),
     ettCuffPressure: z.enum([
       "20-30cmH2O",
-      "CUFF NOT INFLATED",
-      "NOT MEASURED",
+      "Cuff Not Inflated",
+      "Not Measured",
     ]),
     gastricTube: z.boolean(),
     iGel: z.boolean(),
@@ -594,7 +624,7 @@ export const ProceduresSchema = z.object({
     icd: z.boolean(),
     l: z.boolean(),
     r: z.boolean(),
-    date: z.string().optional(),
+    date: z.date().optional(),
     oxygen: z.boolean(),
     spo2: z.boolean(),
     ventilation: z.boolean(),

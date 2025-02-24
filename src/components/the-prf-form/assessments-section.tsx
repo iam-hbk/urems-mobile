@@ -1100,7 +1100,7 @@ export default function AssessmentForm() {
               const firstError = Object.entries(formErrors)[0];
               const errorPath = firstError[0];
               const errorMessage = firstError[1].message;
-              
+
               toast.error(`Validation Error: ${errorPath} - ${errorMessage}`, {
                 duration: 3000,
                 position: "top-right",

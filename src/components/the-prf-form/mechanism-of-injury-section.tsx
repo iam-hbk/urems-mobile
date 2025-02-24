@@ -82,7 +82,10 @@ export default function MechanismOfInjuryForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 flex flex-col">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex flex-col space-y-8"
+      >
         <div className="flex items-center justify-between">
           <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
             Mechanism of Injury
@@ -189,42 +192,53 @@ export default function MechanismOfInjuryForm() {
                                   <Checkbox
                                     checked={field.value?.includes(
                                       item as
-                                      | "Frontal Impact"
-                                      | "Rear"
-                                      | "Rollover"
-                                      | "T - Boned"
-                                      | "Vehicle Spun"
+                                        | "Frontal Impact"
+                                        | "Rear"
+                                        | "Rollover"
+                                        | "T - Boned"
+                                        | "Vehicle Spun",
                                     )}
                                     onCheckedChange={(checked) => {
                                       // make it an empty array if field value is undefined
-                                      const currentValue = Array.isArray(field.value) ? field.value : [];
+                                      const currentValue = Array.isArray(
+                                        field.value,
+                                      )
+                                        ? field.value
+                                        : [];
 
-                                      if (checked) { // if checked 
+                                      if (checked) {
+                                        // if checked
                                         // not included
-                                        if (!currentValue.includes(item as
-                                          | "Frontal Impact"
-                                          | "Rear"
-                                          | "Rollover"
-                                          | "T - Boned"
-                                          | "Vehicle Spun",)) {
+                                        if (
+                                          !currentValue.includes(
+                                            item as
+                                              | "Frontal Impact"
+                                              | "Rear"
+                                              | "Rollover"
+                                              | "T - Boned"
+                                              | "Vehicle Spun",
+                                          )
+                                        ) {
                                           field.onChange([
                                             ...currentValue,
                                             item as
-                                            | "Frontal Impact"
-                                            | "Rear"
-                                            | "Rollover"
-                                            | "T - Boned"
-                                            | "Vehicle Spun",
+                                              | "Frontal Impact"
+                                              | "Rear"
+                                              | "Rollover"
+                                              | "T - Boned"
+                                              | "Vehicle Spun",
                                           ]);
                                         }
                                       } else {
                                         // remove item if unchecked
                                         field.onChange(
-                                          currentValue.filter((value) => value !== item)
+                                          currentValue.filter(
+                                            (value) => value !== item,
+                                          ),
                                         );
                                       }
 
-                                      // 
+                                      //
                                       // return field.value && checked
                                       //   ? field.onChange([
                                       //     ...field.value,
@@ -342,12 +356,20 @@ export default function MechanismOfInjuryForm() {
                                     item as "Airbags" | "Restrained",
                                   )}
                                   onCheckedChange={(checked) => {
+                                    const currentValue = Array.isArray(
+                                      field.value,
+                                    )
+                                      ? field.value
+                                      : [];
 
-                                    const currentValue = Array.isArray(field.value) ? field.value : [];
-
-                                    if (checked) { // if checked 
+                                    if (checked) {
+                                      // if checked
                                       // not included
-                                      if (!currentValue.includes(item as "Airbags" | "Restrained",)) {
+                                      if (
+                                        !currentValue.includes(
+                                          item as "Airbags" | "Restrained",
+                                        )
+                                      ) {
                                         field.onChange([
                                           ...currentValue,
                                           item as "Airbags" | "Restrained",
@@ -356,11 +378,11 @@ export default function MechanismOfInjuryForm() {
                                     } else {
                                       // remove item if unchecked
                                       field.onChange(
-                                        currentValue.filter((value) => value !== item)
+                                        currentValue.filter(
+                                          (value) => value !== item,
+                                        ),
                                       );
                                     }
-
-
 
                                     // return field.value && checked
                                     //   ? field.onChange([
@@ -415,29 +437,37 @@ export default function MechanismOfInjuryForm() {
                                 item as "Bed" | "Same Level" | ">3m" | ">10m",
                               )}
                               onCheckedChange={(checked) => {
+                                const currentValue = Array.isArray(field.value)
+                                  ? field.value
+                                  : [];
 
-                                const currentValue = Array.isArray(field.value) ? field.value : [];
-
-                                if (checked) { // if checked 
+                                if (checked) {
+                                  // if checked
                                   // not included
-                                  if (!currentValue.includes(item as
-                                    | "Bed"
-                                    | "Same Level"
-                                    | ">3m"
-                                    | ">10m",)) {
+                                  if (
+                                    !currentValue.includes(
+                                      item as
+                                        | "Bed"
+                                        | "Same Level"
+                                        | ">3m"
+                                        | ">10m",
+                                    )
+                                  ) {
                                     field.onChange([
                                       ...currentValue,
                                       item as
-                                      | "Bed"
-                                      | "Same Level"
-                                      | ">3m"
-                                      | ">10m",
+                                        | "Bed"
+                                        | "Same Level"
+                                        | ">3m"
+                                        | ">10m",
                                     ]);
                                   }
                                 } else {
                                   // remove item if unchecked
                                   field.onChange(
-                                    currentValue.filter((value) => value !== item)
+                                    currentValue.filter(
+                                      (value) => value !== item,
+                                    ),
                                   );
                                 }
 
@@ -455,7 +485,6 @@ export default function MechanismOfInjuryForm() {
                                 //       (value) => value !== item,
                                 //     ),
                                 //   );
-
                               }}
                             />
                           </FormControl>
@@ -488,36 +517,44 @@ export default function MechanismOfInjuryForm() {
                             <Checkbox
                               checked={field.value?.includes(
                                 item as
-                                | "Gun Shot Wound"
-                                | "AR"
-                                | "Handgun"
-                                | "Rifle",
+                                  | "Gun Shot Wound"
+                                  | "AR"
+                                  | "Handgun"
+                                  | "Rifle",
                               )}
                               onCheckedChange={(checked) => {
-
                                 // make it an empty array if field value is undefined
-                                const currentValue = Array.isArray(field.value) ? field.value : [];
+                                const currentValue = Array.isArray(field.value)
+                                  ? field.value
+                                  : [];
 
-                                if (checked) { // if checked 
+                                if (checked) {
+                                  // if checked
                                   // not included
-                                  if (!currentValue.includes(item as
-                                    | "Gun Shot Wound"
-                                    | "AR"
-                                    | "Handgun"
-                                    | "Rifle",)) {
+                                  if (
+                                    !currentValue.includes(
+                                      item as
+                                        | "Gun Shot Wound"
+                                        | "AR"
+                                        | "Handgun"
+                                        | "Rifle",
+                                    )
+                                  ) {
                                     field.onChange([
                                       ...currentValue,
                                       item as
-                                      | "Gun Shot Wound"
-                                      | "AR"
-                                      | "Handgun"
-                                      | "Rifle",
+                                        | "Gun Shot Wound"
+                                        | "AR"
+                                        | "Handgun"
+                                        | "Rifle",
                                     ]);
                                   }
                                 } else {
                                   // remove item if unchecked
                                   field.onChange(
-                                    currentValue.filter((value) => value !== item)
+                                    currentValue.filter(
+                                      (value) => value !== item,
+                                    ),
                                   );
                                 }
 
@@ -573,39 +610,47 @@ export default function MechanismOfInjuryForm() {
                             <Checkbox
                               checked={field.value?.includes(
                                 item as
-                                | "Assault"
-                                | "Stabbing"
-                                | "Rape"
-                                | "Strangulation"
-                                | "Armed Robbery",
+                                  | "Assault"
+                                  | "Stabbing"
+                                  | "Rape"
+                                  | "Strangulation"
+                                  | "Armed Robbery",
                               )}
                               onCheckedChange={(checked) => {
-
                                 // make it an empty array if field value is undefined
-                                const currentValue = Array.isArray(field.value) ? field.value : [];
+                                const currentValue = Array.isArray(field.value)
+                                  ? field.value
+                                  : [];
 
-                                if (checked) { // if checked 
+                                if (checked) {
+                                  // if checked
                                   // not included
-                                  if (!currentValue.includes(item as
-                                    | "Assault"
-                                    | "Stabbing"
-                                    | "Rape"
-                                    | "Strangulation"
-                                    | "Armed Robbery",)) {
+                                  if (
+                                    !currentValue.includes(
+                                      item as
+                                        | "Assault"
+                                        | "Stabbing"
+                                        | "Rape"
+                                        | "Strangulation"
+                                        | "Armed Robbery",
+                                    )
+                                  ) {
                                     field.onChange([
                                       ...currentValue,
                                       item as
-                                      | "Assault"
-                                      | "Stabbing"
-                                      | "Rape"
-                                      | "Strangulation"
-                                      | "Armed Robbery",
+                                        | "Assault"
+                                        | "Stabbing"
+                                        | "Rape"
+                                        | "Strangulation"
+                                        | "Armed Robbery",
                                     ]);
                                   }
                                 } else {
                                   // remove item if unchecked
                                   field.onChange(
-                                    currentValue.filter((value) => value !== item)
+                                    currentValue.filter(
+                                      (value) => value !== item,
+                                    ),
                                   );
                                 }
 
@@ -662,38 +707,46 @@ export default function MechanismOfInjuryForm() {
                             <Checkbox
                               checked={field.value?.includes(
                                 item as
-                                | "Industrial Accident"
-                                | "Sports Injury"
-                                | "Limited Patient Access"
-                                | "Self-Inflicted Wounds"
-                                | "Suicidal Tendencies",
+                                  | "Industrial Accident"
+                                  | "Sports Injury"
+                                  | "Limited Patient Access"
+                                  | "Self-Inflicted Wounds"
+                                  | "Suicidal Tendencies",
                               )}
                               onCheckedChange={(checked) => {
+                                const currentValue = Array.isArray(field.value)
+                                  ? field.value
+                                  : [];
 
-                                const currentValue = Array.isArray(field.value) ? field.value : [];
-
-                                if (checked) { // if checked 
+                                if (checked) {
+                                  // if checked
                                   // not included
-                                  if (!currentValue.includes(item as
-                                    | "Industrial Accident"
-                                    | "Sports Injury"
-                                    | "Limited Patient Access"
-                                    | "Self-Inflicted Wounds"
-                                    | "Suicidal Tendencies",)) {
+                                  if (
+                                    !currentValue.includes(
+                                      item as
+                                        | "Industrial Accident"
+                                        | "Sports Injury"
+                                        | "Limited Patient Access"
+                                        | "Self-Inflicted Wounds"
+                                        | "Suicidal Tendencies",
+                                    )
+                                  ) {
                                     field.onChange([
                                       ...currentValue,
                                       item as
-                                      | "Industrial Accident"
-                                      | "Sports Injury"
-                                      | "Limited Patient Access"
-                                      | "Self-Inflicted Wounds"
-                                      | "Suicidal Tendencies",
+                                        | "Industrial Accident"
+                                        | "Sports Injury"
+                                        | "Limited Patient Access"
+                                        | "Self-Inflicted Wounds"
+                                        | "Suicidal Tendencies",
                                     ]);
                                   }
                                 } else {
                                   // remove item if unchecked
                                   field.onChange(
-                                    currentValue.filter((value) => value !== item)
+                                    currentValue.filter(
+                                      (value) => value !== item,
+                                    ),
                                   );
                                 }
 
@@ -883,37 +936,46 @@ export default function MechanismOfInjuryForm() {
                                   <Checkbox
                                     checked={field.value?.includes(
                                       item as
-                                      | "Cold Water"
-                                      | "River / Dam"
-                                      | "Flood"
-                                      | "Pool",
+                                        | "Cold Water"
+                                        | "River / Dam"
+                                        | "Flood"
+                                        | "Pool",
                                     )}
                                     onCheckedChange={(checked) => {
-
-
                                       // make it an empty array if field value is undefined
-                                      const currentValue = Array.isArray(field.value) ? field.value : [];
+                                      const currentValue = Array.isArray(
+                                        field.value,
+                                      )
+                                        ? field.value
+                                        : [];
 
-                                      if (checked) { // if checked 
+                                      if (checked) {
+                                        // if checked
                                         // not included
-                                        if (!currentValue.includes(item as
-                                          | "Cold Water"
-                                          | "River / Dam"
-                                          | "Flood"
-                                          | "Pool",)) {
+                                        if (
+                                          !currentValue.includes(
+                                            item as
+                                              | "Cold Water"
+                                              | "River / Dam"
+                                              | "Flood"
+                                              | "Pool",
+                                          )
+                                        ) {
                                           field.onChange([
                                             ...currentValue,
                                             item as
-                                            | "Cold Water"
-                                            | "River / Dam"
-                                            | "Flood"
-                                            | "Pool",
+                                              | "Cold Water"
+                                              | "River / Dam"
+                                              | "Flood"
+                                              | "Pool",
                                           ]);
                                         }
                                       } else {
                                         // remove item if unchecked
                                         field.onChange(
-                                          currentValue.filter((value) => value !== item)
+                                          currentValue.filter(
+                                            (value) => value !== item,
+                                          ),
                                         );
                                       }
 
@@ -1083,45 +1145,55 @@ export default function MechanismOfInjuryForm() {
                                 <Checkbox
                                   checked={field.value?.includes(
                                     item as
-                                    | "Chemical"
-                                    | "Electrical"
-                                    | "Flash"
-                                    | "Lightning"
-                                    | "Steam"
-                                    | "Smoke Inhalation"
-                                    | "Thermal",
+                                      | "Chemical"
+                                      | "Electrical"
+                                      | "Flash"
+                                      | "Lightning"
+                                      | "Steam"
+                                      | "Smoke Inhalation"
+                                      | "Thermal",
                                   )}
                                   onCheckedChange={(checked) => {
-
                                     // make it an empty array if field value is undefined
-                                    const currentValue = Array.isArray(field.value) ? field.value : [];
+                                    const currentValue = Array.isArray(
+                                      field.value,
+                                    )
+                                      ? field.value
+                                      : [];
 
-                                    if (checked) { // if checked 
+                                    if (checked) {
+                                      // if checked
                                       // not included
-                                      if (!currentValue.includes(item as
-                                        | "Chemical"
-                                        | "Electrical"
-                                        | "Flash"
-                                        | "Lightning"
-                                        | "Steam"
-                                        | "Smoke Inhalation"
-                                        | "Thermal",)) {
+                                      if (
+                                        !currentValue.includes(
+                                          item as
+                                            | "Chemical"
+                                            | "Electrical"
+                                            | "Flash"
+                                            | "Lightning"
+                                            | "Steam"
+                                            | "Smoke Inhalation"
+                                            | "Thermal",
+                                        )
+                                      ) {
                                         field.onChange([
                                           ...currentValue,
                                           item as
-                                          | "Chemical"
-                                          | "Electrical"
-                                          | "Flash"
-                                          | "Lightning"
-                                          | "Steam"
-                                          | "Smoke Inhalation"
-                                          | "Thermal",
+                                            | "Chemical"
+                                            | "Electrical"
+                                            | "Flash"
+                                            | "Lightning"
+                                            | "Steam"
+                                            | "Smoke Inhalation"
+                                            | "Thermal",
                                         ]);
                                       }
                                     } else {
                                       // remove item if unchecked
                                       field.onChange(
-                                        currentValue.filter((value) => value !== item)
+                                        currentValue.filter(
+                                          (value) => value !== item,
+                                        ),
                                       );
                                     }
 
@@ -1163,7 +1235,7 @@ export default function MechanismOfInjuryForm() {
         <Button
           type="submit"
           disabled={!form.formState.isDirty}
-          className="w-full sm:w-auto self-end"
+          className="w-full self-end sm:w-auto"
         >
           {form.formState.isSubmitting || updatePrfQuery.isPending ? (
             <>
