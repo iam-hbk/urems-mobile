@@ -50,6 +50,29 @@ import { Badge } from "./ui/badge";
 // utils
 const animations = ["animate-shake1", "animate-shake2", "animate-shake3"];
 
+// Move iconMap before the component and export it
+export const iconMap = {
+  "Case Details": ClipboardList,
+  "Patient Details": User,
+  Transportation: Truck,
+  "Incident Information": AlertTriangle,
+  "Primary Survey": Heartbeat,
+  "Secondary Survey": Stethoscope,
+  "Vital Signs": Activity,
+  "History Taking": FileText,
+  "Physical Exam": Clipboard,
+  Interventions: FirstAid,
+  "Medication Administration": Pill,
+  "Patient Handover": UserCheck,
+  Notes: Edit3,
+  Diagnosis: ClipboardPlus,
+  "Mechanism of Injury": Bandage,
+  "Procedures": ArrowDownUp,
+  "Respiratory Distress Assessment": Wind,
+  "Injuries": PersonStanding,
+  "Assessments": ClipboardPlus,
+};
+
 // QuickLinks Component
 export default function QuickLinks({ prf }: { prf: PRF_FORM }) {
   const [visibleItems, setVisibleItems] = useState<string[]>([]);
@@ -216,27 +239,6 @@ export default function QuickLinks({ prf }: { prf: PRF_FORM }) {
     </nav>
   );
 }
-const iconMap = {
-  "Case Details": ClipboardList,
-  "Patient Details": User,
-  Transportation: Truck,
-  "Incident Information": AlertTriangle,
-  "Primary Survey": Heartbeat,
-  "Secondary Survey": Stethoscope,
-  "Vital Signs": Activity,
-  "History Taking": FileText,
-  "Physical Exam": Clipboard,
-  Interventions: FirstAid,
-  "Medication Administration": Pill,
-  "Patient Handover": UserCheck,
-  Notes: Edit3,
-  Diagnosis: ClipboardPlus,
-  "Mechanism of Injury": Bandage,
-  Procedures: ArrowDownUp,
-  "Respiratory Distress Assessment": Wind,
-  "Injuries": PersonStanding,
-  "Assessments": ClipboardPlus,
-};
 const getPrfDataShapedSectionsForQuickLinks = (prf: PRF_FORM) => {
   return Object.entries(PRFFormDataSchema.shape).map(([sectionKey]) => {
     const sectionSchema =
