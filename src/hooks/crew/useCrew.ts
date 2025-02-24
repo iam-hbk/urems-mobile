@@ -10,7 +10,8 @@ export function useGetCrewEmployeeID(id: string) {
     queryFn: async () => {
       try {
         const res = await apiGetCrewEmployeeID(id);
-        console.log(res);
+        console.log("on the server side here .... ", res);
+        return res;
         // 
       } catch (error: unknown) {
         const err = error as WretchError;
