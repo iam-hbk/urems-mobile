@@ -37,8 +37,17 @@ export default function DiagnosisForm() {
 
   const form = useForm<DiagnosisType>({
     resolver: zodResolver(DiagnosisSchema),
+    values: prf_from_store?.prfData?.diagnosis?.data,
     defaultValues: prf_from_store?.prfData?.diagnosis?.data || {
       diagnosis: "",
+      allergicReaction: {
+        occurred: false,
+        symptoms: [],
+        location: [],
+      },
+      poisoning: false,
+      symptoms: [],
+      priority: "1",
     },
   });
 
@@ -146,8 +155,15 @@ export default function DiagnosisForm() {
               </div>
               <FormControl>
                 <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
+                  checked={field.value || false}
+                  onCheckedChange={(checked) => {
+                    field.onChange(checked);
+                    if (!checked) {
+                      // Reset symptoms and location when allergic reaction is turned off
+                      form.setValue("allergicReaction.symptoms", []);
+                      form.setValue("allergicReaction.location", []);
+                    }
+                  }}
                 />
               </FormControl>
             </FormItem>
@@ -178,23 +194,25 @@ export default function DiagnosisForm() {
                           <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                             <FormControl>
                               <Checkbox
-                                checked={field.value?.includes(
-                                  item as
-                                  | "Stridor"
-                                  | "Wheezes"
-                                  | "Erythema"
-                                  | "Pruritus"
-                                  | "Urticaria",
-                                )}
+                                checked={
+                                  field.value?.includes(
+                                    item as
+                                      | "Stridor"
+                                      | "Wheezes"
+                                      | "Erythema"
+                                      | "Pruritus"
+                                      | "Urticaria",
+                                  ) || false
+                                }
                                 onCheckedChange={(checked) => {
-                                  // make sure field.value is not null or undefined
-                                  return field.value && checked
-                                    ? field.onChange([...field.value, item])
+                                  const currentValue = field.value || [];
+                                  return checked
+                                    ? field.onChange([...currentValue, item])
                                     : field.onChange(
-                                      field.value?.filter(
-                                        (value) => value !== item,
-                                      ),
-                                    );
+                                        currentValue.filter(
+                                          (value) => value !== item,
+                                        ),
+                                      );
                                 }}
                               />
                             </FormControl>
@@ -226,18 +244,20 @@ export default function DiagnosisForm() {
                           <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                             <FormControl>
                               <Checkbox
-                                checked={field.value?.includes(
-                                  item as "Abd" | "Head" | "Limbs" | "Torso",
-                                )}
+                                checked={
+                                  field.value?.includes(
+                                    item as "Abd" | "Head" | "Limbs" | "Torso",
+                                  ) || false
+                                }
                                 onCheckedChange={(checked) => {
-                                  // there is an error here .. check field is valid and not null
-                                  return field.value && checked
-                                    ? field.onChange([...field.value, item])
+                                  const currentValue = field.value || [];
+                                  return checked
+                                    ? field.onChange([...currentValue, item])
                                     : field.onChange(
-                                      field.value?.filter(
-                                        (value) => value !== item,
-                                      ),
-                                    );
+                                        currentValue.filter(
+                                          (value) => value !== item,
+                                        ),
+                                      );
                                 }}
                               />
                             </FormControl>
@@ -305,25 +325,25 @@ export default function DiagnosisForm() {
                           <Checkbox
                             checked={field.value?.includes(
                               item as
-                              | "Abdominal Pain"
-                              | "Altered LOC"
-                              | "Bradycardia"
-                              | "Secretions"
-                              | "Diaphoresis"
-                              | "Hypotension"
-                              | "Incontinence"
-                              | "Miosis"
-                              | "Seizures"
-                              | "Vomiting",
+                                | "Abdominal Pain"
+                                | "Altered LOC"
+                                | "Bradycardia"
+                                | "Secretions"
+                                | "Diaphoresis"
+                                | "Hypotension"
+                                | "Incontinence"
+                                | "Miosis"
+                                | "Seizures"
+                                | "Vomiting",
                             )}
                             onCheckedChange={(checked) => {
                               return field.value && checked
                                 ? field.onChange([...field.value, item])
                                 : field.onChange(
-                                  field.value?.filter(
-                                    (value) => value !== item,
-                                  ),
-                                );
+                                    field.value?.filter(
+                                      (value) => value !== item,
+                                    ),
+                                  );
                             }}
                           />
                         </FormControl>
@@ -341,9 +361,7 @@ export default function DiagnosisForm() {
           type="submit"
           disabled={!form.formState.isDirty}
           className="w-full sm:w-auto"
-          onClick={() => {
-            
-          }}
+          onClick={() => {}}
         >
           {form.formState.isSubmitting || updatePrfQuery.isPending ? (
             <>
