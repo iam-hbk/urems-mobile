@@ -28,7 +28,7 @@ import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
 import { usePathname, useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { toast } from "sonner";
-import SceneAddressInput from "../SceneAddressInput";
+import AddressAutoComplete from "@/components/AddressAutoComplete";
 
 export type IncidentInformationType = z.infer<typeof IncidentInformationSchema>;
 
@@ -121,7 +121,7 @@ const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
               </h4>
             </AccordionTrigger>
             <AccordionContent className="grid gap-3 px-4 sm:grid-cols-2 lg:grid-cols-3">
-              <SceneAddressInput
+              <AddressAutoComplete
                 name="sceneAddress"
                 label="Scene Address"
                 placeholder="Scene Address"
