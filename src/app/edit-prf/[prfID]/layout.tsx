@@ -7,9 +7,10 @@ import { usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import Script from "next/script";
 import QuickLinks from "@/components/quick-links";
-import { Eye, EyeOffIcon, Notebook } from "lucide-react";
+import { Eye, EyeOffIcon, Notebook, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AssessmentToolsSummary from "@/components/assessment-tools-summary";
+import { CommandPalette } from "@/components/command-palette";
 
 function Layout({
   children,
@@ -27,9 +28,18 @@ function Layout({
   path_blocks.splice(2, 1);
   // to toggle the quick links
   const [showQuickLinks, setShowQuickLinks] = useState<boolean>(true);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
 
   return (
     <div className="flex w-full flex-col items-center overflow-auto">
+      {/* Command Palette */}
+      <CommandPalette 
+        prf={prf} 
+        open={showCommandPalette} 
+        onOpenChange={setShowCommandPalette} 
+      />
+
+      {/* Header */}
       <div className="sticky top-2 z-10 m-2 flex w-11/12 flex-col items-center justify-between space-y-2 rounded-lg p-2 shadow shadow-slate-200 backdrop-blur">
         {/* showQuickLinks - to show the quick links components */}
         {prf && showQuickLinks && <QuickLinks prf={prf} />}
@@ -56,6 +66,15 @@ function Layout({
 
           {/* left side of the components */}
           <div className="mt-[1rem] flex items-center sm:mt-[0rem]">
+            {/* Command palette button */}
+            <Button
+              className="mr-[0.5rem] flex items-center text-[0.89rem]"
+              onClick={() => setShowCommandPalette(true)}
+            >
+              <Search size={20} />
+              <span className="ml-[0.5rem]">Search (⌘K)</span>
+            </Button>
+
             {/* toogle between showing the quicks links and not, to provider user with more view */}
             <Button
               className="mr-[0.5rem] flex items-center text-[0.89rem]"
