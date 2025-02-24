@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,17 +20,22 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { toast } from "sonner";
+import { useDebounce } from "use-debounce";
 
-type SceneAddressInputProps = {
+type AddressAutoCompleteProps = {
   name: string;
   label: string;
+  useCurrentLocation?: boolean;
   placeholder?: string;
+  showGetCurrentLocationButton?: boolean;
 };
 
-const SceneAddressInput: React.FC<SceneAddressInputProps> = ({
+const AddressAutoComplete: React.FC<AddressAutoCompleteProps> = ({
   name,
   label,
   placeholder,
+  useCurrentLocation = true,
+  showGetCurrentLocationButton = true,
 }) => {
   const { control, setValue, formState, watch } = useFormContext();
   const [suggestions, setSuggestions] = useState<
@@ -39,12 +44,14 @@ const SceneAddressInput: React.FC<SceneAddressInputProps> = ({
   const [isGoogleMapsLoaded, setIsGoogleMapsLoaded] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const autocompleteRef = useRef<google.maps.places.AutocompleteService | null>(
-    null
+    null,
   );
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const currentValue = watch(name);
+  const [debouncedValue] = useDebounce(currentValue, 300);
 
   useEffect(() => {
     const checkGoogleMapsLoaded = () => {
@@ -58,8 +65,8 @@ const SceneAddressInput: React.FC<SceneAddressInputProps> = ({
           new window.google.maps.places.AutocompleteService();
         setIsGoogleMapsLoaded(true);
         // handle Current Location call only if the default value is empty
-        if (!currentValue) {
-          handleUseCurrentLocation(true);
+        if (!currentValue && useCurrentLocation) {
+          handleUseCurrentLocation();
         }
       } else {
         setIsGoogleMapsLoaded(false);
@@ -83,7 +90,7 @@ const SceneAddressInput: React.FC<SceneAddressInputProps> = ({
         (predictions: google.maps.places.AutocompletePrediction[] | null) => {
           setSuggestions(predictions || []);
           setIsOpen(true);
-        }
+        },
       );
     } else {
       setSuggestions([]);
@@ -91,8 +98,15 @@ const SceneAddressInput: React.FC<SceneAddressInputProps> = ({
     }
   };
 
+  useEffect(() => {
+    // Only trigger API call if the user is actively editing
+    if (isEditing && debouncedValue && isGoogleMapsLoaded) {
+      handleInputChange(debouncedValue);
+    }
+  }, [debouncedValue, isGoogleMapsLoaded, isEditing]);
+
   const handleSuggestionClick = (
-    suggestion: google.maps.places.AutocompletePrediction
+    suggestion: google.maps.places.AutocompletePrediction,
   ) => {
     setValue(name, suggestion.description, {
       shouldValidate: true,
@@ -101,21 +115,19 @@ const SceneAddressInput: React.FC<SceneAddressInputProps> = ({
     });
     setSuggestions([]);
     setIsOpen(false);
+    setIsEditing(false);
     if (inputRef.current) {
-      inputRef.current.focus();
+      inputRef.current.blur(); // Blur the input after selection
     }
   };
 
-  const handleUseCurrentLocation = (doItAnyway?: boolean) => {
+  const handleUseCurrentLocation = () => {
     if ("geolocation" in navigator) {
       setIsLoadingLocation(true);
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          if (
-            (isGoogleMapsLoaded && window.google.maps.Geocoder) ||
-            doItAnyway
-          ) {
+          if (isGoogleMapsLoaded && window.google.maps.Geocoder) {
             const geocoder = new window.google.maps.Geocoder();
             geocoder.geocode(
               { location: { lat: latitude, lng: longitude } },
@@ -138,7 +150,7 @@ const SceneAddressInput: React.FC<SceneAddressInputProps> = ({
                   });
                 }
                 setIsLoadingLocation(false);
-              }
+              },
             );
           } else {
             setValue(name, `Lat: ${latitude}, Lng: ${longitude}`, {
@@ -162,7 +174,7 @@ const SceneAddressInput: React.FC<SceneAddressInputProps> = ({
               "Please try again or enter your address manually.",
           });
         },
-        { timeout: 10000, maximumAge: 0, enableHighAccuracy: true }
+        { timeout: 10000, maximumAge: 0, enableHighAccuracy: true },
       );
     } else {
       toast.warning("Geolocation not supported", {
@@ -190,29 +202,48 @@ const SceneAddressInput: React.FC<SceneAddressInputProps> = ({
                 placeholder={placeholder}
                 onChange={(e) => {
                   field.onChange(e);
-                  handleInputChange(e.target.value);
+                  setIsEditing(true);
+                  if (e.target.value.length >= 2) {
+                    setIsOpen(true);
+                  } else {
+                    setIsOpen(false);
+                  }
                 }}
-                onFocus={() => currentValue.length >= 2 && setIsOpen(true)}
+                onBlur={(e) => {
+                  field.onBlur();
+                  // Small delay to allow click events on suggestions to fire
+                  setTimeout(() => {
+                    setIsOpen(false);
+                  }, 200);
+                }}
+                onFocus={() => {
+                  if (currentValue && currentValue.length >= 2 && isEditing) {
+                    setIsOpen(true);
+                  }
+                }}
+                autoFocus={false}
                 className="pr-20"
                 aria-autocomplete="list"
                 aria-controls="suggestions-list"
                 aria-expanded={isOpen}
               />
-              <div className="absolute right-0 top-0 h-full flex items-center">
-                <Button
-                  onClick={() => handleUseCurrentLocation()}
-                  variant="ghost"
-                  size="sm"
-                  className="h-full px-2 hover:bg-transparent"
-                  title="Use current location"
-                  disabled={isLoadingLocation}
-                >
-                  {isLoadingLocation ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <MapPin className="h-4 w-4" />
-                  )}
-                </Button>
+              <div className="absolute right-0 top-0 flex h-full items-center">
+                {showGetCurrentLocationButton && (
+                  <Button
+                    onClick={() => handleUseCurrentLocation()}
+                    variant="ghost"
+                    size="sm"
+                    className="h-full px-2 hover:bg-transparent"
+                    title="Use current location"
+                    disabled={isLoadingLocation}
+                  >
+                    {isLoadingLocation ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <MapPin className="h-4 w-4" />
+                    )}
+                  </Button>
+                )}
                 {currentValue && (
                   <Button
                     onClick={(e) => {
@@ -266,4 +297,4 @@ const SceneAddressInput: React.FC<SceneAddressInputProps> = ({
   );
 };
 
-export default SceneAddressInput;
+export default AddressAutoComplete;
