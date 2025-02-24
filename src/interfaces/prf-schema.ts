@@ -431,10 +431,15 @@ export type MedicationAdministeredType = z.infer<
 
 export const DiagnosisSchema = z.object({
   diagnosis: z.string().min(1, "Diagnosis is required"),
-  //TODO: add a toggle to chose between 1, 2, 3, 4 and colors [red, yellow,orange, green, blue]
-  priority: z.enum(["1", "2", "3", "4"], {
-    required_error: "You need to select a priority.",
-  }),
+  priorityType: z.enum(["number", "color"]).default("number"),
+  priority: z.union([
+    z.enum(["1", "2", "3", "4"], {
+      required_error: "You need to select a priority.",
+    }),
+    z.enum(["red", "yellow", "orange", "green", "blue"], {
+      required_error: "You need to select a priority color.",
+    })
+  ]),
   allergicReaction: z.object({
     occurred: z.boolean().optional(),
     symptoms: z.array(
