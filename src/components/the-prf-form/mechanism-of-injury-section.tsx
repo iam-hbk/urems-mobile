@@ -28,6 +28,7 @@ import {
   MechanismOfInjuryType,
 } from "@/interfaces/prf-schema";
 import { Switch } from "../ui/switch";
+import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 export default function MechanismOfInjuryForm() {
   const prfId = usePathname().split("/")[2];
@@ -37,6 +38,8 @@ export default function MechanismOfInjuryForm() {
 
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
+
+  const { zsEmployee } = useZuStandEmployeeStore();
 
   const form = useForm<MechanismOfInjuryType>({
     resolver: zodResolver(MechanismOfInjurySchema),
@@ -49,6 +52,13 @@ export default function MechanismOfInjuryForm() {
   // console.log('this is the form vlaues ....', form.getValues())
 
   function onSubmit(values: MechanismOfInjuryType) {
+    if (!zsEmployee) {
+      toast.error("No Employee Information Found", {
+        duration: 3000,
+        position: "top-right",
+      });
+      return;
+    }
     // console.log("saving form", values);
     const prfUpdateValue: PRF_FORM = {
       prfFormId: prfId,
@@ -60,7 +70,7 @@ export default function MechanismOfInjuryForm() {
           isOptional: false,
         },
       },
-      EmployeeID: prf_from_store?.EmployeeID || "2",
+      EmployeeID: zsEmployee?.employeeNumber.toString(),
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
@@ -223,23 +233,6 @@ export default function MechanismOfInjuryForm() {
                                           currentValue.filter((value) => value !== item)
                                         );
                                       }
-
-                                      // 
-                                      // return field.value && checked
-                                      //   ? field.onChange([
-                                      //     ...field.value,
-                                      //     item as
-                                      //     | "Frontal Impact"
-                                      //     | "Rear"
-                                      //     | "Rollover"
-                                      //     | "T - Boned"
-                                      //     | "Vehicle Spun",
-                                      //   ])
-                                      //   : field.onChange(
-                                      //     field.value?.filter(
-                                      //       (value) => value !== item,
-                                      //     ),
-                                      //   );
                                     }}
                                   />
                                 </FormControl>
@@ -359,19 +352,6 @@ export default function MechanismOfInjuryForm() {
                                         currentValue.filter((value) => value !== item)
                                       );
                                     }
-
-
-
-                                    // return field.value && checked
-                                    //   ? field.onChange([
-                                    //     ...field.value,
-                                    //     item as "Airbags" | "Restrained",
-                                    //   ])
-                                    //   : field.onChange(
-                                    //     field.value?.filter(
-                                    //       (value) => value !== item,
-                                    //     ),
-                                    //   );
                                   }}
                                 />
                               </FormControl>
@@ -440,22 +420,6 @@ export default function MechanismOfInjuryForm() {
                                     currentValue.filter((value) => value !== item)
                                   );
                                 }
-
-                                // return field.value && checked
-                                //   ? field.onChange([
-                                //     ...field.value,
-                                //     item as
-                                //     | "Bed"
-                                //     | "Same Level"
-                                //     | ">3m"
-                                //     | ">10m",
-                                //   ])
-                                //   : field.onChange(
-                                //     field.value?.filter(
-                                //       (value) => value !== item,
-                                //     ),
-                                //   );
-
                               }}
                             />
                           </FormControl>
@@ -520,21 +484,6 @@ export default function MechanismOfInjuryForm() {
                                     currentValue.filter((value) => value !== item)
                                   );
                                 }
-
-                                // return field.value && checked
-                                //   ? field.onChange([
-                                //     ...field.value,
-                                //     item as
-                                //     | "Gun Shot Wound"
-                                //     | "AR"
-                                //     | "Handgun"
-                                //     | "Rifle",
-                                //   ])
-                                //   : field.onChange(
-                                //     field.value?.filter(
-                                //       (value) => value !== item,
-                                //     ),
-                                //   );
                               }}
                             />
                           </FormControl>
@@ -608,22 +557,6 @@ export default function MechanismOfInjuryForm() {
                                     currentValue.filter((value) => value !== item)
                                   );
                                 }
-
-                                // return field.value && checked
-                                //   ? field.onChange([
-                                //     ...field.value,
-                                //     item as
-                                //     | "Assault"
-                                //     | "Stabbing"
-                                //     | "Rape"
-                                //     | "Strangulation"
-                                //     | "Armed Robbery",
-                                //   ])
-                                //   : field.onChange(
-                                //     field.value?.filter(
-                                //       (value) => value !== item,
-                                //     ),
-                                //   );
                               }}
                             />
                           </FormControl>
@@ -696,22 +629,6 @@ export default function MechanismOfInjuryForm() {
                                     currentValue.filter((value) => value !== item)
                                   );
                                 }
-
-                                // return field.value && checked
-                                //   ? field.onChange([
-                                //     ...field.value,
-                                //     item as
-                                //     | "Industrial Accident"
-                                //     | "Sports Injury"
-                                //     | "Limited Patient Access"
-                                //     | "Self-Inflicted Wounds"
-                                //     | "Suicidal Tendencies",
-                                //   ])
-                                //   : field.onChange(
-                                //     field.value?.filter(
-                                //       (value) => value !== item,
-                                //     ),
-                                //   );
                               }}
                             />
                           </FormControl>
@@ -916,21 +833,6 @@ export default function MechanismOfInjuryForm() {
                                           currentValue.filter((value) => value !== item)
                                         );
                                       }
-
-                                      // return field.value && checked
-                                      //   ? field.onChange([
-                                      //     ...field.value,
-                                      //     item as
-                                      //     | "Cold Water"
-                                      //     | "River / Dam"
-                                      //     | "Flood"
-                                      //     | "Pool",
-                                      //   ])
-                                      //   : field.onChange(
-                                      //     field.value?.filter(
-                                      //       (value) => value !== item,
-                                      //     ),
-                                      //   );
                                     }}
                                   />
                                 </FormControl>
@@ -1124,24 +1026,6 @@ export default function MechanismOfInjuryForm() {
                                         currentValue.filter((value) => value !== item)
                                       );
                                     }
-
-                                    // return field.value && checked
-                                    //   ? field.onChange([
-                                    //     ...field.value,
-                                    //     item as
-                                    //     | "Chemical"
-                                    //     | "Electrical"
-                                    //     | "Flash"
-                                    //     | "Lightning"
-                                    //     | "Steam"
-                                    //     | "Smoke Inhalation"
-                                    //     | "Thermal",
-                                    //   ])
-                                    //   : field.onChange(
-                                    //     field.value?.filter(
-                                    //       (value) => value !== item,
-                                    //     ),
-                                    //   );
                                   }}
                                 />
                               </FormControl>

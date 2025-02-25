@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
@@ -103,12 +103,23 @@ const TransportationForm: React.FC<TransportationFormProps> = ({
     });
   }
 
-  // get transport details
+  // useEffect(() => {
+  // add current user to the list of crew by default. 
+  // run this only once, because there is only one logged in user
   // console.log("employee here...", zsEmployee)
-  if (zsEmployee && zsEmployee.employeeNumber) {
-    const { data, error } = useGetCrewEmployeeID(zsEmployee?.employeeNumber.toString());
-    console.log("crew information...", data)
+  if (zsEmployee && zsEmployee.employeeNumber && fields.length === 0) {
+    // since i don't know what is the HPCSANo, by default, i'll just add 1 of the fields
+    const initialSurname: string = `${zsEmployee.person.initials} ${zsEmployee.person.lastName}`
+    const hpcsano: string = `${zsEmployee.person.initials}-${zsEmployee.employeeNumber}`
+    // don't add twice 
+    if (!fields.some((fields) => fields.HPCSANo === hpcsano)) {
+      append({ initialAndSurname: initialSurname, HPCSANo: hpcsano })
+    }
+
+    // const { data, error } = useGetCrewEmployeeID(zsEmployee?.employeeNumber.toString());
+    // console.log("crew information...", data)
   }
+  // }, [])
 
 
   return (
@@ -189,6 +200,7 @@ const TransportationForm: React.FC<TransportationFormProps> = ({
               />
             </AccordionContent>
           </AccordionItem>
+
           <AccordionItem value="crew-details">
             <AccordionTrigger
               className={cn({
