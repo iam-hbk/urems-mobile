@@ -98,40 +98,24 @@ const CirculationSchema = z.object({
 });
 
 const InitialGCSSchema = z.object({
-  total: z.string()
-    .refine((val) => {
-      // If verbal is 'T', total should be in format 'nT' where n is sum of motor and eyes
-      if (val.endsWith('T')) {
-        const numPart = parseInt(val.slice(0, -1));
-        return !isNaN(numPart) && numPart >= 2 && numPart <= 10;
-      }
-      // Otherwise total should be sum of all three values
-      const num = parseInt(val);
-      return !isNaN(num) && num >= 3 && num <= 15;
-    }, "Total must be between 3-15, or nT where n is 2-10"),
-  
-  motor: z.string()
-    .refine((val) => {
-      const num = parseInt(val);
-      return !isNaN(num) && num >= 1 && num <= 6;
-    }, "Motor score must be between 1 and 6"),
-  
-  verbal: z.string()
-    .refine((val) => {
-      if (val === 'T') return true;
-      const num = parseInt(val);
-      return !isNaN(num) && num >= 1 && num <= 5;
-    }, "Verbal score must be between 1 and 5, or 'T'"),
-  
-  eyes: z.string()
-    .refine((val) => {
-      const num = parseInt(val);
-      return !isNaN(num) && num >= 1 && num <= 4;
-    }, "Eye score must be between 1 and 4"),
+  total: z.string(),
+  motor: z.string().refine((val) => {
+    const num = parseInt(val);
+    return !isNaN(num) && num >= 1 && num <= 6;
+  }, "Motor score must be between 1 and 6"),
+  verbal: z.string().refine((val) => {
+    if (val === "T") return true;
+    const num = parseInt(val);
+    return !isNaN(num) && num >= 1 && num <= 5;
+  }, "Verbal score must be between 1 and 5, or 'T'"),
+  eyes: z.string().refine((val) => {
+    const num = parseInt(val);
+    return !isNaN(num) && num >= 1 && num <= 4;
+  }, "Eye score must be between 1 and 4"),
 });
 
 const AVPUSchema = z.object({
-value: z.enum(['A', 'V', 'P', 'U'])
+  value: z.enum(["A", "V", "P", "U"]),
 });
 
 const SpinalSensationSchema = z.object({
@@ -146,7 +130,6 @@ const SpinalSchema = z.object({
     normal: z.boolean(),
     guarding: z.boolean(),
     loss: z.boolean(),
-    //TODO: add this to the form
     deformity: z.object({
       present: z.boolean(),
       explanation: z.string().optional(),
@@ -158,16 +141,31 @@ const SpinalSchema = z.object({
 const LocationSchema = z.object({
   fromNeck: z.boolean(),
   nippleLine: z.boolean(),
-  abdomen: z.boolean(), // Changed from 'abd'
+  abdomen: z.boolean(),
 });
 
-const DisabilitySchema = z.object({
+const GCSDisabilitySchema = z.object({
+  assessmentType: z.literal('GCS'),
   initialGCS: InitialGCSSchema,
+  AVPU: z.null(),
   combative: z.boolean(),
-  AVPU: AVPUSchema,
   spinal: SpinalSchema,
-  location: LocationSchema, //Add New Location field
+  location: LocationSchema,
 });
+
+const AVPUDisabilitySchema = z.object({
+  assessmentType: z.literal('AVPU'),
+  initialGCS: z.null(),
+  AVPU: AVPUSchema,
+  combative: z.boolean(),
+  spinal: SpinalSchema,
+  location: LocationSchema,
+});
+
+const DisabilitySchema = z.discriminatedUnion('assessmentType', [
+  GCSDisabilitySchema,
+  AVPUDisabilitySchema,
+]);
 
 const PrimarySurveySchema = z.object({
   airway: AirwaySchema,
@@ -176,4 +174,14 @@ const PrimarySurveySchema = z.object({
   disability: DisabilitySchema,
 });
 
-export { PrimarySurveySchema };
+export type { 
+  SpinalSchema as SpinalSchemaType,
+  LocationSchema as LocationSchemaType,
+};
+
+export { 
+  PrimarySurveySchema,
+  SpinalSchema,
+  LocationSchema,
+  InitialGCSSchema,
+};

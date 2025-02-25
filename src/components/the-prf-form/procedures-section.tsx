@@ -27,6 +27,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../ui/accordion";
+import { DatePicker, Group } from "react-aria-components";
+import { CalendarDate } from "@internationalized/date";
+import { DateInput } from "../ui/datefield-rac";
+import { cn } from "@/lib/utils";
 import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 export default function ProceduresForm() {
@@ -42,7 +46,79 @@ export default function ProceduresForm() {
 
   const form = useForm<ProceduresType>({
     resolver: zodResolver(ProceduresSchema),
-    defaultValues: prf_from_store?.prfData?.procedures?.data || {},
+    values: prf_from_store?.prfData?.procedures?.data,
+    defaultValues: prf_from_store?.prfData?.procedures?.data || {
+      airway: {
+        ett: false,
+        ettSize: undefined,
+        depth: undefined,
+        ettCuffPressure: "Not Measured",
+        gastricTube: false,
+        iGel: false,
+        lma: false,
+        lta: false,
+        lateral: false,
+        needleAirway: false,
+        opa: false,
+        rsi: false,
+        suction: false,
+        surgicalCric: false,
+      },
+      alignment: {
+        extrication: false,
+        headblocks: false,
+        ked: false,
+        logroll: false,
+        mils: false,
+        scoop: false,
+        spiderHarness: false,
+        spineboard: false,
+        splint: false,
+        tracIii: false,
+      },
+      breathing: {
+        bvm: false,
+        chestDecompression: false,
+        cpap: false,
+        etco2: false,
+        icd: false,
+        l: false,
+        r: false,
+        date: new Date(),
+        oxygen: false,
+        spo2: false,
+        ventilation: false,
+        ventilator: undefined,
+        mode: undefined,
+        peep: undefined,
+        pip: undefined,
+        fio2: undefined,
+        ie: undefined,
+        tv: undefined,
+        rate: undefined,
+      },
+      circulation: {
+        blood: false,
+        bolus: false,
+        buretrol: false,
+        cpr: false,
+        cardioversion: false,
+        centralIv: false,
+        defib: false,
+        dialAFlow: false,
+        ecg: false,
+        lead12: false,
+        fluidWarmer: false,
+        hiCapLine: false,
+        infusionPump: false,
+        infusion: false,
+        io: false,
+        pacing: false,
+        peripheralIv: false,
+        plasma: false,
+        syringeDriver: false,
+      },
+    },
   });
 
   function onSubmit(values: ProceduresType) {
@@ -87,113 +163,192 @@ export default function ProceduresForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex flex-col space-y-8"
+      >
         <div className="flex items-center justify-between">
           <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
             Procedures
           </h3>
         </div>
 
-        <Accordion type="single" collapsible defaultValue="airway">
+        <Accordion
+          type="single"
+          collapsible
+          defaultValue="airway"
+          className="space-y-4"
+        >
           {/* Airway Section */}
-          <AccordionItem value="airway" className="">
-            <AccordionTrigger className="p-2 text-lg font-semibold">
+          <AccordionItem
+            value="airway"
+            className={cn(
+              Object.keys(form.formState.errors).some(key => key.startsWith('airway'))
+                ? "border-destructive"
+                : ""
+            )}
+          >
+            <AccordionTrigger
+              className={cn(
+                "text-lg font-semibold",
+                Object.keys(form.formState.errors).some(key => key.startsWith('airway'))
+                  ? "text-destructive"
+                  : ""
+              )}
+            >
               Airway
             </AccordionTrigger>
-            <AccordionContent className="grid grid-cols-2 gap-4 space-y-4 p-2">
-              <div className="col-span-1">
-                <FormField
-                  control={form.control}
-                  name="airway.ett"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormLabel>E.T.T.</FormLabel>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="airway.ettSize"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>ETT SIZE (mm)</FormLabel>
-                      <FormControl>
-                        <Input min={"0"} type="number" {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="airway.depth"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>DEPTH (cm)</FormLabel>
-                      <FormControl>
-                        <Input min={"0"} type="number" {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="airway.ettCuffPressure"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>E.T.T. CUFF PRESSURE</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex flex-row space-y-1"
-                        >
-                          {[
-                            "20-30cmH2O",
-                            "CUFF NOT INFLATED",
-                            "NOT MEASURED",
-                          ].map((option) => (
-                            <FormItem
-                              key={option}
-                              className="flex items-center space-x-3 space-y-0"
-                            >
-                              <FormControl>
-                                <RadioGroupItem value={option} />
-                              </FormControl>
-                              <FormLabel className="font-normal">
-                                {option}
-                              </FormLabel>
-                            </FormItem>
-                          ))}
-                        </RadioGroup>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+            <AccordionContent className="space-y-6 p-4">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="airway.ett"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel>E.T.T.</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="airway.ettSize"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>ETT SIZE (mm)</FormLabel>
+                          <FormControl>
+                            <Input type="number" {...field} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="airway.depth"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>DEPTH (cm)</FormLabel>
+                          <FormControl>
+                            <Input type="number" {...field} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name="airway.ettCuffPressure"
+                    render={({ field }) => (
+                      <FormItem className="space-y-2">
+                        <FormLabel>E.T.T. CUFF PRESSURE</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="flex flex-col space-y-2"
+                          >
+                            {[
+                              "20-30cmH2O",
+                              "Cuff Not Inflated",
+                              "Not Measured",
+                            ].map((option) => (
+                              <FormItem
+                                key={option}
+                                className="flex items-center space-x-3 space-y-0"
+                              >
+                                <FormControl>
+                                  <RadioGroupItem value={option} />
+                                </FormControl>
+                                <FormLabel className="font-normal">
+                                  {option}
+                                </FormLabel>
+                              </FormItem>
+                            ))}
+                          </RadioGroup>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    "gastricTube",
+                    "iGel",
+                    "lma",
+                    "lta",
+                    "lateral",
+                    "needleAirway",
+                    "opa",
+                    "rsi",
+                    "suction",
+                    "surgicalCric",
+                  ].map((item) => (
+                    <FormField
+                      key={item}
+                      control={form.control}
+                      name={`airway.${item}` as "airway.gastricTube"}
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormLabel>{item.toUpperCase()}</FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                </div>
               </div>
-              <div className="grid grid-cols-2 space-y-2 px-2">
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Alignment Section */}
+          <AccordionItem
+            value="alignment"
+            className={cn(
+              Object.keys(form.formState.errors).some(key => key.startsWith('alignment'))
+                ? "border-destructive"
+                : ""
+            )}
+          >
+            <AccordionTrigger
+              className={cn(
+                "text-lg font-semibold",
+                Object.keys(form.formState.errors).some(key => key.startsWith('alignment'))
+                  ? "text-destructive"
+                  : ""
+              )}
+            >
+              Alignment
+            </AccordionTrigger>
+            <AccordionContent className="space-y-4 p-4">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
                 {[
-                  "gastricTube",
-                  "iGel",
-                  "lma",
-                  "lta",
-                  "lateral",
-                  "needleAirway",
-                  "opa",
-                  "rsi",
-                  "suction",
-                  "surgicalCric",
+                  "extrication",
+                  "headblocks",
+                  "ked",
+                  "logroll",
+                  "mils",
+                  "scoop",
+                  "spiderHarness",
+                  "spineboard",
+                  "splint",
+                  "tracIii",
                 ].map((item) => (
                   <FormField
                     key={item}
                     control={form.control}
-                    name={`airway.${item}` as "airway.gastricTube"}
+                    name={`alignment.${item}` as "alignment.extrication"}
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center space-x-3 space-y-0">
                         <FormControl>
@@ -211,168 +366,210 @@ export default function ProceduresForm() {
             </AccordionContent>
           </AccordionItem>
 
-          {/* Alignment Section */}
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold">Alignment</h4>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-              {[
-                "extrication",
-                "headblocks",
-                "ked",
-                "logroll",
-                "mils",
-                "scoop",
-                "spiderHarness",
-                "spineboard",
-                "splint",
-                "tracIii",
-              ].map((item) => (
-                <FormField
-                  key={item}
-                  control={form.control}
-                  name={`alignment.${item}` as "alignment.extrication"}
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormLabel>{item.toUpperCase()}</FormLabel>
-                    </FormItem>
-                  )}
-                />
-              ))}
-            </div>
-          </div>
-
           {/* Breathing Section */}
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold">Breathing</h4>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-              {[
-                "bvm",
-                "chestDecompression",
-                "cpap",
-                "etco2",
-                "icd",
-                "l",
-                "r",
-                "oxygen",
-                "spo2",
-                "ventilation",
-              ].map((item) => (
-                <FormField
-                  key={item}
-                  control={form.control}
-                  name={`breathing.${item}` as "breathing.bvm"}
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormLabel>{item.toUpperCase()}</FormLabel>
-                    </FormItem>
-                  )}
-                />
-              ))}
-            </div>
-            <FormField
-              control={form.control}
-              name="breathing.date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Date</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                </FormItem>
+          <AccordionItem
+            value="breathing"
+            className={cn(
+              Object.keys(form.formState.errors).some(key => key.startsWith('breathing'))
+                ? "border-destructive"
+                : ""
+            )}
+          >
+            <AccordionTrigger
+              className={cn(
+                "text-lg font-semibold",
+                Object.keys(form.formState.errors).some(key => key.startsWith('breathing'))
+                  ? "text-destructive"
+                  : ""
               )}
-            />
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-              {[
-                "ventilator",
-                "mode",
-                "peep",
-                "pip",
-                "fio2",
-                "ie",
-                "tv",
-                "rate",
-              ].map((item) => (
+            >
+              Breathing
+            </AccordionTrigger>
+            <AccordionContent className="space-y-6 p-4">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                {[
+                  "bvm",
+                  "chestDecompression",
+                  "cpap",
+                  "etco2",
+                  "icd",
+                  "l",
+                  "r",
+                  "oxygen",
+                  "spo2",
+                  "ventilation",
+                ].map((item) => (
+                  <FormField
+                    key={item}
+                    control={form.control}
+                    name={`breathing.${item}` as "breathing.bvm"}
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel>{item.toUpperCase()}</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                ))}
+              </div>
+              <div className="max-w-md">
                 <FormField
-                  key={item}
                   control={form.control}
-                  name={`breathing.${item}` as "breathing.ventilator"}
+                  name="breathing.date"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{item.toUpperCase()}</FormLabel>
+                      <FormLabel>
+                        Date
+                        <span className="ml-2 text-xs text-muted-foreground">
+                          (mm/dd/yyyy)
+                        </span>
+                      </FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <DatePicker
+                          value={
+                            field.value
+                              ? typeof field.value === "string"
+                                ? new CalendarDate(
+                                  new Date(field.value).getFullYear(),
+                                  new Date(field.value).getMonth() + 1,
+                                  new Date(field.value).getDate(),
+                                )
+                                : new CalendarDate(
+                                  field.value.getFullYear(),
+                                  field.value.getMonth() + 1,
+                                  field.value.getDate(),
+                                )
+                              : null
+                          }
+                          onChange={(date) => {
+                            if (date) {
+                              const jsDate = new Date(
+                                date.year,
+                                date.month - 1,
+                                date.day,
+                              );
+                              field.onChange(jsDate);
+                            }
+                          }}
+                        >
+                          <div className="flex">
+                            <Group className="w-full">
+                              <DateInput
+                                label="Last Dr Visit"
+                                className="pe-9"
+                              />
+                            </Group>
+                          </div>
+                        </DatePicker>
                       </FormControl>
                     </FormItem>
                   )}
                 />
-              ))}
-            </div>
-          </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                {[
+                  "ventilator",
+                  "mode",
+                  "peep",
+                  "pip",
+                  "fio2",
+                  "ie",
+                  "tv",
+                  "rate",
+                ].map((item) => (
+                  <FormField
+                    key={item}
+                    control={form.control}
+                    name={`breathing.${item}` as "breathing.ventilator"}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{item.toUpperCase()}</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                ))}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
 
           {/* Circulation Section */}
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold">Circulation</h4>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-              {[
-                "blood",
-                "bolus",
-                "buretrol",
-                "cpr",
-                "cardioversion",
-                "centralIv",
-                "defib",
-                "dialAFlow",
-                "ecg",
-                "lead12",
-                "fluidWarmer",
-                "hiCapLine",
-                "infusionPump",
-                "infusion",
-                "io",
-                "pacing",
-                "peripheralIv",
-                "plasma",
-                "syringeDriver",
-              ].map((item) => (
-                <FormField
-                  key={item}
-                  control={form.control}
-                  name={`circulation.${item}` as "circulation.blood"}
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormLabel>
-                        {item.toUpperCase().replace("_", " ")}
-                      </FormLabel>
-                    </FormItem>
-                  )}
-                />
-              ))}
-            </div>
-          </div>
+          <AccordionItem
+            value="circulation"
+            className={cn(
+              Object.keys(form.formState.errors).some(key => key.startsWith('circulation'))
+                ? "border-destructive"
+                : ""
+            )}
+          >
+            <AccordionTrigger
+              className={cn(
+                "text-lg font-semibold",
+                Object.keys(form.formState.errors).some(key => key.startsWith('circulation'))
+                  ? "text-destructive"
+                  : ""
+              )}
+            >
+              Circulation
+            </AccordionTrigger>
+            <AccordionContent className="space-y-4 p-4">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                {[
+                  "blood",
+                  "bolus",
+                  "buretrol",
+                  "cpr",
+                  "cardioversion",
+                  "centralIv",
+                  "defib",
+                  "dialAFlow",
+                  "ecg",
+                  "lead12",
+                  "fluidWarmer",
+                  "hiCapLine",
+                  "infusionPump",
+                  "infusion",
+                  "io",
+                  "pacing",
+                  "peripheralIv",
+                  "plasma",
+                  "syringeDriver",
+                ].map((item) => (
+                  <FormField
+                    key={item}
+                    control={form.control}
+                    name={`circulation.${item}` as "circulation.blood"}
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel>
+                          {item.toUpperCase().replace("_", " ")}
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                ))}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
         </Accordion>
 
         <Button
           type="submit"
           disabled={!form.formState.isDirty}
-          className="w-full sm:w-auto"
+          className="w-full self-end sm:w-auto"
         >
           {form.formState.isSubmitting || updatePrfQuery.isPending ? (
             <>

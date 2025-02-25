@@ -7,10 +7,10 @@ import { usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import Script from "next/script";
 import QuickLinks from "@/components/quick-links";
-import { Eye, EyeOffIcon, Notebook } from "lucide-react";
+import { Eye, EyeOffIcon, Notebook, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-type Props = {};
+import AssessmentToolsSummary from "@/components/assessment-tools-summary";
+import { CommandPalette } from "@/components/command-palette";
 
 function Layout({
   children,
@@ -28,17 +28,24 @@ function Layout({
   path_blocks.splice(2, 1);
   // to toggle the quick links
   const [showQuickLinks, setShowQuickLinks] = useState<boolean>(true);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
 
   return (
     <div className="flex w-full flex-col items-center overflow-auto">
+      {/* Command Palette */}
+      <CommandPalette
+        prf={prf}
+        open={showCommandPalette}
+        onOpenChange={setShowCommandPalette}
+      />
 
-      <div className="sticky top-2 z-10 m-2 flex w-11/12 flex-col items-center justify-between space-y-2 rounded-lg p-2 shadow shadow-slate-200 backdrop-blur ">
-
+      {/* Header */}
+      <div className="sticky top-2 z-10 m-2 flex w-11/12 flex-col items-center justify-between space-y-2 rounded-lg p-2 shadow shadow-slate-200 backdrop-blur">
         {/* showQuickLinks - to show the quick links components */}
         {prf && showQuickLinks && <QuickLinks prf={prf} />}
 
-        <div className="flex w-full flex-col sm:flex-row justify-between ">
-          <div className="flex flex-row gap-1 items-center ">
+        <div className="flex w-full flex-col justify-between sm:flex-row">
+          <div className="flex flex-row items-center gap-1">
             {path_blocks.map((block, index) => {
               if (index == 0) {
                 return (
@@ -58,14 +65,25 @@ function Layout({
           </div>
 
           {/* left side of the components */}
-          <div className=" items-center flex mt-[1rem] sm:mt-[0rem]  " >
+          <div className="mt-[1rem] flex items-center gap-2 sm:mt-[0rem]">
             {/* toogle between showing the quicks links and not, to provider user with more view */}
-            <Button className=" mr-[0.5rem] text-[0.89rem] flex items-center "
-              onClick={() => setShowQuickLinks(!showQuickLinks)} >
+            <Button
+              variant={"outline"}
+              onClick={() => setShowQuickLinks(!showQuickLinks)}
+            >
               {showQuickLinks ? <EyeOffIcon size={20} /> : <Eye size={20} />}
-              <span className=" ml-[0.5rem] " >Quick Links</span>
+              <span className="ml-[0.5rem]">Quick Links</span>
             </Button>
-            {/*  */}
+            {/* Command palette button */}
+            <Button
+              variant={"outline"}
+              onClick={() => setShowCommandPalette(true)}
+            >
+              <Search size={20} />
+              <span className="ml-[0.5rem]">Search (⌘K)</span>
+            </Button>
+
+            {/* Stepper View */}
             {!!prf && (
               <StepperView prf={prf} triggerTitle="View Progress"></StepperView>
             )}
@@ -81,9 +99,10 @@ function Layout({
         strategy="afterInteractive"
         async
       />
-      <div className="absolute shadow-lg bottom-10 right-10 rounded-full w-12 h-12  bg-primary text-primary-foreground flex justify-center items-center z-50">
+      <div className="absolute bottom-10 right-10 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg">
         <Notebook />
       </div>
+      {prf && <AssessmentToolsSummary prf={prf} />}
     </div>
   );
 }

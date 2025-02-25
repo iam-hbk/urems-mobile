@@ -47,6 +47,7 @@ import {
 } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
+import AddressAutoComplete from "../AddressAutoComplete";
 
 export type PatientDetailsType = z.infer<typeof PatientDetailsSchema>;
 
@@ -56,7 +57,7 @@ type PatientDetailsFormProps = {
 
 type AgeUnit = "years" | "months" | "days";
 
-const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
+const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
   // SM
   const { zsEmployee } = useZuStandEmployeeStore();
   const prfId = usePathname().split("/")[2];
@@ -138,7 +139,10 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
 
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
       age--;
     }
 
@@ -294,7 +298,7 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Age</FormLabel>
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="mb-2 flex items-center gap-2">
                       <Switch
                         checked={useDateOfBirth}
                         onCheckedChange={setUseDateOfBirth}
@@ -313,7 +317,7 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
                                   variant={"outline"}
                                   className={cn(
                                     "w-full justify-start text-left font-normal",
-                                    !field.value && "text-muted-foreground"
+                                    !field.value && "text-muted-foreground",
                                   )}
                                 >
                                   <CalendarIcon className="mr-2 h-4 w-4" />
@@ -324,17 +328,23 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
                                   )}
                                 </Button>
                               </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
+                              <PopoverContent
+                                className="w-auto p-0"
+                                align="start"
+                              >
                                 <Calendar
                                   mode="single"
-                                  selected={field.value ? new Date() : undefined}
+                                  selected={
+                                    field.value ? new Date() : undefined
+                                  }
                                   onSelect={(date) => {
                                     if (date) {
                                       calculateAge(date);
                                     }
                                   }}
                                   disabled={(date) =>
-                                    date > new Date() || date < new Date("1900-01-01")
+                                    date > new Date() ||
+                                    date < new Date("1900-01-01")
                                   }
                                   initialFocus
                                 />
@@ -352,24 +362,26 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
                               onChange={(e) => {
                                 const value = e.target.value;
                                 if (value === "" || !isNaN(Number(value))) {
-                                  field.onChange(value === "" ? "" : Number(value));
+                                  field.onChange(
+                                    value === "" ? "" : Number(value),
+                                  );
                                 }
                               }}
                             />
                             {(form.formState.touchedFields.age ||
                               form.formState.errors.age) && (
-                                <Button
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    field.onChange("");
-                                  }}
-                                  variant={"ghost"}
-                                  size={"icon"}
-                                  className="absolute right-0 z-10"
-                                >
-                                  <X className="h-4 w-4" />
-                                </Button>
-                              )}
+                              <Button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  field.onChange("");
+                                }}
+                                variant={"ghost"}
+                                size={"icon"}
+                                className="absolute right-0 z-10"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
                           </div>
                         )}
                         <FormField
@@ -469,7 +481,9 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
                           className="h-4 w-4"
                         />
                       </FormControl>
-                      <FormLabel className="font-normal">Unable to obtain information</FormLabel>
+                      <FormLabel className="font-normal">
+                        Unable to obtain information
+                      </FormLabel>
                     </div>
                     <FormMessage />
                   </FormItem>
@@ -492,7 +506,9 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
                             onChange={(e) => {
                               const value = e.target.value;
                               if (value === "" || !isNaN(Number(value))) {
-                                field.onChange(value === "" ? undefined : Number(value));
+                                field.onChange(
+                                  value === "" ? undefined : Number(value),
+                                );
                               }
                             }}
                           />
@@ -580,18 +596,12 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
+              <AddressAutoComplete
                 name="nextOfKin.physicalAddress"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Physical Address</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Physical Address" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                label="Physical Address"
+                placeholder="Address of Next of Kin"
+                useCurrentLocation={false}
+                showGetCurrentLocationButton={false}
               />
               <FormField
                 control={form.control}
@@ -752,18 +762,12 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
+              <AddressAutoComplete
                 name="employer.workAddress"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Work Address</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Work Address" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                label="Work Address"
+                placeholder="Address of Employer"
+                useCurrentLocation={false}
+                showGetCurrentLocationButton={false}
               />
             </AccordionContent>
           </AccordionItem>
@@ -777,7 +781,8 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
             >
               <h4
                 className={cn({
-                  "col-span-full scroll-m-20 text-lg font-semibold tracking-tight": true,
+                  "col-span-full scroll-m-20 text-lg font-semibold tracking-tight":
+                    true,
                   "text-destructive": form.formState.errors.pastHistory,
                 })}
               >
@@ -792,7 +797,10 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
                   <FormItem className="col-span-full">
                     <FormLabel>Allergies</FormLabel>
                     <FormControl>
-                      <Input placeholder="List any known allergies" {...field} />
+                      <Input
+                        placeholder="List any known allergies"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -806,7 +814,10 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
                   <FormItem className="col-span-full">
                     <FormLabel>Current Medications</FormLabel>
                     <FormControl>
-                      <Input placeholder="List current medications" {...field} />
+                      <Input
+                        placeholder="List current medications"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -820,7 +831,10 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
                   <FormItem className="col-span-full">
                     <FormLabel>Medical History</FormLabel>
                     <FormControl>
-                      <Input placeholder="Relevant medical history" {...field} />
+                      <Input
+                        placeholder="Relevant medical history"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -834,7 +848,10 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
                   <FormItem className="col-span-full">
                     <FormLabel>Last Meal</FormLabel>
                     <FormControl>
-                      <Input placeholder="Time and description of last meal" {...field} />
+                      <Input
+                        placeholder="Time and description of last meal"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -945,7 +962,9 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
                           className="h-4 w-4"
                         />
                       </FormControl>
-                      <FormLabel className="font-normal">Hypertension</FormLabel>
+                      <FormLabel className="font-normal">
+                        Hypertension
+                      </FormLabel>
                     </FormItem>
                   )}
                 />

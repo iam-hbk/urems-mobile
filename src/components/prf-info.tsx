@@ -89,7 +89,7 @@ export default function PRF_Summary({
             <div className="flex items-center gap-2">
               <Ambulance className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
               <span className="text-sm">
-                Ambulance: {case_details?.data.ambulance || "Unknown"}
+                Ambulance: {case_details?.data.vehicle.name || "Unknown"}
               </span>
             </div>
             <Separator />

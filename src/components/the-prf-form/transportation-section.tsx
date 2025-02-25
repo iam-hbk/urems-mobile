@@ -28,8 +28,8 @@ import { useStore } from "@/lib/store";
 import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
 import { PRF_FORM } from "@/interfaces/prf-form";
 import { toast } from "sonner";
+import AddressAutoComplete from "../AddressAutoComplete";
 import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
-import { useGetCrewEmployeeID } from "@/hooks/crew/useCrew";
 
 export type TransportationType = z.infer<typeof TransportationSchema>;
 
@@ -50,6 +50,7 @@ const TransportationForm: React.FC<TransportationFormProps> = ({
   const router = useRouter();
   const form = useForm<TransportationType>({
     resolver: zodResolver(TransportationSchema),
+    values: prf_from_store?.prfData?.transportation?.data,
     defaultValues: prf_from_store?.prfData?.transportation?.data || {
       fromSuburbTown: "",
       by: "",
@@ -139,38 +140,23 @@ const TransportationForm: React.FC<TransportationFormProps> = ({
               Transportation
             </h3>
           </div>
-          <AccordionItem value="transportation">
-            <AccordionTrigger
-              className={cn({
-                "text-destructive":
-                  Object.keys(form.formState.errors).length > 0,
-              })}
+          <div>
+            <h4
+              className={cn(
+                "col-span-full scroll-m-20 text-lg font-semibold tracking-tight",
+                {
+                  "text-destructive":
+                    Object.keys(form.formState.errors).length > 0,
+                },
+              )}
             >
-              <h4
-                className={cn(
-                  "col-span-full scroll-m-20 text-lg font-semibold tracking-tight",
-                  {
-                    "text-destructive":
-                      Object.keys(form.formState.errors).length > 0,
-                  },
-                )}
-              >
-                Transportation Details
-              </h4>
-            </AccordionTrigger>
-            <AccordionContent className="grid gap-3 px-4 sm:grid-cols-2 lg:grid-cols-3">
-              <FormField
-                control={form.control}
+              Transportation Details
+            </h4>
+            <div className="grid gap-3 px-4 sm:grid-cols-2 lg:grid-cols-3">
+              <AddressAutoComplete
                 name="fromSuburbTown"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>From Suburb/Town</FormLabel>
-                    <FormControl>
-                      <Input placeholder="From Suburb/Town" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                label="From Suburb/Town"
+                placeholder="From Suburb/Town"
               />
               <FormField
                 control={form.control}
@@ -185,22 +171,15 @@ const TransportationForm: React.FC<TransportationFormProps> = ({
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
+              <AddressAutoComplete
                 name="to"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>To (Destination)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="To (Destination)" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                label="To (Destination)"
+                placeholder="To (Destination)"
+                useCurrentLocation={false}
+                showGetCurrentLocationButton={false}
               />
-            </AccordionContent>
-          </AccordionItem>
-
+            </div>
+          </div>
           <AccordionItem value="crew-details">
             <AccordionTrigger
               className={cn({

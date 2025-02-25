@@ -17,12 +17,16 @@ interface TimePickerProps {
   name: string;
   className?: string;
   showUnknownOption?: boolean;
+  value?: string;
+  onChange?: (value: string) => void;
 }
 
 export function TimePicker({
   name,
   className,
   showUnknownOption = false,
+  value: customValue,
+  onChange: onCustomChange,
 }: TimePickerProps) {
   const { control } = useFormContext();
 
@@ -45,6 +49,8 @@ export function TimePicker({
               <Clock className="mr-2 h-4 w-4" />
               {value?.unknown ? (
                 <span className="text-muted-foreground">Unknown</span>
+              ) : customValue ? (
+                customValue
               ) : value?.value ? (
                 value.value
               ) : (
@@ -60,12 +66,17 @@ export function TimePicker({
                   suppressHydrationWarning
                   type="time"
                   className={cn(value?.unknown && "opacity-50")}
-                  value={value?.value || ""}
+                  value={customValue || value?.value || ""}
                   onChange={(e) => {
-                    onChange({
-                      value: e.target.value,
-                      unknown: false,
-                    });
+                    if (onCustomChange) {
+                      console.log("onCustomChange:", e.target.value);
+                      onCustomChange(e.target.value);
+                    } else {
+                      onChange({
+                        value: e.target.value,
+                        unknown: false,
+                      });
+                    }
                   }}
                   disabled={value?.unknown}
                 />
