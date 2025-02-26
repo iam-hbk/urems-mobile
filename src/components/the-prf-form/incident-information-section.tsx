@@ -36,7 +36,7 @@ type IncidentInformationFormProps = {
   initialData?: PRF_FORM;
 };
 
-const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
+const IncidentInformationForm = ({ }: IncidentInformationFormProps) => {
   const prfId = usePathname().split("/")[2];
   const prf_from_store = useStore((state) => state.prfForms).find(
     (prf) => prf.prfFormId == prfId,

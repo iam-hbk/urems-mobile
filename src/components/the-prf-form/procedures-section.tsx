@@ -31,6 +31,7 @@ import { DatePicker, Group } from "react-aria-components";
 import { CalendarDate } from "@internationalized/date";
 import { DateInput } from "../ui/datefield-rac";
 import { cn } from "@/lib/utils";
+import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 export default function ProceduresForm() {
   const prfId = usePathname().split("/")[2];
@@ -40,6 +41,8 @@ export default function ProceduresForm() {
 
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
+
+  const { zsEmployee } = useZuStandEmployeeStore();
 
   const form = useForm<ProceduresType>({
     resolver: zodResolver(ProceduresSchema),
@@ -119,6 +122,15 @@ export default function ProceduresForm() {
   });
 
   function onSubmit(values: ProceduresType) {
+
+    if (!zsEmployee) {
+      toast.error("No Employee Information Found", {
+        duration: 3000,
+        position: "top-right",
+      });
+      return;
+    }
+
     const prfUpdateValue: PRF_FORM = {
       prfFormId: prfId,
       prfData: {
@@ -129,7 +141,7 @@ export default function ProceduresForm() {
           isOptional: false,
         },
       },
-      EmployeeID: prf_from_store?.EmployeeID || "2",
+      EmployeeID: zsEmployee?.employeeNumber.toString(),
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
@@ -168,19 +180,19 @@ export default function ProceduresForm() {
           className="space-y-4"
         >
           {/* Airway Section */}
-          <AccordionItem 
+          <AccordionItem
             value="airway"
             className={cn(
               Object.keys(form.formState.errors).some(key => key.startsWith('airway'))
-                ? "border-destructive" 
+                ? "border-destructive"
                 : ""
             )}
           >
-            <AccordionTrigger 
+            <AccordionTrigger
               className={cn(
                 "text-lg font-semibold",
-                Object.keys(form.formState.errors).some(key => key.startsWith('airway')) 
-                  ? "text-destructive" 
+                Object.keys(form.formState.errors).some(key => key.startsWith('airway'))
+                  ? "text-destructive"
                   : ""
               )}
             >
@@ -301,19 +313,19 @@ export default function ProceduresForm() {
           </AccordionItem>
 
           {/* Alignment Section */}
-          <AccordionItem 
+          <AccordionItem
             value="alignment"
             className={cn(
               Object.keys(form.formState.errors).some(key => key.startsWith('alignment'))
-                ? "border-destructive" 
+                ? "border-destructive"
                 : ""
             )}
           >
-            <AccordionTrigger 
+            <AccordionTrigger
               className={cn(
                 "text-lg font-semibold",
-                Object.keys(form.formState.errors).some(key => key.startsWith('alignment')) 
-                  ? "text-destructive" 
+                Object.keys(form.formState.errors).some(key => key.startsWith('alignment'))
+                  ? "text-destructive"
                   : ""
               )}
             >
@@ -355,19 +367,19 @@ export default function ProceduresForm() {
           </AccordionItem>
 
           {/* Breathing Section */}
-          <AccordionItem 
+          <AccordionItem
             value="breathing"
             className={cn(
               Object.keys(form.formState.errors).some(key => key.startsWith('breathing'))
-                ? "border-destructive" 
+                ? "border-destructive"
                 : ""
             )}
           >
-            <AccordionTrigger 
+            <AccordionTrigger
               className={cn(
                 "text-lg font-semibold",
-                Object.keys(form.formState.errors).some(key => key.startsWith('breathing')) 
-                  ? "text-destructive" 
+                Object.keys(form.formState.errors).some(key => key.startsWith('breathing'))
+                  ? "text-destructive"
                   : ""
               )}
             >
@@ -423,15 +435,15 @@ export default function ProceduresForm() {
                             field.value
                               ? typeof field.value === "string"
                                 ? new CalendarDate(
-                                    new Date(field.value).getFullYear(),
-                                    new Date(field.value).getMonth() + 1,
-                                    new Date(field.value).getDate(),
-                                  )
+                                  new Date(field.value).getFullYear(),
+                                  new Date(field.value).getMonth() + 1,
+                                  new Date(field.value).getDate(),
+                                )
                                 : new CalendarDate(
-                                    field.value.getFullYear(),
-                                    field.value.getMonth() + 1,
-                                    field.value.getDate(),
-                                  )
+                                  field.value.getFullYear(),
+                                  field.value.getMonth() + 1,
+                                  field.value.getDate(),
+                                )
                               : null
                           }
                           onChange={(date) => {
@@ -489,19 +501,19 @@ export default function ProceduresForm() {
           </AccordionItem>
 
           {/* Circulation Section */}
-          <AccordionItem 
+          <AccordionItem
             value="circulation"
             className={cn(
               Object.keys(form.formState.errors).some(key => key.startsWith('circulation'))
-                ? "border-destructive" 
+                ? "border-destructive"
                 : ""
             )}
           >
-            <AccordionTrigger 
+            <AccordionTrigger
               className={cn(
                 "text-lg font-semibold",
-                Object.keys(form.formState.errors).some(key => key.startsWith('circulation')) 
-                  ? "text-destructive" 
+                Object.keys(form.formState.errors).some(key => key.startsWith('circulation'))
+                  ? "text-destructive"
                   : ""
               )}
             >

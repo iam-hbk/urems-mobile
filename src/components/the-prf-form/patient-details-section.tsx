@@ -167,7 +167,6 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
 
   function onSubmit(values: z.infer<typeof PatientDetailsSchema>) {
     // if there is valid employee info
-    console.log(zsEmployee);
     if (!zsEmployee) {
       toast.error("No Employee Information Found", {
         duration: 3000,

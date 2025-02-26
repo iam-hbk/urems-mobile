@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
@@ -29,6 +29,7 @@ import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
 import { PRF_FORM } from "@/interfaces/prf-form";
 import { toast } from "sonner";
 import AddressAutoComplete from "../AddressAutoComplete";
+import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 export type TransportationType = z.infer<typeof TransportationSchema>;
 
@@ -43,6 +44,7 @@ const TransportationForm: React.FC<TransportationFormProps> = ({
   const prf_from_store = useStore((state) => state.prfForms).find(
     (prf) => prf.prfFormId == prfId,
   );
+  const { zsEmployee } = useZuStandEmployeeStore();
 
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
@@ -63,6 +65,15 @@ const TransportationForm: React.FC<TransportationFormProps> = ({
   });
 
   function onSubmit(values: TransportationType) {
+
+    if (!zsEmployee) {
+      toast.error("No Employee Information Found", {
+        duration: 3000,
+        position: "top-right",
+      });
+      return;
+    }
+
     const prfUpdateValue: PRF_FORM = {
       prfFormId: prfId,
       prfData: {
@@ -73,7 +84,7 @@ const TransportationForm: React.FC<TransportationFormProps> = ({
           isOptional: false,
         },
       },
-      EmployeeID: prf_from_store?.EmployeeID || "2",
+      EmployeeID: zsEmployee?.employeeNumber.toString(),
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
@@ -92,6 +103,25 @@ const TransportationForm: React.FC<TransportationFormProps> = ({
       },
     });
   }
+
+  // useEffect(() => {
+  // add current user to the list of crew by default. 
+  // run this only once, because there is only one logged in user
+  // console.log("employee here...", zsEmployee)
+  if (zsEmployee && zsEmployee.employeeNumber && fields.length === 0) {
+    // since i don't know what is the HPCSANo, by default, i'll just add 1 of the fields
+    const initialSurname: string = `${zsEmployee.person.initials} ${zsEmployee.person.lastName}`
+    const hpcsano: string = `${zsEmployee.person.initials}-${zsEmployee.employeeNumber}`
+    // don't add twice 
+    if (!fields.some((fields) => fields.HPCSANo === hpcsano)) {
+      append({ initialAndSurname: initialSurname, HPCSANo: hpcsano })
+    }
+
+    // const { data, error } = useGetCrewEmployeeID(zsEmployee?.employeeNumber.toString());
+    // console.log("crew information...", data)
+  }
+  // }, [])
+
 
   return (
     <Accordion

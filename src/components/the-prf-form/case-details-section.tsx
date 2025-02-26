@@ -68,17 +68,17 @@ const PRFEditSummary = ({
         initialData?.prfData.case_details?.data.vehicle ||
         (zsVehicle
           ? {
-              id: zsVehicle.vehicleId,
-              name: zsVehicle.vehicleName,
-              license: zsVehicle.vehicleLicense,
-              registrationNumber: zsVehicle.vehicleRegistrationNumber,
-            }
+            id: zsVehicle.vehicleId,
+            name: zsVehicle.vehicleName,
+            license: zsVehicle.vehicleLicense,
+            registrationNumber: zsVehicle.vehicleRegistrationNumber,
+          }
           : {
-              id: 0,
-              name: "",
-              license: "",
-              registrationNumber: "",
-            }),
+            id: 0,
+            name: "",
+            license: "",
+            registrationNumber: "",
+          }),
       dateOfCase:
         action === "create"
           ? new Date()
@@ -269,10 +269,10 @@ const PRFEditSummary = ({
                         value={
                           field.value
                             ? new CalendarDate(
-                                field.value.getFullYear(),
-                                field.value.getMonth() + 1,
-                                field.value.getDate(),
-                              )
+                              field.value.getFullYear(),
+                              field.value.getMonth() + 1,
+                              field.value.getDate(),
+                            )
                             : null
                         }
                         onChange={(date) => {
