@@ -58,7 +58,6 @@ const PRFEditSummary = ({
   const dialogCloseRef = React.useRef<HTMLButtonElement>(null);
   const form = useForm<z.infer<typeof CaseDetailsSchema>>({
     resolver: zodResolver(CaseDetailsSchema),
-    // values: initialData?.prfData.case_details?.data,
     defaultValues: {
       regionDistrict:
         initialData?.prfData.case_details?.data.regionDistrict || "",
