@@ -986,6 +986,24 @@ export const PastMedicalHistorySchema = z.object({
 
 export type PastMedicalHistoryType = z.infer<typeof PastMedicalHistorySchema>;
 
+// Inventory section schema
+export const InventoryItemSchema = z.object({
+  itemId: z.string(),
+  name: z.string(),
+  category: z.enum(["medication", "fluid", "equipment", "consumable"]),
+  quantityUsed: z.number().min(0),
+  availableStock: z.number().min(0),
+  notes: z.string().optional(),
+});
+
+export const InventorySchema = z.object({
+  items: z.array(InventoryItemSchema),
+  additionalNotes: z.string().optional(),
+});
+
+export type InventoryItemType = z.infer<typeof InventoryItemSchema>;
+export type InventoryType = z.infer<typeof InventorySchema>;
+
 export const PRFFormDataSchema = z.object({
   case_details: z
     .object({
@@ -1132,6 +1150,13 @@ export const PRFFormDataSchema = z.object({
       isOptional: z.boolean().default(false),
       isCompleted: z.boolean().default(false),
       data: PastMedicalHistorySchema,
+    })
+    .optional(),
+  inventory: z
+    .object({
+      isOptional: z.boolean().default(false),
+      isCompleted: z.boolean().default(false),
+      data: InventorySchema,
     })
     .optional(),
 });
