@@ -16,9 +16,23 @@ interface MedicationItem {
   currentStock: number;
 }
 
+interface EquipmentItem {
+  id: string;
+  name: string;
+  currentStock: number;
+}
+
+interface ConsumableItem {
+  id: string;
+  name: string;
+  currentStock: number;
+}
+
 interface VehicleInventory {
   fluids: FluidItem[];
   medications: MedicationItem[];
+  equipment: EquipmentItem[];
+  consumables: ConsumableItem[];
 }
 
 interface Vehicle {
@@ -39,6 +53,8 @@ interface useZuStandCrewStoreItems {
   zsClearCrewID: () => void;
   zsUpdateFluidStock: (fluidId: string, volumeUsed: number) => void;
   zsUpdateMedicationStock: (medicationId: string, unitsUsed: number) => void;
+  zsUpdateEquipmentStock: (equipmentId: string, unitsUsed: number) => void;
+  zsUpdateConsumableStock: (consumableId: string, unitsUsed: number) => void;
 }
 
 // Mock data for initial vehicle inventory
@@ -91,6 +107,35 @@ const mockVehicleInventory: VehicleInventory = {
       dose: "10mg/1ml",
       route: "IM/IV",
       currentStock: 8,
+    },
+  ],
+  equipment: [
+    {
+      id: "eq-bvm",
+      name: "Bag Valve Mask",
+      currentStock: 2,
+    },
+    {
+      id: "eq-spo2",
+      name: "SpO2 Sensor",
+      currentStock: 3,
+    },
+  ],
+  consumables: [
+    {
+      id: "con-gloves",
+      name: "Gloves (pair)",
+      currentStock: 50,
+    },
+    {
+      id: "con-gauze",
+      name: "Gauze Pads",
+      currentStock: 30,
+    },
+    {
+      id: "con-bandage",
+      name: "Bandages",
+      currentStock: 20,
     },
   ],
 };
@@ -148,6 +193,42 @@ export const useZuStandCrewStore = create<useZuStandCrewStoreItems>()((set, get)
             med.id === medicationId 
               ? { ...med, currentStock: Math.max(0, med.currentStock - unitsUsed) }
               : med
+          ),
+        },
+      },
+    });
+  },
+  zsUpdateEquipmentStock: (equipmentId: string, unitsUsed: number) => {
+    const currentVehicle = get().zsVehicle;
+    if (!currentVehicle) return;
+
+    set({
+      zsVehicle: {
+        ...currentVehicle,
+        inventory: {
+          ...currentVehicle.inventory,
+          equipment: currentVehicle.inventory.equipment.map(item => 
+            item.id === equipmentId 
+              ? { ...item, currentStock: Math.max(0, item.currentStock - unitsUsed) }
+              : item
+          ),
+        },
+      },
+    });
+  },
+  zsUpdateConsumableStock: (consumableId: string, unitsUsed: number) => {
+    const currentVehicle = get().zsVehicle;
+    if (!currentVehicle) return;
+
+    set({
+      zsVehicle: {
+        ...currentVehicle,
+        inventory: {
+          ...currentVehicle.inventory,
+          consumables: currentVehicle.inventory.consumables.map(item => 
+            item.id === consumableId 
+              ? { ...item, currentStock: Math.max(0, item.currentStock - unitsUsed) }
+              : item
           ),
         },
       },

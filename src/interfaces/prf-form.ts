@@ -42,6 +42,7 @@ export const sectionDescriptions = [
   "Injuries",
   "Assessments",
   "Past Medical History",
+  "Inventory",
 ] as const;
 export const PRF_FORM_DATA_DISPLAY_NAMES: Record<
   keyof PRF_FORM_DATA,
@@ -68,4 +69,5 @@ export const PRF_FORM_DATA_DISPLAY_NAMES: Record<
   injuries: "Injuries",
   assessments: "Assessments",
   past_medical_history: "Past Medical History",
+  inventory: "Inventory",
 };
