@@ -13,6 +13,7 @@ const fontSans = FontSans({
 export const metadata: Metadata = {
   title: "UREMS - PRF",
   description: "Patient Report Form",
+  manifest: "/manifest.ts"
 };
 
 export default function RootLayout({
