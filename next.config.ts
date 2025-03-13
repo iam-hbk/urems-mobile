@@ -1,9 +1,9 @@
-// import type { NextConfig } from "next";
+import type { NextConfig } from "next";
 import withPWAInit from "@ducanh2912/next-pwa";
 
 const withPWA = withPWAInit({
   dest: "public",
-  scope: "/app",
+  scope: "/",
   register: true,
   sw: "service-worker.js",
   fallbacks: {
@@ -12,18 +12,18 @@ const withPWA = withPWAInit({
   },
 });
 
-// const nextConfig: NextConfig = { /* config options here */};
-// https://lbndhmuqqdswzpplnriw.supabase.co/storage/v1/s3
-const nextConfig = {
-  images: {
-    remotePatterns: [
-
-    ],
-  },
+const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: '3mb',
     },
+    turbo: {
+    },
+  },
+  images: {
+    remotePatterns: [
+
+    ],
   },
   reactStrictMode: true,
   // exclude  net which is for server side to be bundled with client side
@@ -43,7 +43,7 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/notification-sw.js',
+        source: '/service-worker.js',
         headers: [
           {
             key: 'X-Content-Type-Options',
@@ -57,11 +57,6 @@ const nextConfig = {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
           },
-        ],
-      },
-      {
-        source: '/sw.js',
-        headers: [
           {
             key: 'Content-Type',
             value: 'application/javascript; charset=utf-8',
@@ -73,6 +68,24 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value: "default-src 'self'; script-src 'self'",
+          },
+        ],
+      },
+      // for notification - though i have it in the service-worker.js file - fallback
+      {
+        source: "/notification-sw.js",
+        headers: [
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          {
+            key: "X-Frame-Options",
+            value: "DENY",
+          },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
           },
         ],
       },

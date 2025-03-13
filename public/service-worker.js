@@ -22,27 +22,27 @@ if (!self.define) {
   const singleRequire = (uri, parentUri) => {
     uri = new URL(uri + ".js", parentUri).href;
     return registry[uri] || (
-      
-        new Promise(resolve => {
-          if ("document" in self) {
-            const script = document.createElement("script");
-            script.src = uri;
-            script.onload = resolve;
-            document.head.appendChild(script);
-          } else {
-            nextDefineUri = uri;
-            importScripts(uri);
-            resolve();
-          }
-        })
-      
-      .then(() => {
-        let promise = registry[uri];
-        if (!promise) {
-          throw new Error(`Module ${uri} didn’t register its module`);
+
+      new Promise(resolve => {
+        if ("document" in self) {
+          const script = document.createElement("script");
+          script.src = uri;
+          script.onload = resolve;
+          document.head.appendChild(script);
+        } else {
+          nextDefineUri = uri;
+          importScripts(uri);
+          resolve();
         }
-        return promise;
       })
+
+        .then(() => {
+          let promise = registry[uri];
+          if (!promise) {
+            throw new Error(`Module ${uri} didn’t register its module`);
+          }
+          return promise;
+        })
     );
   };
 
@@ -67,7 +67,8 @@ if (!self.define) {
     });
   };
 }
-define(['./workbox-1e54d6fe'], (function (workbox) { 'use strict';
+define(['./workbox-1e54d6fe'], (function (workbox) {
+  'use strict';
 
   importScripts("/fallback-development.js");
   self.skipWaiting();
@@ -111,3 +112,77 @@ define(['./workbox-1e54d6fe'], (function (workbox) { 'use strict';
   }), 'GET');
 
 }));
+
+
+// Push event listener for receiving push notifications
+self.addEventListener('push', function (event) {
+  if (event.data) {
+    const data = event.data.json();
+    const options = {
+      body: data.body,
+      icon: data.icon || '/web-app-manifest-192x192.png',
+      badge: '/web-app-manifest-192x192.png',
+      vibrate: [100, 50, 100], // Vibration pattern: 100ms on, 50ms off, 100ms on
+      data: {
+        dateOfArrival: Date.now(),
+        primaryKey: '2',
+      },
+    };
+    // Show the notification with the title and options
+    event.waitUntil(self.registration.showNotification(data.title, options));
+  }
+});
+
+// Notification click event listener
+self.addEventListener('notificationclick', function (event) {
+  console.log('Notification click received.');
+  // Close the notification
+  event.notification.close();
+
+  // Define the target URL based on environment or data
+  // uncomment this, when code is hosted
+  // const targetUrl = event.notification.data?.url ||
+  //   (self.location.hostname === 'localhost'
+  //     ? 'http://localhost:3000'
+  //     : 'https://justgig.vercel.app');
+
+  const targetUrl = 'http://localhost'
+
+  // Open the window with the target URL
+  event.waitUntil(
+    clients
+      .matchAll({ type: 'window', includeUncontrolled: true })
+      .then((clientList) => {
+        // Check if a window is already open and focus it
+        for (const client of clientList) {
+          if (client.url === targetUrl && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        // If no matching window is found, open a new one
+        return clients.openWindow(targetUrl);
+      })
+  );
+});
+
+
+// notification service worker
+self.addEventListener('install', (event) => {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(clients.claim());
+});
+
+self.addEventListener('push', (event) => {
+  const options = {
+    body: event.data?.text() || 'No payload',
+    icon: '/web-app-manifest-192x192.png',
+    badge: '/web-app-manifest-192x192.png'
+  };
+
+  event.waitUntil(
+    self.registration.showNotification('Just Gig', options)
+  );
+});

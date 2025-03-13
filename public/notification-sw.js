@@ -1,4 +1,3 @@
-// notification-sw.js
 self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
