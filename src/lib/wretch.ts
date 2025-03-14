@@ -3,7 +3,8 @@ import QueryStringAddon from "wretch/addons/queryString";
 import { WretchError } from "wretch/resolver";
 
 
-export const UREM__ERP_API_BASE: string = "http://localhost:7089"
+// export const UREM__ERP_API_BASE: string = "http://localhost:7089"
+export const UREM__ERP_API_BASE: string = "https://urems-backend-dev.up.railway.app"
 
 const api = wretch(`${UREM__ERP_API_BASE}/api`)
   .catcher(400, (error: WretchError) => {

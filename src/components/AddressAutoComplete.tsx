@@ -131,7 +131,10 @@ const AddressAutoComplete: React.FC<AddressAutoCompleteProps> = ({
             const geocoder = new window.google.maps.Geocoder();
             geocoder.geocode(
               { location: { lat: latitude, lng: longitude } },
-              (results, status) => {
+              (
+                results: google.maps.GeocoderResult[] | null,
+                status: google.maps.GeocoderStatus
+              ) => {
                 if (status === "OK" && !!results && results[0]) {
                   setValue(name, results[0].formatted_address, {
                     shouldValidate: true,
