@@ -28,7 +28,6 @@ import {
 } from "../ui/accordion";
 import { cn } from "@/lib/utils";
 import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
-import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 const RespiratoryDistressSchema = z.object({
   hx: z.array(
