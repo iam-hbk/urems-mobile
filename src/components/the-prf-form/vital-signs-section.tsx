@@ -41,6 +41,7 @@ import {
   VitalSignsType,
 } from "@/interfaces/prf-vital-signs-schema";
 import { z } from "zod";
+import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 // Big measures
 const VitalSignsSchemaWithData = z.object({
@@ -57,6 +58,8 @@ const VitalSignsForm: React.FC = () => {
 
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
+
+  const { zsEmployee } = useZuStandEmployeeStore();
 
   const form = useForm<VitalSignsTypeWithData>({
     resolver: zodResolver(VitalSignsSchemaWithData),
@@ -81,6 +84,7 @@ const VitalSignsForm: React.FC = () => {
           isOptional: false,
         },
       },
+      EmployeeID: zsEmployee?.employeeNumber.toString() || "2" // fallback
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
@@ -167,13 +171,13 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null &&
-                                field.value !== undefined
+                                  field.value !== undefined
                                   ? field.value?.toString()
                                   : new Date().toLocaleTimeString("en-US", {
-                                      hour12: false,
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })
+                                    hour12: false,
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })
                               }
                             />
                           </FormControl>
@@ -348,7 +352,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                field.value !== undefined
+                                  field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }
@@ -393,7 +397,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                field.value !== undefined
+                                  field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }
@@ -416,7 +420,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                field.value !== undefined
+                                  field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }
@@ -627,7 +631,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                field.value !== undefined
+                                  field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }
@@ -650,7 +654,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                field.value !== undefined
+                                  field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }

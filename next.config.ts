@@ -13,6 +13,7 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
+  output: "standalone", // for docker, must produce standalone, cause there is no image
   experimental: {
     serverActions: {
       bodySizeLimit: '3mb',

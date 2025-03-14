@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import FormFillProgress from "@/components/progress-ring";
 import PRFEditSummary from "@/components/the-prf-form/case-details-section";
 import { Button } from "@/components/ui/button";
@@ -9,15 +9,24 @@ import { usePrfForms } from "@/hooks/prf/usePrfForms";
 import PRF_DATA_TASKS from "@/components/form-task-details-table";
 import { PRFFormDataSchema } from "@/interfaces/prf-schema";
 
-type Props = {
+
+// from +15 props are promise 
+// https://nextjs.org/docs/app/building-your-application/upgrading/version-15#asynchronous-page
+type Props = Promise<{
   params: {
     prfID: string;
   };
-};
+}>;
 
-const PRF = (props: Props) => {
+export default async function Page(props: { params: Props }) {
+  // const { prfID } = (await props.params).params; // server
+  const prfID = use(props.params).params.prfID
+
+
   const { data, isLoading, error } = usePrfForms();
   const [isSaving, setIsSaving] = useState(false);
+
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -27,7 +36,7 @@ const PRF = (props: Props) => {
   if (!data) {
     return <div>No PRFs found</div>;
   }
-  const prf = data.find((prf) => prf.prfFormId == props.params.prfID);
+  const prf = data.find((prf) => prf.prfFormId == prfID);
   if (!prf) {
     return <div>No PRF found</div>;
   }
@@ -37,10 +46,10 @@ const PRF = (props: Props) => {
       {/* Header */}
       <section className="flex flex-row  justify-between">
         <h2 className="scroll-m-20  pb-2 lg:text-3xl text-2xl font-semibold tracking-tight first:mt-0">
-          {`Patient Report Form #${props.params.prfID}`}
+          {`Patient Report Form #${prfID}`}
         </h2>
         <div className="flex flex-row gap-2 items-center">
-          <Button disabled={isSaving} onClick={() => {}}>
+          <Button disabled={isSaving} onClick={() => { }}>
             {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -107,11 +116,11 @@ const PRF = (props: Props) => {
                 <div className=" text-muted-foreground">
                   {prf.prfData.case_details?.data.dateOfCase
                     ? new Date(
-                        prf.prfData.case_details?.data.dateOfCase
-                      ).toDateString()
+                      prf.prfData.case_details?.data.dateOfCase
+                    ).toDateString()
                     : prf.createdAt
-                    ? new Date(prf.createdAt).toDateString()
-                    : "Unknown"}
+                      ? new Date(prf.createdAt).toDateString()
+                      : "Unknown"}
                 </div>
               </div>
               <div className="flex items-center justify-between">
@@ -154,5 +163,3 @@ const PRF = (props: Props) => {
     </main>
   );
 };
-
-export default PRF;

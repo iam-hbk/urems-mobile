@@ -108,7 +108,7 @@ export const Logo = () => {
       <motion.span
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="whitespace-pre font-medium text-primary-foreground"
+      // className="whitespace-pre font-medium text-primary-foreground"
       >
         Patient Report Form
       </motion.span>
