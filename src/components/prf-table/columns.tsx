@@ -55,14 +55,11 @@ export const columns: ColumnDef<PRF_FORM>[] = [
       <DataTableColumnHeader column={column} title="Patient Name" />
     ),
     cell: ({ row }) => {
-      // const patientName =
-      //   row.original.prfData.patient_details?.data.patientInformation
-      //     .patientName || "N/A";
-      // const patientSurname =
-      //   row.original.prfData.patient_details?.data.patientInformation
-      //     .patientSurname || "N/A";
-      // return `${patientName} ${patientSurname}`;
-      return "patientName patientSurname";
+      const patientName =
+        row.original.prfData.patient_details?.data.patientName || "N/A";
+      const patientSurname =
+        row.original.prfData.patient_details?.data.patientSurname || "N/A";
+      return `${patientName} ${patientSurname}`;
     },
   },
   {

@@ -30,7 +30,7 @@ export default function PRF_Summary({
     isCompleted,
   } = patientRecord;
 
-  const fullName = `${patient_details?.data.patientInformation.patientName || "Unknown"} ${patient_details?.data.patientInformation.patientSurname || "Unknown"}`;
+  const fullName = `${patient_details?.data.patientName || "Unknown"} ${patient_details?.data.patientSurname || "Unknown"}`;
 
   return (
     <Link
@@ -60,8 +60,8 @@ export default function PRF_Summary({
               <User className="h-4 w-4 text-muted-foreground" />
               <span className="font-medium">{fullName}</span>
               <span className="text-muted-foreground">
-                ({patient_details?.data.patientInformation.age || "-"} years,{" "}
-                {patient_details?.data.patientInformation.gender || "-"})
+                ({patient_details?.data.age || "-"} years,{" "}
+                {patient_details?.data.gender || "-"})
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-2">

@@ -82,7 +82,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
   // Add this state for the toggle
   const [useDateOfBirth, setUseDateOfBirth] = React.useState(false);
 
-  // Add this function to calculate age from DOB
+  // Function to calculate age from DOB
   const calculateAge = (birthDate: Date) => {
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
@@ -102,15 +102,15 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
         // Calculate days for newborns
         const diffTime = Math.abs(today.getTime() - birthDate.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        form.setValue("patientInformation.age", diffDays);
-        form.setValue("patientInformation.ageUnit", "days");
+        form.setValue("age", diffDays);
+        form.setValue("ageUnit", "days");
       } else {
-        form.setValue("patientInformation.age", months);
-        form.setValue("patientInformation.ageUnit", "months");
+        form.setValue("age", months);
+        form.setValue("ageUnit", "months");
       }
     } else {
-      form.setValue("patientInformation.age", age);
-      form.setValue("patientInformation.ageUnit", "years");
+      form.setValue("age", age);
+      form.setValue("ageUnit", "years");
     }
   };
 
@@ -139,16 +139,38 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
 
       // Preserve existing patient information values, but they'll be optional
       // Only initialize if they don't exist
-      if (!form.getValues("patientInformation")) {
-        form.setValue("patientInformation", {
-          age: undefined,
-          ageUnit: "years",
-          gender: undefined,
-          patientName: "",
-          patientSurname: "",
-          id: "",
-          passport: "",
-        }, {
+      if (!form.getValues("age")) {
+        form.setValue("age", undefined, {
+          shouldValidate: false
+        });
+      }
+      if (!form.getValues("ageUnit")) {
+        form.setValue("ageUnit", "years", {
+          shouldValidate: false
+        });
+      }
+      if (!form.getValues("gender")) {
+        form.setValue("gender", undefined, {
+          shouldValidate: false
+        });
+      }
+      if (!form.getValues("patientName")) {
+        form.setValue("patientName", "", {
+          shouldValidate: false
+        });
+      }
+      if (!form.getValues("patientSurname")) {
+        form.setValue("patientSurname", "", {
+          shouldValidate: false
+        });
+      }
+      if (!form.getValues("id")) {
+        form.setValue("id", "", {
+          shouldValidate: false
+        });
+      }
+      if (!form.getValues("passport")) {
+        form.setValue("passport", "", {
           shouldValidate: false
         });
       }
@@ -265,21 +287,6 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
       return;
     }
 
-    // Double check if we're in unableToObtainInformation mode
-    const isUnableToObtainInfo = values.unableToObtainInformation?.status;
-    
-    // Validate that we have either patient information or unable to obtain info checked
-    if (!isUnableToObtainInfo && 
-        (!values.patientInformation?.patientName || 
-         !values.patientInformation?.patientSurname || 
-         values.patientInformation?.age === undefined || 
-         !values.patientInformation?.gender)) {
-      toast.error("Please complete required patient information or check 'Unable to obtain complete information'", {
-        duration: 3000,
-        position: "top-right",
-      });
-      return;
-    }
 
     const prfUpdateValue: PRF_FORM = {
       prfFormId: prfId,
@@ -347,12 +354,12 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
             <AccordionTrigger
               className={cn({
                 "text-destructive":
-                  form.formState.errors.patientInformation?.age ||
-                  form.formState.errors.patientInformation?.gender ||
-                  form.formState.errors.patientInformation?.patientName ||
-                  form.formState.errors.patientInformation?.patientSurname ||
-                  form.formState.errors.patientInformation?.id ||
-                  form.formState.errors.patientInformation?.passport  
+                  form.formState.errors.age ||
+                  form.formState.errors.gender ||
+                  form.formState.errors.patientName ||
+                  form.formState.errors.patientSurname ||
+                  form.formState.errors.id ||
+                  form.formState.errors.passport  
               })}
             >
               <h4
@@ -360,12 +367,12 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                   "col-span-full scroll-m-20 text-lg font-semibold tracking-tight":
                     true,
                   "text-destructive":
-                    form.formState.errors.patientInformation?.age ||
-                    form.formState.errors.patientInformation?.gender ||
-                    form.formState.errors.patientInformation?.patientName ||
-                    form.formState.errors.patientInformation?.patientSurname ||
-                    form.formState.errors.patientInformation?.id ||
-                    form.formState.errors.patientInformation?.passport,
+                    form.formState.errors.age ||
+                    form.formState.errors.gender ||
+                    form.formState.errors.patientName ||
+                    form.formState.errors.patientSurname ||
+                    form.formState.errors.id ||
+                    form.formState.errors.passport,
                 })}
               >
                 Patient Information
@@ -374,7 +381,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
             <AccordionContent className="grid gap-3 px-4 sm:grid-cols-2 lg:grid-cols-3">
               <FormField
                 control={form.control}
-                name="patientInformation.patientName"
+                name="patientName"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel
@@ -400,7 +407,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
               />
               <FormField
                 control={form.control}
-                name="patientInformation.patientSurname"
+                name="patientSurname"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel
@@ -426,7 +433,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
               />
               <FormField
                 control={form.control}
-                name="patientInformation.age"
+                name="age"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel
@@ -509,9 +516,9 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                           />
                         )}
                         <Select
-                          value={form.watch("patientInformation.ageUnit")}
+                          value={form.watch("ageUnit")}
                           onValueChange={(value) =>
-                            form.setValue("patientInformation.ageUnit", value as AgeUnit)
+                            form.setValue("ageUnit", value as AgeUnit)
                           }
                         >
                           <SelectTrigger className="w-[110px]">
@@ -531,7 +538,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
               />
               <FormField
                 control={form.control}
-                name="patientInformation.gender"
+                name="gender"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel
@@ -569,7 +576,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
               />
               <FormField
                 control={form.control}
-                name="patientInformation.id"
+                name="id"
                 render={({ field }) => (
                   <FormItem className="col-span-1">
                     <FormLabel>ID</FormLabel>
@@ -583,7 +590,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
 
               <FormField
                 control={form.control}
-                name="patientInformation.passport"
+                name="passport"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Passport</FormLabel>

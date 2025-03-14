@@ -63,7 +63,13 @@ export const PatientDetailsSchema = z.object({
     estimatedAge: z.number().optional(),
     notes: z.string().optional(),
   }),
-  patientInformation: PatientInformationSchema,
+  age: z.number().optional(),
+  ageUnit: z.enum(["years", "months", "days"]).default("years"),
+  gender: z.enum(["male", "female"]).optional(),
+  patientName: z.string().optional(),
+  patientSurname: z.string().optional(),
+  id: z.string().optional(),
+  passport: z.string().optional(),
 
   // ------------------------------------
   nextOfKin: z
@@ -108,7 +114,45 @@ export const PatientDetailsSchema = z.object({
       copd: z.boolean().default(false),
     })
     .optional(),
+})
+.superRefine((val, ctx) => {
+  // Skip validation if unable to obtain information
+  if (val.unableToObtainInformation.status === true) return true;
+
+  // Check required fields when able to obtain information
+  if (val.age === undefined || val.age === null) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Age is required when able to obtain patient information",
+      path: ["age"],
+    });
+  }
+
+  if (!val.gender) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Gender is required when able to obtain patient information",
+      path: ["gender"],
+    });
+  }
+
+  if (!val.patientName || val.patientName.trim() === "") {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Patient name is required when able to obtain patient information",
+      path: ["patientName"],
+    });
+  }
+
+  if (!val.patientSurname || val.patientSurname.trim() === "") {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Patient surname is required when able to obtain patient information",
+      path: ["patientSurname"],
+    });
+  }
 });
+
 export const CaseDetailsSchema = z.object({
   regionDistrict: z.string().min(2, "Region/District is required").max(50),
   base: z.string().min(2, "Base is required").max(50),
