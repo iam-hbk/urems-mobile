@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, use } from "react";
 import FormFillProgress from "@/components/progress-ring";
 import PRFEditSummary from "@/components/the-prf-form/case-details-section";
 import { Button } from "@/components/ui/button";
@@ -10,12 +10,13 @@ import PRF_DATA_TASKS from "@/components/form-task-details-table";
 import { PRFFormDataSchema } from "@/interfaces/prf-schema";
 
 type Props = {
-  params: {
+  params: Promise<{
     prfID: string;
-  };
+  }>;
 };
 
 const PRF = (props: Props) => {
+  const params = use(props.params);
   const { data, isLoading, error } = usePrfForms();
   const [isSaving, setIsSaving] = useState(false);
   if (isLoading) {
@@ -27,17 +28,17 @@ const PRF = (props: Props) => {
   if (!data) {
     return <div>No PRFs found</div>;
   }
-  const prf = data.find((prf) => prf.prfFormId == props.params.prfID);
+  const prf = data.find((prf) => prf.prfFormId == params.prfID);
   if (!prf) {
     return <div>No PRF found</div>;
   }
 
   return (
-    <main className="w-full p-4 flex flex-col flex-grow gap-5">
+    (<main className="w-full p-4 flex flex-col flex-grow gap-5">
       {/* Header */}
       <section className="flex flex-row  justify-between">
         <h2 className="scroll-m-20  pb-2 lg:text-3xl text-2xl font-semibold tracking-tight first:mt-0">
-          {`Patient Report Form #${props.params.prfID}`}
+          {`Patient Report Form #${params.prfID}`}
         </h2>
         <div className="flex flex-row gap-2 items-center">
           <Button disabled={isSaving} onClick={() => {}}>
@@ -151,7 +152,7 @@ const PRF = (props: Props) => {
           <PRF_DATA_TASKS data={prf} />
         </div>
       </section>
-    </main>
+    </main>)
   );
 };
 
