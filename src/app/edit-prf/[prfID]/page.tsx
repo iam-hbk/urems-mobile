@@ -1,5 +1,5 @@
 "use client";
-import React, { use, useState } from "react";
+import React, { useState, use } from "react";
 import FormFillProgress from "@/components/progress-ring";
 import PRFEditSummary from "@/components/the-prf-form/case-details-section";
 import { Button } from "@/components/ui/button";
@@ -42,7 +42,7 @@ export default async function Page(props: { params: Props }) {
   }
 
   return (
-    <main className="w-full p-4 flex flex-col flex-grow gap-5">
+    (<main className="w-full p-4 flex flex-col flex-grow gap-5">
       {/* Header */}
       <section className="flex flex-row  justify-between">
         <h2 className="scroll-m-20  pb-2 lg:text-3xl text-2xl font-semibold tracking-tight first:mt-0">
@@ -160,6 +160,6 @@ export default async function Page(props: { params: Props }) {
           <PRF_DATA_TASKS data={prf} />
         </div>
       </section>
-    </main>
+    </main>)
   );
 };

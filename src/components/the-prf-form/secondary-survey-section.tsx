@@ -262,6 +262,20 @@ export default function SecondarySurveyForm({
     });
   }
 
+  // Add this function to handle form errors
+  const onError = (errors: any) => {
+    const errorMessages = Object.entries(errors)
+      .map(([_, error]: [string, any]) => error?.message)
+      .filter(Boolean);
+    
+    const errorMessage = errorMessages[0] || "Please fill in all required fields";
+    
+    toast.error(errorMessage, {
+      duration: 3000,
+      position: "top-right",
+    });
+  };
+
   return (
     <Accordion
       type="single"
@@ -271,7 +285,7 @@ export default function SecondarySurveyForm({
     >
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(onSubmit)}
+          onSubmit={form.handleSubmit(onSubmit, onError)}
           className="flex flex-col space-y-8"
         >
           <div className="flex items-center justify-between">

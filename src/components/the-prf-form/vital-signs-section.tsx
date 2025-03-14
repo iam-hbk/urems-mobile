@@ -84,7 +84,7 @@ const VitalSignsForm: React.FC = () => {
           isOptional: false,
         },
       },
-      EmployeeID: zsEmployee?.employeeNumber.toString() || "2" // fallback
+      EmployeeID: zsEmployee?.employeeNumber.toString() || "2", // fallback
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
@@ -104,6 +104,21 @@ const VitalSignsForm: React.FC = () => {
     });
   }
 
+  // Add this function to handle form errors
+  const onError = (errors: any) => {
+    const errorMessages = Object.entries(errors)
+      .map(([_, error]: [string, any]) => error?.message)
+      .filter(Boolean);
+
+    const errorMessage =
+      errorMessages[0] || "Please fill in all required fields";
+
+    toast.error(errorMessage, {
+      duration: 3000,
+      position: "top-right",
+    });
+  };
+
   return (
     <Accordion
       type="single"
@@ -113,7 +128,7 @@ const VitalSignsForm: React.FC = () => {
     >
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(onSubmit)}
+          onSubmit={form.handleSubmit(onSubmit, onError)}
           className="flex flex-col space-y-8"
         >
           <div className="flex items-center justify-between">
@@ -171,13 +186,13 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null &&
-                                  field.value !== undefined
+                                field.value !== undefined
                                   ? field.value?.toString()
                                   : new Date().toLocaleTimeString("en-US", {
-                                    hour12: false,
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })
+                                      hour12: false,
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })
                               }
                             />
                           </FormControl>
@@ -352,7 +367,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                  field.value !== undefined
+                                field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }
@@ -397,7 +412,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                  field.value !== undefined
+                                field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }
@@ -420,7 +435,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                  field.value !== undefined
+                                field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }
@@ -461,9 +476,7 @@ const VitalSignsForm: React.FC = () => {
                         <FormItem>
                           <FormLabel>Perfusion</FormLabel>
                           <FormControl>
-                            <Select
-                              onValueChange={field.onChange}
-                            >
+                            <Select onValueChange={field.onChange}>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select Perfusion" />
                               </SelectTrigger>
@@ -631,7 +644,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                  field.value !== undefined
+                                field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }
@@ -654,7 +667,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                  field.value !== undefined
+                                field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }

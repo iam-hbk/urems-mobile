@@ -142,10 +142,28 @@ export default function RespiratoryDistressAssessmentForm() {
     });
   }
 
+  // Add this function to handle form errors
+  const onError = (errors: any) => {
+    const errorMessages = Object.entries(errors)
+      .map(([_, error]: [string, any]) => error?.message)
+      .filter(Boolean);
+
+    const errorMessage =
+      errorMessages[0] || "Please fill in all required fields";
+
+    toast.error(errorMessage, {
+      duration: 3000,
+      position: "top-right",
+    });
+  };
+
   return (
     <Form {...form}>
       <Accordion type="single" collapsible defaultValue="hx">
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form
+          onSubmit={form.handleSubmit(onSubmit, onError)}
+          className="space-y-8"
+        >
           <div className="flex items-center justify-between">
             <div className="scroll-m-20 text-2xl font-semibold tracking-tight">
               Respiratory Distress Assessment
