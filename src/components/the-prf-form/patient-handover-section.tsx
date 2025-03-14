@@ -39,6 +39,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 export default function PatientHandoverForm() {
   const path = usePathname();
@@ -46,7 +47,7 @@ export default function PatientHandoverForm() {
   const prf_from_store = useStore((state) => state.prfForms).find(
     (prf) => prf.prfFormId == prfId,
   );
-
+  const { zsEmployee } = useZuStandEmployeeStore();
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
   const user = useStore((state) => state.user);
@@ -80,6 +81,7 @@ export default function PatientHandoverForm() {
           isOptional: false,
         },
       },
+      EmployeeID: zsEmployee?.employeeNumber.toString() || "2" // fallback
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
@@ -105,11 +107,11 @@ export default function PatientHandoverForm() {
 
   const handleEditSignature =
     (field: "patientSignature" | "witnessSignature") =>
-    (event: React.MouseEvent) => {
-      event.preventDefault();
-      setCurrentSignatureField(field);
-      setSignatureModalOpen(true);
-    };
+      (event: React.MouseEvent) => {
+        event.preventDefault();
+        setCurrentSignatureField(field);
+        setSignatureModalOpen(true);
+      };
 
   const handleSaveSignature = (signature: string) => {
     if (currentSignatureField) {

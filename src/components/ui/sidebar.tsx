@@ -2,7 +2,7 @@
 import { cn } from "@/lib/utils";
 import Link, { LinkProps } from "next/link";
 import React, { useState, createContext, useContext } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, MotionProps, } from "framer-motion";
 import { IconMenu2, IconX } from "@tabler/icons-react";
 
 interface Links {
@@ -73,20 +73,22 @@ export const Sidebar = ({
   );
 };
 
-export const SidebarBody = (props: React.ComponentProps<typeof motion.div>) => {
+
+type SidebarBodyProps = React.HTMLAttributes<HTMLDivElement> & Partial<MotionProps>;
+
+export const SidebarBody = (props: SidebarBodyProps) => {
   return (
     <>
       <DesktopSidebar {...props} />
-      <MobileSidebar {...(props as React.ComponentProps<"div">)} />
+      <MobileSidebar {...props} />
     </>
   );
 };
-
 export const DesktopSidebar = ({
   className,
   children,
   ...props
-}: React.ComponentProps<typeof motion.div>) => {
+}: React.HTMLAttributes<HTMLDivElement> & MotionProps) => {
   const { open, setOpen, animate, hasInteracted, setHasInteracted } = useSidebar();
 
   const handleMouseEnter = () => {
@@ -116,6 +118,7 @@ export const DesktopSidebar = ({
     </motion.div>
   );
 };
+
 
 export const MobileSidebar = ({
   className,
@@ -172,6 +175,7 @@ export const MobileSidebar = ({
     </>
   );
 };
+
 
 export const SidebarLink = ({
   link,

@@ -28,6 +28,7 @@ import {
 } from "../ui/accordion";
 import { cn } from "@/lib/utils";
 import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
+import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 const RespiratoryDistressSchema = z.object({
   hx: z.array(
@@ -97,7 +98,9 @@ export default function RespiratoryDistressAssessmentForm() {
 
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
-  const zsEmployee = useZuStandEmployeeStore((state) => state.zsEmployee);
+
+  const { zsEmployee } = useZuStandEmployeeStore();
+
   const form = useForm<RespiratoryDistressType>({
     resolver: zodResolver(RespiratoryDistressSchema),
     defaultValues: prf_from_store?.prfData?.respiratory_distress?.data || {
@@ -119,7 +122,8 @@ export default function RespiratoryDistressAssessmentForm() {
           isOptional: false,
         },
       },
-      EmployeeID: zsEmployee?.employeeNumber?.toString() || "2",
+      EmployeeID: zsEmployee?.employeeNumber.toString() || "2" // fallback
+
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
@@ -205,23 +209,23 @@ export default function RespiratoryDistressAssessmentForm() {
                                 <Checkbox
                                   checked={field.value?.includes(
                                     item as
-                                      | "Asthma"
-                                      | "COPD"
-                                      | "Emphysema"
-                                      | "Hx of Pulmonary Emboli"
-                                      | "Lung Cancer"
-                                      | "Prone to Chest Infections / Pneumonia"
-                                      | "Pulmonary TB"
-                                      | "COVID +",
+                                    | "Asthma"
+                                    | "COPD"
+                                    | "Emphysema"
+                                    | "Hx of Pulmonary Emboli"
+                                    | "Lung Cancer"
+                                    | "Prone to Chest Infections / Pneumonia"
+                                    | "Pulmonary TB"
+                                    | "COVID +",
                                   )}
                                   onCheckedChange={(checked) => {
                                     return checked
                                       ? field.onChange([...field.value, item])
                                       : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== item,
-                                          ),
-                                        );
+                                        field.value?.filter(
+                                          (value) => value !== item,
+                                        ),
+                                      );
                                   }}
                                 />
                               </FormControl>
@@ -276,20 +280,20 @@ export default function RespiratoryDistressAssessmentForm() {
                                   <Checkbox
                                     checked={field.value?.includes(
                                       item as
-                                        | "Taking Contraceptives"
-                                        | "Hx of DVTs"
-                                        | "Recent: Long Distance Travel"
-                                        | "Fracture"
-                                        | "Recently given birth",
+                                      | "Taking Contraceptives"
+                                      | "Hx of DVTs"
+                                      | "Recent: Long Distance Travel"
+                                      | "Fracture"
+                                      | "Recently given birth",
                                     )}
                                     onCheckedChange={(checked) => {
                                       return checked
                                         ? field.onChange([...field.value, item])
                                         : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== item,
-                                            ),
-                                          );
+                                          field.value?.filter(
+                                            (value) => value !== item,
+                                          ),
+                                        );
                                     }}
                                   />
                                 </FormControl>
@@ -365,10 +369,10 @@ export default function RespiratoryDistressAssessmentForm() {
                                       return checked
                                         ? field.onChange([...field.value, item])
                                         : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== item,
-                                            ),
-                                          );
+                                          field.value?.filter(
+                                            (value) => value !== item,
+                                          ),
+                                        );
                                     }}
                                   />
                                 </FormControl>
@@ -426,21 +430,21 @@ export default function RespiratoryDistressAssessmentForm() {
                                   <Checkbox
                                     checked={field.value?.includes(
                                       item as
-                                        | "Chest Recession"
-                                        | "Grunting"
-                                        | "Irritable"
-                                        | "Prem Baby: Respiratory Distress Syndrome"
-                                        | "Congenital Abnormality"
-                                        | "Hyaline Membrane Disease",
+                                      | "Chest Recession"
+                                      | "Grunting"
+                                      | "Irritable"
+                                      | "Prem Baby: Respiratory Distress Syndrome"
+                                      | "Congenital Abnormality"
+                                      | "Hyaline Membrane Disease",
                                     )}
                                     onCheckedChange={(checked) => {
                                       return checked
                                         ? field.onChange([...field.value, item])
                                         : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== item,
-                                            ),
-                                          );
+                                          field.value?.filter(
+                                            (value) => value !== item,
+                                          ),
+                                        );
                                     }}
                                   />
                                 </FormControl>
