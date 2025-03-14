@@ -69,6 +69,9 @@ importers:
       '@react-google-maps/api':
         specifier: ^2.19.3
         version: 2.20.6(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-types/shared':
+        specifier: ^3.28.0
+        version: 3.28.0(react@19.0.0)
       '@tabler/icons-react':
         specifier: ^3.11.0
         version: 3.31.0(react@19.0.0)
@@ -166,6 +169,9 @@ importers:
       '@tanstack/eslint-plugin-query':
         specifier: ^5.51.15
         version: 5.68.0(eslint@9.22.0(jiti@1.21.7))(typescript@5.8.2)
+      '@types/google.maps':
+        specifier: ^3.58.1
+        version: 3.58.1
       '@types/node':
         specifier: ^20
         version: 20.17.24

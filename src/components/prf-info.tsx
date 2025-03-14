@@ -35,11 +35,11 @@ export default function PRF_Summary({
   return (
     <Link
       href={`/edit-prf/${prfFormId}`}
-      className="block transition-opacity hover:opacity-80 relative"
+      className="relative block transition-opacity hover:opacity-80"
     >
       <Card className="mx-auto w-full max-w-2xl">
         <CardHeader>
-          <div className=" flex flex-col sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
             <div className="mb-2 sm:mb-0">
               <CardTitle className="mb-2 text-xl sm:text-2xl">
                 Patient Record Summary
@@ -48,7 +48,7 @@ export default function PRF_Summary({
             </div>
             <Badge
               variant={isCompleted ? "default" : "secondary"}
-              className="absolute top-2 right-2"
+              className="absolute right-2 top-2"
             >
               {isCompleted ? "Completed" : "Incomplete"}
             </Badge>
@@ -89,7 +89,10 @@ export default function PRF_Summary({
             <div className="flex items-center gap-2">
               <Ambulance className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
               <span className="text-sm">
-                Ambulance: {case_details?.data.vehicle.name || "Unknown"}
+                Ambulance:{" "}
+                {case_details?.data.vehicle?.name
+                  ? case_details?.data.vehicle?.name
+                  : "Unknown"}
               </span>
             </div>
             <Separator />

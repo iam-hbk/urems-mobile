@@ -13,7 +13,7 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
-  output: "standalone", // for docker, must produce standalone, cause there is no image
+  // output: "standalone", // for docker, must produce standalone, cause there is no image
   experimental: {
     serverActions: {
       bodySizeLimit: '3mb',
@@ -68,7 +68,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self'",
+            value: "default-src 'self'; script-src 'self'; connect-src 'self' https://urems-backend-dev.up.railway.app",
           },
         ],
       },
@@ -87,6 +87,10 @@ const nextConfig: NextConfig = {
           {
             key: "Referrer-Policy",
             value: "strict-origin-when-cross-origin",
+          },
+          {
+            key: "Content-Security-Policy",
+            value: "default-src 'self'; script-src 'self'; connect-src 'self' https://urems-backend-dev.up.railway.app",
           },
         ],
       },

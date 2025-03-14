@@ -1,0 +1,7 @@
+---
+description: Project rules
+globs: 
+alwaysApply: true
+---
+
+When you need to install anything always check [package.json](mdc:package.json) first if it's not intalled and I use pnpm as my package manager
