@@ -41,6 +41,7 @@ import {
   VitalSignsType,
 } from "@/interfaces/prf-vital-signs-schema";
 import { z } from "zod";
+import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 // Big measures
 const VitalSignsSchemaWithData = z.object({
@@ -54,6 +55,7 @@ const VitalSignsForm: React.FC = () => {
   const prf_from_store = useStore((state) => state.prfForms).find(
     (prf) => prf.prfFormId == prfId,
   );
+  const zsEmployee = useZuStandEmployeeStore((state) => state.zsEmployee);
 
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
@@ -81,6 +83,7 @@ const VitalSignsForm: React.FC = () => {
           isOptional: false,
         },
       },
+      EmployeeID: zsEmployee?.employeeNumber?.toString() || "2",
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
@@ -100,6 +103,20 @@ const VitalSignsForm: React.FC = () => {
     });
   }
 
+  // Add this function to handle form errors
+  const onError = (errors: any) => {
+    const errorMessages = Object.entries(errors)
+      .map(([_, error]: [string, any]) => error?.message)
+      .filter(Boolean);
+    
+    const errorMessage = errorMessages[0] || "Please fill in all required fields";
+    
+    toast.error(errorMessage, {
+      duration: 3000,
+      position: "top-right",
+    });
+  };
+
   return (
     <Accordion
       type="single"
@@ -109,7 +126,7 @@ const VitalSignsForm: React.FC = () => {
     >
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(onSubmit)}
+          onSubmit={form.handleSubmit(onSubmit, onError)}
           className="flex flex-col space-y-8"
         >
           <div className="flex items-center justify-between">

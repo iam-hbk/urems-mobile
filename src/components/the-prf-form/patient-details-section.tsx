@@ -58,13 +58,10 @@ type PatientDetailsFormProps = {
 type AgeUnit = "years" | "months" | "days";
 
 const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
-  // SM
   const { zsEmployee } = useZuStandEmployeeStore();
   const prfId = usePathname().split("/")[2];
-  console.log("PRF ID from pathname:", prfId); // Debug log
 
   const prf_from_store = useStore((state) => {
-    console.log("All PRF forms in store:", state.prfForms); // Debug log
     return state.prfForms.find(
       (prf) => String(prf.prfFormId) === String(prfId),
     );
@@ -76,60 +73,12 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
   const router = useRouter();
   const form = useForm<z.infer<typeof PatientDetailsSchema>>({
     resolver: zodResolver(PatientDetailsSchema),
-    mode: "onBlur",
-    defaultValues: prf_from_store?.prfData.patient_details?.data ?? {
-      age: undefined,
-      ageUnit: "years",
-      gender: undefined,
-      patientName: "",
-      id: "",
-      patientSurname: "",
-      passport: "",
-      nextOfKin: {
-        name: "",
-        relationToPatient: "",
-        email: "",
-        physicalAddress: "",
-        phoneNo: "",
-        alternatePhoneNo: "",
-        otherNOKPhoneNo: "",
-      },
-      medicalAid: {
-        name: "",
-        number: "",
-        principalMember: "",
-        authNo: "",
-      },
-      employer: {
-        name: "",
-        workPhoneNo: "",
-        workAddress: "",
-      },
-      unableToObtainInformation: {
-        status: false,
-        estimatedAge: undefined,
-        notes: "",
-      },
-      pastHistory: {
-        allergies: "",
-        medication: "",
-        medicalHx: "",
-        lastMeal: "",
-        cva: false,
-        epilepsy: false,
-        cardiac: false,
-        byPass: false,
-        dmOneOrTwo: false,
-        HPT: false,
-        asthma: false,
-        copd: false,
-      },
-    },
+    values: prf_from_store?.prfData.patient_details?.data,
+    // mode: "onBlur",
   });
 
   // Watch the unableToObtainInformation.status field
   const unableToObtainInfo = form.watch("unableToObtainInformation.status");
-
   // Add this state for the toggle
   const [useDateOfBirth, setUseDateOfBirth] = React.useState(false);
 
@@ -153,22 +102,179 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
         // Calculate days for newborns
         const diffTime = Math.abs(today.getTime() - birthDate.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        form.setValue("age", diffDays);
-        form.setValue("ageUnit", "days");
+        form.setValue("patientInformation.age", diffDays);
+        form.setValue("patientInformation.ageUnit", "days");
       } else {
-        form.setValue("age", months);
-        form.setValue("ageUnit", "months");
+        form.setValue("patientInformation.age", months);
+        form.setValue("patientInformation.ageUnit", "months");
       }
     } else {
-      form.setValue("age", age);
-      form.setValue("ageUnit", "years");
+      form.setValue("patientInformation.age", age);
+      form.setValue("patientInformation.ageUnit", "years");
     }
+  };
+
+  // Function to handle the "Unable to obtain information" checkbox change
+  const handleUnableToObtainInfoChange = (checked: boolean) => {
+    // Batch all form value changes to avoid multiple re-renders and validations
+    form.setValue("unableToObtainInformation.status", checked, {
+      shouldDirty: true,
+      shouldValidate: false, // Don't validate yet
+    });
+
+    // If checked, we'll keep any existing values but mark them as optional
+    // If unchecked, we'll validate the required fields
+    if (checked) {
+      // Add estimated age and notes fields if they don't exist
+      if (!form.getValues("unableToObtainInformation.estimatedAge")) {
+        form.setValue("unableToObtainInformation.estimatedAge", undefined, {
+          shouldValidate: false
+        });
+      }
+      if (!form.getValues("unableToObtainInformation.notes")) {
+        form.setValue("unableToObtainInformation.notes", "", {
+          shouldValidate: false
+        });
+      }
+
+      // Preserve existing patient information values, but they'll be optional
+      // Only initialize if they don't exist
+      if (!form.getValues("patientInformation")) {
+        form.setValue("patientInformation", {
+          age: undefined,
+          ageUnit: "years",
+          gender: undefined,
+          patientName: "",
+          patientSurname: "",
+          id: "",
+          passport: "",
+        }, {
+          shouldValidate: false
+        });
+      }
+
+      // Initialize optional fields with empty values if they don't exist
+      if (!form.getValues("nextOfKin")) {
+        form.setValue("nextOfKin", {
+          name: "",
+          relationToPatient: "",
+          email: "",
+          physicalAddress: "",
+          phoneNo: "",
+          alternatePhoneNo: "",
+          otherNOKPhoneNo: "",
+        }, {
+          shouldValidate: false
+        });
+      }
+      if (!form.getValues("medicalAid")) {
+        form.setValue("medicalAid", {
+          name: "",
+          number: "",
+          principalMember: "",
+          authNo: "",
+        }, {
+          shouldValidate: false
+        });
+      }
+      if (!form.getValues("employer")) {
+        form.setValue("employer", {
+          name: "",
+          workPhoneNo: "",
+          workAddress: "",
+        }, {
+          shouldValidate: false
+        });
+      }
+      if (!form.getValues("pastHistory")) {
+        form.setValue("pastHistory", {
+          allergies: "",
+          medication: "",
+          medicalHx: "",
+          lastMeal: "",
+          cva: false,
+          epilepsy: false,
+          cardiac: false,
+          byPass: false,
+          dmOneOrTwo: false,
+          HPT: false,
+          asthma: false,
+          copd: false,
+        }, {
+          shouldValidate: false
+        });
+      }
+
+      // Clear any existing errors since fields are now optional
+      form.clearErrors();
+    }
+
+    // Use a small delay to ensure state is updated before validation
+    setTimeout(() => {
+      // Finally trigger validation after all state changes are applied
+      form.trigger();
+    }, 0);
+  };
+
+  // Add this function to handle form errors
+  const onError = (errors: any) => {
+    console.log("Form validation errors:", errors);
+
+    // Check if there are any errors
+    if (Object.keys(errors).length === 0) {
+      return;
+    }
+
+    // Get all error messages
+    const errorMessages = Object.entries(errors)
+      .map(([key, error]: [string, any]) => {
+        if (error?.message) {
+          return error.message;
+        }
+        // Handle nested errors
+        if (typeof error === "object" && error !== null) {
+          const nestedErrors = Object.values(error)
+            .filter(Boolean)
+            .map((e: any) => e?.message)
+            .filter(Boolean);
+
+          if (nestedErrors.length > 0) {
+            return nestedErrors[0];
+          }
+        }
+        return null;
+      })
+      .filter(Boolean);
+
+    const errorMessage =
+      errorMessages[0] || "Please fill in all required fields";
+
+    toast.error(errorMessage, {
+      duration: 3000,
+      position: "top-right",
+    });
   };
 
   function onSubmit(values: z.infer<typeof PatientDetailsSchema>) {
     // if there is valid employee info
     if (!zsEmployee) {
       toast.error("No Employee Information Found", {
+        duration: 3000,
+        position: "top-right",
+      });
+      return;
+    }
+
+    // Double check if we're in unableToObtainInformation mode
+    const isUnableToObtainInfo = values.unableToObtainInformation?.status;
+    
+    // Validate that we have either patient information or unable to obtain info checked
+    if (!isUnableToObtainInfo && 
+        (!values.patientInformation?.patientName || 
+         !values.patientInformation?.patientSurname || 
+         values.patientInformation?.age === undefined || 
+         !values.patientInformation?.gender)) {
+      toast.error("Please complete required patient information or check 'Unable to obtain complete information'", {
         duration: 3000,
         position: "top-right",
       });
@@ -215,7 +321,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
     >
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(onSubmit)}
+          onSubmit={form.handleSubmit(onSubmit, onError)}
           className="flex flex-col space-y-8"
         >
           <div className="flex items-center justify-between">
@@ -241,12 +347,12 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
             <AccordionTrigger
               className={cn({
                 "text-destructive":
-                  form.formState.errors.age ||
-                  form.formState.errors.gender ||
-                  form.formState.errors.patientName ||
-                  form.formState.errors.patientSurname ||
-                  form.formState.errors.id ||
-                  form.formState.errors.passport,
+                  form.formState.errors.patientInformation?.age ||
+                  form.formState.errors.patientInformation?.gender ||
+                  form.formState.errors.patientInformation?.patientName ||
+                  form.formState.errors.patientInformation?.patientSurname ||
+                  form.formState.errors.patientInformation?.id ||
+                  form.formState.errors.patientInformation?.passport  
               })}
             >
               <h4
@@ -254,12 +360,12 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                   "col-span-full scroll-m-20 text-lg font-semibold tracking-tight":
                     true,
                   "text-destructive":
-                    form.formState.errors.age ||
-                    form.formState.errors.gender ||
-                    form.formState.errors.patientName ||
-                    form.formState.errors.patientSurname ||
-                    form.formState.errors.id ||
-                    form.formState.errors.passport,
+                    form.formState.errors.patientInformation?.age ||
+                    form.formState.errors.patientInformation?.gender ||
+                    form.formState.errors.patientInformation?.patientName ||
+                    form.formState.errors.patientInformation?.patientSurname ||
+                    form.formState.errors.patientInformation?.id ||
+                    form.formState.errors.patientInformation?.passport,
                 })}
               >
                 Patient Information
@@ -268,12 +374,25 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
             <AccordionContent className="grid gap-3 px-4 sm:grid-cols-2 lg:grid-cols-3">
               <FormField
                 control={form.control}
-                name="patientName"
+                name="patientInformation.patientName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Patient Name</FormLabel>
+                    <FormLabel
+                      className={
+                        unableToObtainInfo
+                          ? "after:ml-1 after:text-muted-foreground after:content-['(optional)']"
+                          : "after:ml-0.5 after:text-red-500 after:content-['*']"
+                      }
+                    >
+                      Patient Name
+                    </FormLabel>
                     <FormControl>
-                      <Input placeholder="Patient Name" {...field} />
+                      <Input
+                        placeholder={
+                          unableToObtainInfo ? "Optional" : "Patient Name"
+                        }
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -281,12 +400,25 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
               />
               <FormField
                 control={form.control}
-                name="patientSurname"
+                name="patientInformation.patientSurname"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Patient Surname</FormLabel>
+                    <FormLabel
+                      className={
+                        unableToObtainInfo
+                          ? "after:ml-1 after:text-muted-foreground after:content-['(optional)']"
+                          : "after:ml-0.5 after:text-red-500 after:content-['*']"
+                      }
+                    >
+                      Patient Surname
+                    </FormLabel>
                     <FormControl>
-                      <Input placeholder="Patient Surname" {...field} />
+                      <Input
+                        placeholder={
+                          unableToObtainInfo ? "Optional" : "Patient Surname"
+                        }
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -294,10 +426,18 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
               />
               <FormField
                 control={form.control}
-                name="age"
+                name="patientInformation.age"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Age</FormLabel>
+                    <FormLabel
+                      className={
+                        unableToObtainInfo
+                          ? "after:ml-1 after:text-muted-foreground after:content-['(optional)']"
+                          : "after:ml-0.5 after:text-red-500 after:content-['*']"
+                      }
+                    >
+                      Age
+                    </FormLabel>
                     <div className="mb-2 flex items-center gap-2">
                       <Switch
                         checked={useDateOfBirth}
@@ -352,57 +492,37 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                             </Popover>
                           </div>
                         ) : (
-                          <div className="relative flex flex-1">
-                            <Input
-                              type="number"
-                              placeholder="Age"
-                              {...field}
-                              step="any"
-                              min="0"
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                if (value === "" || !isNaN(Number(value))) {
-                                  field.onChange(
-                                    value === "" ? "" : Number(value),
-                                  );
-                                }
-                              }}
-                            />
-                            {(form.formState.touchedFields.age ||
-                              form.formState.errors.age) && (
-                              <Button
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  field.onChange("");
-                                }}
-                                variant={"ghost"}
-                                size={"icon"}
-                                className="absolute right-0 z-10"
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
+                          <Input
+                            type="number"
+                            placeholder={
+                              unableToObtainInfo ? "Optional" : "Age"
+                            }
+                            {...field}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (value === "" || !isNaN(Number(value))) {
+                                field.onChange(
+                                  value === "" ? undefined : Number(value),
+                                );
+                              }
+                            }}
+                          />
                         )}
-                        <FormField
-                          control={form.control}
-                          name="ageUnit"
-                          render={({ field }) => (
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <SelectTrigger className="w-[110px]">
-                                <SelectValue placeholder="Unit" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="years">Years</SelectItem>
-                                <SelectItem value="months">Months</SelectItem>
-                                <SelectItem value="days">Days</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          )}
-                        />
+                        <Select
+                          value={form.watch("patientInformation.ageUnit")}
+                          onValueChange={(value) =>
+                            form.setValue("patientInformation.ageUnit", value as AgeUnit)
+                          }
+                        >
+                          <SelectTrigger className="w-[110px]">
+                            <SelectValue placeholder="Unit" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="years">Years</SelectItem>
+                            <SelectItem value="months">Months</SelectItem>
+                            <SelectItem value="days">Days</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -411,10 +531,18 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
               />
               <FormField
                 control={form.control}
-                name="gender"
+                name="patientInformation.gender"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Sex</FormLabel>
+                    <FormLabel
+                      className={
+                        unableToObtainInfo
+                          ? "after:ml-1 after:text-muted-foreground after:content-['(optional)']"
+                          : "after:ml-0.5 after:text-red-500 after:content-['*']"
+                      }
+                    >
+                      Sex
+                    </FormLabel>
                     <FormControl>
                       <RadioGroup
                         onValueChange={field.onChange}
@@ -441,7 +569,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
               />
               <FormField
                 control={form.control}
-                name="id"
+                name="patientInformation.id"
                 render={({ field }) => (
                   <FormItem className="col-span-1">
                     <FormLabel>ID</FormLabel>
@@ -455,7 +583,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
 
               <FormField
                 control={form.control}
-                name="passport"
+                name="patientInformation.passport"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Passport</FormLabel>
@@ -471,20 +599,28 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                 control={form.control}
                 name="unableToObtainInformation.status"
                 render={({ field }) => (
-                  <FormItem className="col-span-full">
+                  <FormItem className="col-span-full rounded-md border-2 border-dashed border-muted-foreground/20 p-4">
                     <div className="flex items-center space-x-2">
                       <FormControl>
                         <input
                           type="checkbox"
                           checked={field.value}
-                          onChange={field.onChange}
+                          onChange={(e) =>
+                            handleUnableToObtainInfoChange(e.target.checked)
+                          }
                           className="h-4 w-4"
                         />
                       </FormControl>
-                      <FormLabel className="font-normal">
-                        Unable to obtain information
+                      <FormLabel className="font-semibold">
+                        Unable to obtain complete information
                       </FormLabel>
                     </div>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Check this box if you are unable to obtain complete
+                      patient information. This will make patient name, surname,
+                      age, gender, ID, and passport fields optional. You can
+                      still enter any partial information you have.
+                    </p>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -496,7 +632,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                     control={form.control}
                     name="unableToObtainInformation.estimatedAge"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="col-span-full sm:col-span-1">
                         <FormLabel>Estimated Age</FormLabel>
                         <FormControl>
                           <Input
@@ -522,7 +658,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                     control={form.control}
                     name="unableToObtainInformation.notes"
                     render={({ field }) => (
-                      <FormItem className="col-span-2">
+                      <FormItem className="col-span-full sm:col-span-2">
                         <FormLabel>Notes</FormLabel>
                         <FormControl>
                           <Input
