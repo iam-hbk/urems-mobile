@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import Script from "next/script";
 import QuickLinks from "@/components/quick-links";
-import { Eye, EyeOffIcon, Menu, Notebook, Search } from "lucide-react";
+import { Eye, EyeOffIcon, Menu, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AssessmentToolsSummary from "@/components/assessment-tools-summary";
 import { CommandPalette } from "@/components/command-palette";
@@ -16,6 +16,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import NotesDialog from "@/components/the-prf-form/notes-dialog";
 
 function Layout({
   children,
@@ -168,9 +169,7 @@ function Layout({
         strategy="afterInteractive"
         async
       />
-      <div className="absolute bottom-10 right-10 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg">
-        <Notebook />
-      </div>
+      <NotesDialog />
       {prf && <AssessmentToolsSummary prf={prf} />}
     </div>
   );
