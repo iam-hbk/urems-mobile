@@ -1058,6 +1058,12 @@ export const InventorySchema = z.object({
 export type InventoryItemType = z.infer<typeof InventoryItemSchema>;
 export type InventoryType = z.infer<typeof InventorySchema>;
 
+export const NotesSchema = z.object({
+  notes: z.string(),
+});
+
+export type NotesType = z.infer<typeof NotesSchema>;
+
 export const PRFFormDataSchema = z.object({
   case_details: z
     .object({
@@ -1196,7 +1202,7 @@ export const PRFFormDataSchema = z.object({
     .object({
       isOptional: z.boolean(),
       isCompleted: z.boolean(),
-      data: z.string(),
+      data: NotesSchema,
     })
     .optional(),
   past_medical_history: z

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Urbanist as FontSans } from "next/font/google";
 import "./globals.css";
+import "./print.css";
 import { cn } from "@/lib/utils";
 import { NavigationBar } from "@/components/main-navigation";
 import { Toaster } from "@/components/ui/sonner";
