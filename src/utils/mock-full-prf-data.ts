@@ -237,11 +237,11 @@ export const data: PRFFormType[] = [
         isCompleted: true,
         data: "Patient reports chest pain started an hour ago.",
       },
-      physical_exam: {
-        isOptional: false,
-        isCompleted: true,
-        data: "Auscultation reveals clear lung sounds. Heart sounds normal.",
-      },
+      // physical_exam: {
+      //   isOptional: false,
+      //   isCompleted: true,
+      //   data: "Auscultation reveals clear lung sounds. Heart sounds normal.",
+      // },
       interventions: {
         isOptional: false,
         isCompleted: true,
@@ -701,11 +701,11 @@ export const data: PRFFormType[] = [
         isCompleted: true,
         data: "Patient reports fall at home. Complains of hip pain.",
       },
-      physical_exam: {
-        isOptional: false,
-        isCompleted: true,
-        data: "External rotation of left leg. Pain on palpation of hip.",
-      },
+      // physical_exam: {
+      //   isOptional: false,
+      //   isCompleted: true,
+      //   data: "External rotation of left leg. Pain on palpation of hip.",
+      // },
       interventions: {
         isOptional: false,
         isCompleted: true,

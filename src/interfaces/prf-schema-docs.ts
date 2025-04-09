@@ -975,13 +975,13 @@ export const PRFFormSchema = z.object({
           data: z.string(),
         })
         .optional(),
-      physical_exam: z
-        .object({
-          isOptional: z.boolean(),
-          isCompleted: z.boolean(),
-          data: z.string(),
-        })
-        .optional(),
+      // physical_exam: z
+      //   .object({
+      //     isOptional: z.boolean(),
+      //     isCompleted: z.boolean(),
+      //     data: z.string(),
+      //   })
+      //   .optional(),
       interventions: z
         .object({
           isOptional: z.boolean().default(false),

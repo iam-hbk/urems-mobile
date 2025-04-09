@@ -1,62 +1,61 @@
-import { PRF_FORM } from "@/interfaces/prf-form";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { PRF_FORM } from "@/interfaces/prf-form";
+import { User } from "@/interfaces/user";
 
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  hpcsaNumber: string;
-  signature: string;
-  role: "paramedic" | "admin";
-  qualification: string;
-  baseLocation: string;
-};
+interface NotesState {
+  notesByPrfId: Record<string, { notes: string }>;
+  updateNotes: (prfId: string, notes: string) => void;
+  clearNotes: (prfId: string) => void;
+}
 
-interface StoreState {
+interface StoreState extends NotesState {
   user: User | null;
   prfForms: PRF_FORM[];
   setUser: (user: User) => void;
+  setPrfForms: (prfForms: PRF_FORM[]) => void;
   addPrfForm: (prf: PRF_FORM) => void;
-  setPrfForms: (prfs: PRF_FORM[]) => void;
   updatePrfForm: (updatedPrf: PRF_FORM) => void;
 }
 
-// Hardcoded paramedic user
-const DEFAULT_USER: User = {
-  id: "2",
-  name: "Heritier Kaumbu",
-  email: "heritier.kaumbu@ems.com",
-  hpcsaNumber: "HP123456",
-  signature:
-    "data:image/png;base64,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gAAEtiSAgGzpdioNAQhAoJ0AAtLOEAsQgAAEtiSAgGzpdioNAQhAoJ0AAtLOEAsQgAAEtiSAgGzpdioNAQhAoJ0AAtLOEAsQgAAEtiSAgGzpdioNAQhAoJ0AAtLOEAsQgAAEtiSAgGzpdioNAQhAoJ0AAtLOEAsQgAAEtiSAgGzpdioNAQhAoJ0AAtLOEAsQgAAEtiSAgGzpdioNAQhAoJ0AAtLOEAsQgAAEtiSAgGzpdioNAQhAoJ0AAtLOEAsQgAAEtiSAgGzpdioNAQhAoJ0AAtLOEAsQgAAEtiSAgGzpdioNAQhAoJ0AAtLOEAsQgAAEtiSAgGzpdioNAQhAoJ0AAtLOEAsQgAAEtiSAgGzpdioNAQhAoJ0AAtLOEAsQgAAEtiSAgGzpdioNAQhAoJ0AAtLOEAsQgAAEtiSAgGzpdioNAQhAoJ0AAtLOEAsQgAAEtiSAgGzpdioNAQhAoJ0AAtLOEAsQgAAEtiSAgGzpdioNAQhAoJ0AAtLOEAsQgAAEtiSAgGzpdioNAQhAoJ0AAtLOEAsQgAAEtiSAgGzpdioNAQhAoJ0AAtLOEAsQgAAEtiSAgGzpdioNAQhAoJ0AAtLOEAsQgAAEtiSAgGzpdioNAQhAoJ3AvwHrjyz2+3sXwwAAAABJRU5ErkJggg==", // Base64 signature can be added here
-  role: "paramedic",
-  qualification: "Advanced Life Support",
-  baseLocation: "Park Station",
-};
-
 export const useStore = create<StoreState>()(
   persist(
-    (set, get) => ({
-      user: DEFAULT_USER, // Initialize with default user
+    (set) => ({
+      user: null,
       prfForms: [],
+      notesByPrfId: {},
       setUser: (user) => set({ user }),
+      setPrfForms: (prfForms) => set({ prfForms }),
       addPrfForm: (prf) =>
         set((state) => ({
           prfForms: [...state.prfForms, prf],
         })),
-      setPrfForms: (prfs) => set({ prfForms: prfs }),
-      updatePrfForm: (updatedPrf) => {
+      updatePrfForm: (updatedPrf) =>
         set((state) => ({
-          prfForms: state.prfForms.map((prf) => {
-            if (prf.prfFormId === updatedPrf.prfFormId) {
-              return updatedPrf;
-            }
-            return prf;
-          }),
-        }));
-      },
+          prfForms: state.prfForms.map((prf) =>
+            prf.prfFormId === updatedPrf.prfFormId ? updatedPrf : prf
+          ),
+        })),
+      updateNotes: (prfId, notes) =>
+        set((state) => ({
+          notesByPrfId: {
+            ...state.notesByPrfId,
+            [prfId]: { notes },
+          },
+        })),
+      clearNotes: (prfId) =>
+        set((state) => {
+          const { [prfId]: _, ...rest } = state.notesByPrfId;
+          return { notesByPrfId: rest };
+        }),
     }),
-    { name: "prf-store" },
-  ),
+    {
+      name: "prf-storage",
+      partialize: (state) => ({
+        user: state.user,
+        prfForms: state.prfForms,
+        notesByPrfId: state.notesByPrfId,
+      }),
+    }
+  )
 );

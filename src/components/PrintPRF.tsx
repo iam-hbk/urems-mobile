@@ -69,6 +69,7 @@ export function PrintPRF({ prf }: PrintPRFProps) {
                     width={150}
                     height={150}
                     priority
+                    className="border"
                   />
                   <p className="text-2xl font-bold text-primary">
                     <span>UREMS</span>
