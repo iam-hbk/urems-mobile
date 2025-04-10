@@ -15,13 +15,36 @@ import {
   User2,
 } from "lucide-react";
 import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export function NavigationBar({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { zsEmployee } = useZuStandEmployeeStore();
+  const { zsEmployee, zsClearemployee } = useZuStandEmployeeStore();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to logout');
+      }
+
+      // Clear employee data from Zustand
+      zsClearemployee();
+      toast.success("Logged out successfully");
+      router.push('/login');
+    } catch (error) {
+      toast.error("Failed to logout. Please try again.");
+    }
+  };
+
   const links = [
     {
       label: "Dashboard",
@@ -55,6 +78,7 @@ export function NavigationBar({
       icon: (
         <LogOut className="h-5 w-5 flex-shrink-0 scale-x-[-1] transform text-primary-foreground" />
       ),
+      onClick: handleLogout,
     },
   ];
   const [open, setOpen] = useState(false);

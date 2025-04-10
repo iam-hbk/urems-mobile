@@ -4,6 +4,7 @@ import Link, { LinkProps } from "next/link";
 import React, { useState, createContext, useContext } from "react";
 import { AnimatePresence, motion, MotionProps, } from "framer-motion";
 import { IconMenu2, IconX } from "@tabler/icons-react";
+import { usePathname } from "next/navigation";
 
 interface Links {
   label: string;
@@ -176,36 +177,37 @@ export const MobileSidebar = ({
   );
 };
 
+interface SidebarLinkProps {
+  link: {
+    label: string;
+    href: string;
+    icon: React.ReactNode;
+    onClick?: () => void;
+  };
+}
 
-export const SidebarLink = ({
-  link,
-  className,
-  ...props
-}: {
-  link: Links;
-  className?: string;
-  props?: LinkProps;
-}) => {
-  const { open, animate, hasInteracted } = useSidebar();
+export function SidebarLink({ link }: SidebarLinkProps) {
+  const pathname = usePathname();
+  const isActive = pathname === link.href;
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (link.onClick) {
+      e.preventDefault();
+      link.onClick();
+    }
+  };
+
   return (
     <Link
       href={link.href}
+      onClick={handleClick}
       className={cn(
-        "flex items-center text-primary-foreground justify-start gap-2 group/sidebar py-2",
-        className
+        "flex items-center gap-3 rounded-lg px-3 py-2 text-primary-foreground transition-all hover:text-primary-foreground",
+        isActive && "bg-primary-foreground/10",
       )}
-      {...props}
     >
       {link.icon}
-      <motion.span
-        animate={{
-          display: hasInteracted && animate ? (open ? "inline-block" : "none") : "inline-block",
-          opacity: hasInteracted && animate ? (open ? 1 : 0) : 0,
-        }}
-        className="text-primary-foreground text-sm group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0"
-      >
-        {link.label}
-      </motion.span>
+      <span className="text-sm font-medium">{link.label}</span>
     </Link>
   );
-};
+}

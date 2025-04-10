@@ -15,6 +15,8 @@ import { useZuStandCrewStore } from "@/lib/zuStand/crew";
 import { DataTable } from "@/components/prf-table/data-table";
 import { columns } from "@/components/prf-table/columns";
 import { ViewToggle } from "@/components/prf-table/view-toggle";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 //
 export default function Home() {
@@ -24,8 +26,9 @@ export default function Home() {
   });
   const [view, setView] = useState<"table" | "summary">("table");
   const { data: prfs_, error, isLoading } = usePrfForms();
-  const { zsSetEmployee } = useZuStandEmployeeStore(); // to use employee information
+  const { zsSetEmployee, zsEmployee } = useZuStandEmployeeStore();
   const { zsSetCrewID } = useZuStandCrewStore();
+  const router = useRouter();
 
   // loading employee profile information - here to avoid loading in the profile page
   // have to change employee number when auth is enabled
@@ -36,14 +39,38 @@ export default function Home() {
   } = useQuery<EmployeeData>({
     queryKey: ["employeeData", "2"],
     queryFn: async () => {
-      const response = await fetch(
-        `${UREM__ERP_API_BASE}/api/Employee/EmployeeWithDetails/2`,
-      );
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
+      try {
+        const response = await fetch(
+          `${UREM__ERP_API_BASE}/api/Employee/EmployeeWithDetails/2`,
+        );
+        
+        if (response.status === 404) {
+          // If we already have employee data in Zustand, use that instead
+          if (zsEmployee) {
+            toast.info("Using cached employee data");
+            return zsEmployee;
+          }
+          // Otherwise redirect to login
+          toast.error("Please login to continue");
+          router.push("/login");
+          throw new Error("Please login to continue");
+        }
+
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        return response.json();
+      } catch (error) {
+        // If we have employee data in Zustand, use that instead
+        if (zsEmployee) {
+          toast.info("Using cached employee data");
+          return zsEmployee;
+        }
+        throw error;
       }
-      return response.json();
     },
+    retry: false, // Don't retry on failure
   });
 
   // called like this to avoid errors
@@ -70,11 +97,14 @@ export default function Home() {
         if (filter_.length > 0) {
           zsSetCrewID(filter_[0].vehicleId);
         } else {
+          toast.info("No crew assigned for today");
         }
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
+        toast.error(`Error getting crew information: ${error.message}`);
       } else {
+        toast.error("Unknown error getting crew information");
       }
     } finally {
       setLoading_({ ...loading_, status: false });
@@ -83,9 +113,7 @@ export default function Home() {
 
   useEffect(() => {
     if (employeeData) {
-      // console.log(employeeData);
       zsSetEmployee(employeeData);
-      //
       getCrew(employeeData.employeeNumber.toString());
     }
   }, [employeeData, zsSetEmployee]);
@@ -93,12 +121,22 @@ export default function Home() {
   if (isLoading || loading) {
     return <LoadingComponent />;
   }
+
   if (!!error || !!error_) {
-    return <div>{JSON.stringify(error)}</div>;
+    if (zsEmployee) {
+      // If we have employee data in Zustand, continue with the app
+      toast.info("Using cached data");
+    } else {
+      // Otherwise redirect to login
+      router.push("/login");
+      return null;
+    }
   }
+
   if (!prfs_) {
     return <div>No PRFs found</div>;
   }
+
   return (
     <main className="flex w-full flex-col gap-5 overflow-y-scroll p-4">
       <StoreInitializer prfForms={prfs_} />
