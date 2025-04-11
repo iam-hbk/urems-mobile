@@ -13,225 +13,84 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import { authClient } from "@/lib/auth/client";
 
-// Schema matching the expected API response format
 const loginFormSchema = z.object({
-  employeeNumber: z.string(),
-  firstName: z.string(),
-  lastName: z.string(),
-  dateOfBirth: z.string(),
-  initials: z.string(),
-  gender: z.string(),
-  email: z.string().email(),
-  cellNumber: z.string(),
+  employeeNumber: z.string().min(1, "Employee number is required"),
+  password: z.string().min(1, "Password is required"),
 });
 
-export default function LoginPage() {
-  const { zsSetEmployee } = useZuStandEmployeeStore();
-  const router = useRouter();
+type LoginFormValues = z.infer<typeof loginFormSchema>;
 
-  const form = useForm<z.infer<typeof loginFormSchema>>({
+export default function LoginPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('from') || '/';
+  
+  const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
       employeeNumber: "",
-      firstName: "",
-      lastName: "",
-      dateOfBirth: "",
-      initials: "",
-      gender: "",
-      email: "",
-      cellNumber: "",
+      password: "",
     },
   });
 
-  async function onSubmit(values: z.infer<typeof loginFormSchema>) {
-    // Transform the form data to match the expected EmployeeData format
-    const employeeData = {
-      employeeNumber: parseInt(values.employeeNumber),
-      employeeType: {
-        employeeTypeId: 1,
-        typeDescription: "Emergency Medical Technician",
-      },
-      person: {
-        personId: parseInt(values.employeeNumber),
-        firstName: values.firstName,
-        secondName: "",
-        lastName: values.lastName,
-        dateOfBirth: values.dateOfBirth,
-        initials: values.initials,
-        gender: values.gender,
-        personContactDetails: [
-          {
-            isPrimary: true,
-            contactDetails: {
-              cellNumber: values.cellNumber,
-              email: values.email,
-              telephoneNumber: "",
-              contactDetailsType: 1,
-              contactDetailsTypeNavigation: {
-                typeDescription: "Primary",
-              },
-            },
-          },
-        ],
-        personIdentifications: [],
-      },
-      assignedVehicle: null,
-    };
-
+  async function onSubmit(data: LoginFormValues) {
     try {
-      // Set the session cookie
-      // Since we can't directly set cookies in client components,
-      // we'll make a request to an API route that will set the cookie
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(employeeData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to set session');
-      }
-
-      // Store employee data in Zustand
-      zsSetEmployee(employeeData);
-      toast.success("Login successful!");
-      router.push("/");
+      await authClient.signIn.credentials(data);
+      toast.success("Login successful");
+      router.push(redirectTo);
     } catch (error) {
-      toast.error("Failed to login. Please try again.");
+      toast.error("Invalid credentials");
     }
   }
 
   return (
-    <div className="container flex h-screen items-center justify-center">
-      <Card className="w-[450px]">
-        <CardHeader>
-          <CardTitle className="text-2xl">Login to UREMS</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="employeeNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Employee Number</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter your employee number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="firstName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>First Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter your first name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="lastName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Last Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter your last name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <FormField
-                control={form.control}
-                name="dateOfBirth"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Date of Birth</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="initials"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Initials</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter your initials" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="gender"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Gender</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter your gender" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="Enter your email" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="cellNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cell Number</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter your cell number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full">
-                Login
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+    <div className="flex min-h-screen items-center justify-center">
+      <div className="w-full max-w-md space-y-8 rounded-lg border p-6 shadow-lg">
+        <div className="space-y-2 text-center">
+          <h1 className="text-3xl font-bold">Welcome Back</h1>
+          <p className="text-gray-500">Please sign in to continue</p>
+        </div>
+        
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="employeeNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Employee Number</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your employee number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="Enter your password" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button type="submit" className="w-full">
+              Sign In
+            </Button>
+          </form>
+        </Form>
+      </div>
     </div>
   );
 } 

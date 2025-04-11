@@ -5,9 +5,6 @@ import PRFEditSummary from "@/components/the-prf-form/case-details-section";
 import { usePrfForms } from "@/hooks/prf/usePrfForms";
 import { EmployeeData } from "./profile/page";
 import { useQuery } from "@tanstack/react-query";
-import { UREM__ERP_API_BASE } from "@/lib/wretch";
-import { useEffect, useState } from "react";
-import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 import LoadingComponent from "@/components/loading";
 import { apiGetCrewEmployeeID } from "@/lib/api/crew-apis";
 import { TypeCrew } from "@/interfaces/crew";
@@ -15,122 +12,75 @@ import { useZuStandCrewStore } from "@/lib/zuStand/crew";
 import { DataTable } from "@/components/prf-table/data-table";
 import { columns } from "@/components/prf-table/columns";
 import { ViewToggle } from "@/components/prf-table/view-toggle";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { authClient } from "@/lib/auth/client";
+import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
+import { useEffect, useState } from "react";
 
-//
 export default function Home() {
-  const [loading_, setLoading_] = useState({
-    message: "Loading",
-    status: false,
-  });
   const [view, setView] = useState<"table" | "summary">("table");
   const { data: prfs_, error, isLoading } = usePrfForms();
-  const { zsSetEmployee, zsEmployee } = useZuStandEmployeeStore();
+  const { zsSetEmployee } = useZuStandEmployeeStore();
   const { zsSetCrewID } = useZuStandCrewStore();
-  const router = useRouter();
+  const { data: session, loading: authLoading } = authClient.useSession();
 
-  // loading employee profile information - here to avoid loading in the profile page
-  // have to change employee number when auth is enabled
-  const {
-    data: employeeData,
-    isLoading: loading,
-    error: error_,
-  } = useQuery<EmployeeData>({
-    queryKey: ["employeeData", "2"],
+  // Use React Query for crew information
+  const { data: crewData, error: crewError } = useQuery<TypeCrew | null, Error>({
+    queryKey: ["crew", session?.user.employeeNumber],
     queryFn: async () => {
-      try {
-        const response = await fetch(
-          `${UREM__ERP_API_BASE}/api/Employee/EmployeeWithDetails/2`,
-        );
-        
-        if (response.status === 404) {
-          // If we already have employee data in Zustand, use that instead
-          if (zsEmployee) {
-            toast.info("Using cached employee data");
-            return zsEmployee;
-          }
-          // Otherwise redirect to login
-          toast.error("Please login to continue");
-          router.push("/login");
-          throw new Error("Please login to continue");
-        }
-
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-
-        return response.json();
-      } catch (error) {
-        // If we have employee data in Zustand, use that instead
-        if (zsEmployee) {
-          toast.info("Using cached employee data");
-          return zsEmployee;
-        }
-        throw error;
-      }
-    },
-    retry: false, // Don't retry on failure
-  });
-
-  // called like this to avoid errors
-  async function getCrew(id: string) {
-    setLoading_({
-      ...loading_,
-      message: "Getting Crew Information",
-      status: true,
-    });
-    try {
-      // for loading crew information
-      const res = await apiGetCrewEmployeeID(id);
-      // if there is dates for employee
-      if (res && res.data) {
-        // Find all dates that matches today's date.
-        // Use this id when creating a new pr form
-        const filter_: TypeCrew[] = res.data.filter(
+      if (!session?.user.employeeNumber) return null;
+      const res = await apiGetCrewEmployeeID(
+        session.user.employeeNumber.toString(),
+      );
+      if (res?.data) {
+        const todaysCrew = res.data.filter(
           (i: TypeCrew) =>
             new Date(i.date).toLocaleDateString() ===
             new Date().toLocaleDateString(),
         );
-        // store crewID in ZS-State Management
-        // if there is no crew, the crew id, should be undefined
-        if (filter_.length > 0) {
-          zsSetCrewID(filter_[0].vehicleId);
-        } else {
-          toast.info("No crew assigned for today");
-        }
+        return todaysCrew[0] || null;
       }
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(`Error getting crew information: ${error.message}`);
-      } else {
-        toast.error("Unknown error getting crew information");
-      }
-    } finally {
-      setLoading_({ ...loading_, status: false });
-    }
-  }
-
-  useEffect(() => {
-    if (employeeData) {
-      zsSetEmployee(employeeData);
-      getCrew(employeeData.employeeNumber.toString());
-    }
-  }, [employeeData, zsSetEmployee]);
-
-  if (isLoading || loading) {
-    return <LoadingComponent />;
-  }
-
-  if (!!error || !!error_) {
-    if (zsEmployee) {
-      // If we have employee data in Zustand, continue with the app
-      toast.info("Using cached data");
-    } else {
-      // Otherwise redirect to login
-      router.push("/login");
       return null;
+    },
+    enabled: !!session?.user.employeeNumber,
+  });
+
+  // Handle crew data changes
+  useEffect(() => {
+    if (crewData) {
+      zsSetCrewID(crewData.vehicleId);
+    } else if (crewData === null && session) {
+      toast.info("No crew assigned for today");
     }
+  }, [crewData, session]);
+
+  // Handle crew error
+  useEffect(() => {
+    if (crewError) {
+      toast.error(`Error getting crew information: ${crewError.message}`);
+    }
+  }, [crewError]);
+
+  // Set employee data in store
+  useEffect(() => {
+    if (session?.user) {
+      zsSetEmployee(session.user as EmployeeData);
+    }
+  }, [session, zsSetEmployee]);
+
+  // Show loading state
+  if (authLoading) {
+    return <LoadingComponent message="Checking authentication..." />;
+  }
+
+  // Check authentication
+  if (!session?.user) {
+    return null; // Let middleware handle the redirect
+  }
+
+  // Show loading state for PRF data
+  if (isLoading) {
+    return <LoadingComponent message="Loading PRF data..." />;
   }
 
   if (!prfs_) {

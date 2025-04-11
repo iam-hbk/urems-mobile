@@ -1,33 +1,64 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { Session } from './lib/auth/config'
 
 // This function can be marked `async` if using `await` inside
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   // Get the pathname
-  const path = request.nextUrl.pathname;
+  const pathname = request.nextUrl.pathname
 
-  // Define public paths that don't require authentication
-  const isPublicPath = path === '/login';
+  // Define public and protected routes
+  const publicRoutes = ['/login']
+  const protectedRoutes = [
+    '/profile',
+    '/dashboard',
+    '/'
+  ]
 
-  // Get the employee data from the store
-  // Since middleware runs on the edge, we can't access Zustand directly
-  // Instead, we'll check for a session cookie that we'll set on login
-  const isAuthenticated = request.cookies.has('employee_session');
+  // Get the session from cookie
+  const sessionCookie = request.cookies.get('auth_session')?.value
+  let session: Session | null = null
 
-  // Redirect to login if accessing a protected route without authentication
-  if (!isAuthenticated && !isPublicPath) {
-    return NextResponse.redirect(new URL('/login', request.url));
+  if (sessionCookie) {
+    try {
+      const parsedSession = JSON.parse(sessionCookie) as Session
+      // Check if session is expired
+      if (new Date(parsedSession.expires) < new Date()) {
+        session = null
+      } else {
+        session = parsedSession
+      }
+    } catch {
+      session = null
+    }
   }
 
-  // Redirect to home if accessing login while authenticated
-  if (isAuthenticated && isPublicPath) {
-    return NextResponse.redirect(new URL('/', request.url));
+  // Check if the current path is a protected route
+  const isProtectedRoute = protectedRoutes.some(route => 
+    pathname === route || // Exact match
+    (route !== '/' && pathname.startsWith(route)) // Starts with but not root
+  )
+
+  // Check if the current path is a public route
+  const isPublicRoute = publicRoutes.some(route => pathname === route)
+
+  // If accessing a protected route and not authenticated
+  if (isProtectedRoute && !session) {
+    const loginUrl = new URL('/login', request.url)
+    // Add the original URL as a query parameter for redirect after login
+    loginUrl.searchParams.set('from', pathname)
+    return NextResponse.redirect(loginUrl)
   }
 
-  return NextResponse.next();
+  // If accessing public route (like login) while authenticated
+  if (isPublicRoute && session) {
+    return NextResponse.redirect(new URL('/', request.url))
+  }
+
+  return NextResponse.next()
 }
 
-// Configure the paths that should be handled by this middleware
+// Configure which routes the middleware should run on
 export const config = {
   matcher: [
     /*

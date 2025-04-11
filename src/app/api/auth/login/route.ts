@@ -1,27 +1,73 @@
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { cookies } from 'next/headers';
+import { Session } from '@/lib/auth/config';
+import { EmployeeData } from '@/app/profile/page';
 
-export async function POST(request: NextRequest) {
+// Mock user for testing
+const MOCK_USER: EmployeeData = {
+  employeeNumber: 2,
+  employeeType: {
+    employeeTypeId: 1,
+    typeDescription: "Emergency Medical Technician"
+  },
+  person: {
+    personId: 1,
+    firstName: "John",
+    secondName: "",
+    lastName: "Doe",
+    dateOfBirth: new Date('1990-01-01').toISOString(),
+    initials: "JD",
+    gender: "Male",
+    personContactDetails: [{
+      isPrimary: true,
+      contactDetails: {
+        cellNumber: "1234567890",
+        email: "john@example.com",
+        telephoneNumber: "",
+        contactDetailsType: 1,
+        contactDetailsTypeNavigation: {
+          typeDescription: "Primary"
+        }
+      }
+    }],
+    personIdentifications: []
+  },
+  assignedVehicle: null
+};
+
+export async function POST(request: Request) {
   try {
-    const employeeData = await request.json();
+    const body = await request.json();
+    
+    // In a real app, you would validate credentials here
+    // For now, just check if employeeNumber matches our mock user
+    if (body.employeeNumber !== MOCK_USER.employeeNumber.toString()) {
+      return NextResponse.json(
+        { error: 'Invalid credentials' },
+        { status: 401 }
+      );
+    }
 
-    // Create a new response
-    const response = NextResponse.json({ success: true });
+    // Create session
+    const session: Session = {
+      user: MOCK_USER,
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
+    };
 
-    // Set the cookie on the response
-    response.cookies.set('employee_session', JSON.stringify(employeeData), {
+    const response = NextResponse.json(session);
+
+    // Set session cookie
+    response.cookies.set('auth_session', JSON.stringify(session), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 60 * 60 * 24, // 24 hours
-      path: '/',
+      sameSite: 'lax',
+      expires: new Date(session.expires),
     });
 
     return response;
   } catch (error) {
     return NextResponse.json(
-      { error: 'Failed to process login' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
