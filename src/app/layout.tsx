@@ -3,14 +3,16 @@ import { Urbanist as FontSans } from "next/font/google";
 import "./globals.css";
 import "./print.css";
 import { cn } from "@/lib/utils";
-import { NavigationBar } from "@/components/main-navigation";
 import { Toaster } from "@/components/ui/sonner";
 import QueryClientWrapper from "@/lib/react-query-client";
+import { SidebarProvider } from "@/components/ui/sidebar"
+import { AppSidebar } from "@/components/app-sidebar"
 
 const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
 });
+
 export const metadata: Metadata = {
   title: "UREMS - PRF",
   description: "Patient Report Form",
@@ -19,9 +21,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="en">
       <body
@@ -30,10 +32,17 @@ export default function RootLayout({
           fontSans.variable
         )}
       >
-        <QueryClientWrapper>
-          <NavigationBar>{children}</NavigationBar>
-        </QueryClientWrapper>
-        <Toaster richColors />
+        <SidebarProvider defaultOpen={true}>
+          <div className="flex min-h-screen">
+            <AppSidebar />
+            {/* <div className="flex-1 overflow-y-auto p-8"> */}
+              <QueryClientWrapper>
+                {children}
+              </QueryClientWrapper>
+            {/* </div> */}
+          </div>
+          <Toaster />
+        </SidebarProvider>
       </body>
     </html>
   );
