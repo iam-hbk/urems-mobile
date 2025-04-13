@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth/client";
+import { Suspense } from "react";
 
 const loginFormSchema = z.object({
   employeeNumber: z.string().min(1, "Employee number is required"),
@@ -24,7 +25,7 @@ const loginFormSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginFormSchema>;
 
-export default function LoginPage() {
+const LoginForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('from') || '/';
@@ -92,5 +93,13 @@ export default function LoginPage() {
         </Form>
       </div>
     </div>
+  );
+};
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 } 
