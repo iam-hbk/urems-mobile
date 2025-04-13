@@ -60,7 +60,7 @@ export const iconMap = {
   "Secondary Survey": Stethoscope,
   "Vital Signs": Activity,
   "History Taking": FileText,
-  "Physical Exam": Clipboard,
+  // "Physical Exam": Clipboard,
   Interventions: FirstAid,
   "Medication Administration": Pill,
   "Patient Handover": UserCheck,

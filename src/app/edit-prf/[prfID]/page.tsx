@@ -9,8 +9,6 @@ import { usePrfForms } from "@/hooks/prf/usePrfForms";
 import PRF_DATA_TASKS from "@/components/form-task-details-table";
 import { PRFFormDataSchema } from "@/interfaces/prf-schema";
 
-// from +15 props are promise
-// https://nextjs.org/docs/app/building-your-application/upgrading/version-15#asynchronous-page
 type Params = Promise<{ prfID: string }>;
 
 export default function Page(props: { params: Params }) {

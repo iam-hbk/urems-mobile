@@ -15,7 +15,7 @@ export const useZuStandEmployeeStore = create<useZuStandEmployeeStoreItems>()(
   (set, get) => ({
     zsEmployee: null,
     zsSetEmployee: (val: EmployeeData) => set({ zsEmployee: val }),
-    zsClearemployee: () => { },
+    zsClearemployee: () => set({ zsEmployee: null }),
   })
   // ,  )
 )

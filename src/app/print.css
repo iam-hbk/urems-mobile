@@ -1,0 +1,27 @@
+@media print {
+  .print\:block {
+    display: block !important;
+  }
+
+  /* Ensure proper page breaks */
+  .page-break-after {
+    page-break-after: always;
+  }
+
+  /* Hide preview UI elements */
+  .fixed,
+  .sticky {
+    position: relative !important;
+  }
+
+  /* Ensure white background */
+  #prf-preview {
+    background: white !important;
+  }
+
+  /* Ensure proper image rendering */
+  img {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+} 
