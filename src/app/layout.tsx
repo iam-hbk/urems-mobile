@@ -5,8 +5,10 @@ import "./print.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 import QueryClientWrapper from "@/lib/react-query-client";
-import { SidebarProvider } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/app-sidebar"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Scroll } from "lucide-react";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -22,27 +24,23 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en">
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased",
-          fontSans.variable
+          fontSans.variable,
         )}
       >
-        <SidebarProvider defaultOpen={true}>
-          <div className="flex min-h-screen">
+        <QueryClientWrapper>
+          <SidebarProvider defaultOpen={false}>
             <AppSidebar />
-            {/* <div className="flex-1 overflow-y-auto p-8"> */}
-              <QueryClientWrapper>
-                {children}
-              </QueryClientWrapper>
-            {/* </div> */}
-          </div>
+            <SidebarInset>{children}</SidebarInset>
+          </SidebarProvider>
           <Toaster />
-        </SidebarProvider>
+        </QueryClientWrapper>
       </body>
     </html>
   );

@@ -25,25 +25,27 @@ export default function Home() {
   const { data: session, loading: authLoading } = authClient.useSession();
 
   // Use React Query for crew information
-  const { data: crewData, error: crewError } = useQuery<TypeCrew | null, Error>({
-    queryKey: ["crew", session?.user.employeeNumber],
-    queryFn: async () => {
-      if (!session?.user.employeeNumber) return null;
-      const res = await apiGetCrewEmployeeID(
-        session.user.employeeNumber.toString(),
-      );
-      if (res?.data) {
-        const todaysCrew = res.data.filter(
-          (i: TypeCrew) =>
-            new Date(i.date).toLocaleDateString() ===
-            new Date().toLocaleDateString(),
+  const { data: crewData, error: crewError } = useQuery<TypeCrew | null, Error>(
+    {
+      queryKey: ["crew", session?.user.employeeNumber],
+      queryFn: async () => {
+        if (!session?.user.employeeNumber) return null;
+        const res = await apiGetCrewEmployeeID(
+          session.user.employeeNumber.toString(),
         );
-        return todaysCrew[0] || null;
-      }
-      return null;
+        if (res?.data) {
+          const todaysCrew = res.data.filter(
+            (i: TypeCrew) =>
+              new Date(i.date).toLocaleDateString() ===
+              new Date().toLocaleDateString(),
+          );
+          return todaysCrew[0] || null;
+        }
+        return null;
+      },
+      enabled: !!session?.user.employeeNumber,
     },
-    enabled: !!session?.user.employeeNumber,
-  });
+  );
 
   // Handle crew data changes
   useEffect(() => {
@@ -88,7 +90,7 @@ export default function Home() {
   }
 
   return (
-    <main className="flex w-full flex-col gap-5 overflow-y-scroll p-4">
+    <main className="flex w-full flex-col gap-5 p-4">
       <StoreInitializer prfForms={prfs_} />
       <div className="flex flex-row items-center justify-between">
         <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
@@ -111,6 +113,13 @@ export default function Home() {
           ))}
         </section>
       )}
+      {/* <div className="flex flex-col bg-green-600 w-full gap-4">
+        {[...new Array(100)].map((_, index) => (
+          <div key={index} className="h-10 w-10 bg-red-500">
+            {index}
+          </div>
+        ))}
+      </div> */}
     </main>
   );
 }

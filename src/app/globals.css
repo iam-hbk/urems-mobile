@@ -4,7 +4,6 @@
 
 html {
   scroll-behavior: smooth;
-  overflow: hidden;
 }
 
 /* Hide spinner buttons for Chrome, Safari, Edge, Opera */

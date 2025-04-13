@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import {
   Calendar,
   Home,
@@ -25,6 +26,7 @@ import {
   SidebarTrigger,
   SidebarFooter,
   useSidebar,
+  SidebarRail,
 } from "@/components/ui/sidebar";
 import { Button } from "./ui/button";
 import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
@@ -33,45 +35,63 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-const mainMenuItems = [
-  {
-    title: "Dashboard",
-    url: "/",
-    icon: Home,
-  },
-  {
-    title: "PRF Forms",
-    url: "/prf",
-    icon: FileText,
-  },
-  {
-    title: "Calendar",
-    url: "/calendar",
-    icon: Calendar,
-  },
-  {
-    title: "Crew",
-    url: "/crew",
-    icon: Users,
-  },
-  {
-    title: "Profile",
-    url: "/profile",
-    icon: User2,
-  },
-  {
-    title: "Guides",
-    url: "/guides",
-    icon: HelpCircle,
-  },
-  {
-    title: "Settings",
-    url: "/settings",
-    icon: Settings,
-  },
-];
+// This is our navigation data structure
+const navigationData = {
+  mainMenu: [
+    {
+      title: "Main",
+      items: [
+        {
+          title: "Dashboard",
+          url: "/",
+          icon: Home,
+        },
+        {
+          title: "PRF Forms",
+          url: "/prf",
+          icon: FileText,
+        },
+        {
+          title: "Calendar",
+          url: "/calendar",
+          icon: Calendar,
+        },
+      ],
+    },
+    {
+      title: "Management",
+      items: [
+        {
+          title: "Crew",
+          url: "/crew",
+          icon: Users,
+        },
+        {
+          title: "Profile",
+          url: "/profile",
+          icon: User2,
+        },
+      ],
+    },
+    {
+      title: "System",
+      items: [
+        {
+          title: "Guides",
+          url: "/guides",
+          icon: HelpCircle,
+        },
+        {
+          title: "Settings",
+          url: "/settings",
+          icon: Settings,
+        },
+      ],
+    },
+  ],
+};
 
-export function AppSidebar() {
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { zsEmployee, zsClearemployee } = useZuStandEmployeeStore();
   const router = useRouter();
   const { state } = useSidebar();
@@ -86,7 +106,6 @@ export function AppSidebar() {
         throw new Error("Failed to logout");
       }
 
-      // Clear employee data from Zustand
       zsClearemployee();
       toast.success("Logged out successfully");
       router.push("/login");
@@ -96,17 +115,17 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="border-r" collapsible="icon">
+    <Sidebar className="border-r" collapsible="icon" {...props}>
       <SidebarHeader
         className={cn(
           "flex h-[60px] flex-row items-center justify-between",
-          state === "collapsed" && "justify-center",
+          state === "collapsed" && "justify-center"
         )}
       >
         <span
           className={cn(
             "ml-3 font-semibold",
-            state === "collapsed" && "hidden",
+            state === "collapsed" && "hidden"
           )}
         >
           UREMS PRF
@@ -118,23 +137,25 @@ export function AppSidebar() {
         </SidebarTrigger>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {mainMenuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link href={item.url} className="flex items-center gap-3">
-                      <item.icon className="h-5 w-5" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {navigationData.mainMenu.map((section) => (
+          <SidebarGroup key={section.title}>
+            <SidebarGroupLabel>{section.title}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {section.items.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <Link href={item.url} className="flex items-center gap-3">
+                        <item.icon className="h-5 w-5" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
       <SidebarFooter className="px-4 py-2">
         <SidebarMenu>
@@ -146,6 +167,7 @@ export function AppSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   );
 }
