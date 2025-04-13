@@ -29,7 +29,9 @@ if (typeof window !== 'undefined') {
       const res = await fetch('/api/auth/check-session');
       if (res.ok) {
         const session = await res.json();
-        useAuthStore.getState().setSession(session);
+        if (session) {
+          useAuthStore.getState().setSession(session);
+        }
       }
     } catch (error) {
       console.error('Failed to check session:', error);
@@ -54,14 +56,22 @@ export const authClient = {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(credentials),
+          credentials: 'include', // Important for cookies
         });
         
-        if (!res.ok) throw new Error('Authentication failed');
+        if (!res.ok) {
+          throw new Error('Authentication failed');
+        }
         
         const session = await res.json();
+        if (!session || !session.user) {
+          throw new Error('Invalid session data received');
+        }
+        
         useAuthStore.getState().setSession(session);
         return session;
       } catch (error) {
+        useAuthStore.getState().setSession(null);
         throw error;
       } finally {
         useAuthStore.getState().setLoading(false);
@@ -71,11 +81,18 @@ export const authClient = {
   signOut: async () => {
     try {
       useAuthStore.getState().setLoading(true);
-      await fetch(`${authConfig.baseUrl}${authConfig.apiPath}/logout`, {
+      const res = await fetch(`${authConfig.baseUrl}${authConfig.apiPath}/logout`, {
         method: 'POST',
+        credentials: 'include', // Important for cookies
       });
+      
+      if (!res.ok) {
+        throw new Error('Logout failed');
+      }
+      
       useAuthStore.getState().setSession(null);
     } catch (error) {
+      console.error('Logout error:', error);
       throw error;
     } finally {
       useAuthStore.getState().setLoading(false);

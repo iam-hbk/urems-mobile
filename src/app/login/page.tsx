@@ -40,10 +40,19 @@ const LoginForm = () => {
 
   async function onSubmit(data: LoginFormValues) {
     try {
-      await authClient.signIn.credentials(data);
-      toast.success("Login successful");
-      router.push(redirectTo);
+      const session = await authClient.signIn.credentials(data);
+      if (session) {
+        toast.success("Login successful");
+        // Add a small delay to ensure the session is properly set
+        setTimeout(() => {
+          router.push(redirectTo);
+          router.refresh(); // Force a refresh to ensure new session is picked up
+        }, 100);
+      } else {
+        toast.error("Login failed");
+      }
     } catch (error) {
+      console.error("Login error:", error);
       toast.error("Invalid credentials");
     }
   }

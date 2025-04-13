@@ -92,10 +92,10 @@ export default function Home() {
   return (
     <main className="flex w-full flex-col gap-5 p-4">
       <StoreInitializer prfForms={prfs_} />
-      <div className="flex flex-row items-center justify-between">
-        <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
+      <div className="flex flex-row items-center justify-end">
+        {/* <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:block lg:text-5xl">
           Dashboard
-        </h1>
+        </h1> */}
         <div className="flex items-center gap-4">
           <ViewToggle view={view} onViewChange={setView} />
           <PRFEditSummary buttonTitle="Create a new Patient Report Form" />

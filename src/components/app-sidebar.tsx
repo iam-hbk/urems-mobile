@@ -94,7 +94,7 @@ const navigationData = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { zsEmployee, zsClearemployee } = useZuStandEmployeeStore();
   const router = useRouter();
-  const { state } = useSidebar();
+  const { state,isMobile } = useSidebar();
 
   const handleLogout = async () => {
     try {
@@ -119,22 +119,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader
         className={cn(
           "flex h-[60px] flex-row items-center justify-between",
-          state === "collapsed" && "justify-center"
+          state === "collapsed" && !isMobile && "justify-center"
         )}
       >
         <span
           className={cn(
-            "ml-3 font-semibold",
-            state === "collapsed" && "hidden"
+            "ml-3 font-semibold whitespace-nowrap",
+            state === "collapsed" && !isMobile && "hidden"
           )}
         >
           UREMS PRF
         </span>
-        <SidebarTrigger>
-          <Button variant="ghost" size="icon">
-            <Menu className="h-6 w-6" />
-          </Button>
-        </SidebarTrigger>
+        
       </SidebarHeader>
       <SidebarContent>
         {navigationData.mainMenu.map((section) => (
