@@ -22,6 +22,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import AppBreadcrumbs from "@/components/app-breadcrumbs";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -66,12 +67,10 @@ export default function RootLayout({
                         Dashboard
                       </BreadcrumbLink>
                     </BreadcrumbItem>
-                    {/* <BreadcrumbSeparator className="hidden md:block" />
-                    <BreadcrumbItem>
-                      <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-                    </BreadcrumbItem> */}
+                    <AppBreadcrumbs />
                   </BreadcrumbList>
                 </Breadcrumb>
+                
               </header>
               <div className="flex flex-1 flex-col">
                 {children}
