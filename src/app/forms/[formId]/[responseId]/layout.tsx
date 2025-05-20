@@ -54,7 +54,7 @@ export default function DynamicFormLayout({
   return (
     <div className="flex w-full flex-col items-center overflow-auto">
       {formTemplate && formId && (
-        <DynamicFormQuickLinks formTemplate={formTemplate} formId={formId} />
+        <DynamicFormQuickLinks formTemplate={formTemplate} formId={formId} responseId={responseId} />
       )}
 
       <main className="grid w-full flex-grow grid-cols-1 justify-items-center p-4">
