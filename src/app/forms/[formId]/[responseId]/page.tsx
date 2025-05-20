@@ -70,9 +70,7 @@ const RootFormResponseSectionPage = (props: { params: Props }) => {
                 formResponse.sectionStatuses.reduce(
                   (acc, curr) => acc + (curr.isCompleted ? 1 : 0),
                   0,
-                ) /
-                  formResponse.sectionStatuses.length +
-                20
+                ) / formResponse.sectionStatuses.length
               }
               className="scale-110 transform" // Make it slightly larger
             />

@@ -45,7 +45,6 @@ export default function DynamicFormLayout({
     gcTime: 1000 * 60 * 60, // 1 hour
   });
 
-  // Filter out empty strings
 
   // TODO: Adapt QuickLinks, StepperView, CommandPalette for FormTemplate
   // const [showQuickLinks, setShowQuickLinks] = useState<boolean>(true);

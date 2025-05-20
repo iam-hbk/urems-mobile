@@ -2,18 +2,26 @@
 
 import React, { use } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { FormTemplate, Section } from "@/types/form-template";
+import {
+  DetailedFormResponse,
+  FormTemplate,
+  Section,
+} from "@/types/form-template";
 import FormSectionRenderer from "@/components/dynamic-form/FormSectionRenderer";
 import Link from "next/link";
-import { fetchFormTemplateById } from "../../../api";
+import { fetchFormResponseById, fetchFormTemplateById } from "../../../api";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-type Params = Promise<{ formId: string; sectionId: string }>;
+type Params = Promise<{
+  formId: string;
+  responseId: string;
+  sectionId: string;
+}>;
 
 export default function DynamicFormSectionPage(props: { params: Params }) {
-  const { formId, sectionId } = use(props.params);
+  const { formId, responseId, sectionId } = use(props.params);
   const router = useRouter();
 
   const {
@@ -24,6 +32,18 @@ export default function DynamicFormSectionPage(props: { params: Params }) {
     queryKey: ["formTemplate", formId],
     queryFn: () => fetchFormTemplateById(formId),
     enabled: !!formId,
+    staleTime: 1000 * 60 * 60, // 1 hour
+    gcTime: 1000 * 60 * 60 * 24, // 24 hours (use gcTime for TanStack Query v5+)
+  });
+
+  const {
+    data: formResponse,
+    isLoading: isLoadingResponse,
+    error: responseError,
+  } = useQuery<DetailedFormResponse | null, Error>({
+    queryKey: ["formResponse", responseId],
+    queryFn: () => fetchFormResponseById(responseId),
+    enabled: !!responseId,
     staleTime: 1000 * 60 * 60, // 1 hour
     gcTime: 1000 * 60 * 60 * 24, // 24 hours (use gcTime for TanStack Query v5+)
   });
@@ -89,9 +109,16 @@ export default function DynamicFormSectionPage(props: { params: Params }) {
 
   return (
     <div className="container mx-auto p-4">
-      <Button variant="link" onClick={() => router.back()} className="mb-4">
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back to {formTemplate.title}
-      </Button>
+      <div className="mb-4 flex space-x-4">
+        <Button variant="link" asChild>
+          <Link
+            href={`/forms/${formId}/${responseId}`}
+            className="flex items-center"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back to response overview
+          </Link>
+        </Button>
+      </div>
       <FormSectionRenderer section={currentSection} />
       {/* TODO: Add navigation to next/previous section if applicable */}
       {/* TODO: Consider how form state/submission works for a single section */}
