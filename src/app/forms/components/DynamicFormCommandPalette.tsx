@@ -24,23 +24,23 @@ const sectionIconMap: { [key: string]: React.ElementType } = {
 };
 
 interface DynamicFormCommandPaletteProps {
-  formTemplate?: FormTemplate | null; // Make optional as it might not be loaded initially
+  formTemplate: FormTemplate;
   formId: string;
+  responseId?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function DynamicFormCommandPalette({
+export default function DynamicFormCommandPalette({
   formTemplate,
   formId,
+  responseId,
   open,
   onOpenChange,
 }: DynamicFormCommandPaletteProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [search, setSearch] = useState("");
-
-  
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -62,7 +62,7 @@ export function DynamicFormCommandPalette({
   const commandSections = formTemplate?.sections.map((section) => ({
     id: section.id,
     title: section.name,
-    href: `/forms/${formId}/section/${section.id}`,
+    href: responseId ? `/forms/${formId}/${responseId}/${section.id}` : `/forms/${formId}`,
     icon: sectionIconMap[section.name] || sectionIconMap.default,
     keywords: [section.name].filter(Boolean) as string[],
   })) || [];

@@ -36,12 +36,14 @@ const sectionIconMap: { [key: string]: React.ElementType } = {
 
 interface DynamicFormQuickLinksProps {
   formTemplate: FormTemplate;
-  formId: string; // To construct links
+  formId: string;
+  responseId?: string;
 }
 
 export default function DynamicFormQuickLinks({
   formTemplate,
   formId,
+  responseId,
 }: DynamicFormQuickLinksProps) {
   const [showQuickLinks, setShowQuickLinks] = useState<boolean>(true);
 
@@ -179,7 +181,7 @@ export default function DynamicFormQuickLinks({
                 asChild
                 key={section.id}
               >
-                <Link href={`/forms/${formId}/section/${section.id}`}>
+                <Link href={responseId ? `/forms/${formId}/${responseId}/${section.id}` : `/forms/${formId}`}>
                   <Icon className="h-4 w-4 flex-shrink-0" />
                   <span className="truncate text-sm">{section.name}</span>
                   {isIndicatedAsRequired && !customizing && (

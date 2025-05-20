@@ -6,11 +6,15 @@ import { FormTemplate, Section } from "@/types/form-template";
 import FormSectionRenderer from "@/components/dynamic-form/FormSectionRenderer";
 import Link from "next/link";
 import { fetchFormTemplateById } from "../../../api";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 type Params = Promise<{ formId: string; sectionId: string }>;
 
 export default function DynamicFormSectionPage(props: { params: Params }) {
   const { formId, sectionId } = use(props.params);
+  const router = useRouter();
 
   const {
     data: formTemplate,
@@ -20,7 +24,6 @@ export default function DynamicFormSectionPage(props: { params: Params }) {
     queryKey: ["formTemplate", formId],
     queryFn: () => fetchFormTemplateById(formId),
     enabled: !!formId,
-    // Longer cache times as requested - example: 1 hour staleTime, 24 hours cacheTime
     staleTime: 1000 * 60 * 60, // 1 hour
     gcTime: 1000 * 60 * 60 * 24, // 24 hours (use gcTime for TanStack Query v5+)
   });
@@ -86,14 +89,9 @@ export default function DynamicFormSectionPage(props: { params: Params }) {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="mb-4">
-        <Link
-          href={`/forms/${formId}`}
-          className="text-blue-600 hover:underline"
-        >
-          &larr; Back to {formTemplate.title}
-        </Link>
-      </div>
+      <Button variant="link" onClick={() => router.back()} className="mb-4">
+        <ArrowLeft className="mr-2 h-4 w-4" /> Back to {formTemplate.title}
+      </Button>
       <FormSectionRenderer section={currentSection} />
       {/* TODO: Add navigation to next/previous section if applicable */}
       {/* TODO: Consider how form state/submission works for a single section */}

@@ -108,7 +108,7 @@ const UserResponsesForTemplate: React.FC<UserResponsesForTemplateProps> = ({
             <TableRow key={response.id} className="text-sm hover:bg-slate-50">
               <TableCell>
                 <Link
-                  href={`/forms/responses/${response.id}`}
+                  href={`/forms/${templateId}/${response.id}`}
                   className="text-blue-600 hover:underline"
                 >
                   #{response.id.substring(0, 8)}
@@ -136,7 +136,7 @@ const UserResponsesForTemplate: React.FC<UserResponsesForTemplateProps> = ({
               </TableCell>
               <TableCell>
                 <Link
-                  href={`/forms/responses/${response.id}/edit`}
+                  href={`/forms/${templateId}/${response.id}`}
                   className="text-green-600 hover:underline"
                 >
                   Edit
@@ -195,12 +195,12 @@ export default function DynamicFormPage(props: { params: Params }) {
         const firstSectionId = formTemplate?.sections?.[0]?.id;
         if (firstSectionId) {
           router.push(
-            `/forms/${formTemplate!.id}/section/${firstSectionId}?responseId=${newResponseData.id}`,
+            `/forms/${formTemplate!.id}/${newResponseData.id}/${firstSectionId}`,
           );
         } else {
           toast.info("Form has no sections. Staying on current page.");
           router.push(
-            `/forms/${formTemplate!.id}?newResponseId=${newResponseData.id}`,
+            `/forms/${formTemplate!.id}/${newResponseData.id}`,
           );
         }
       },

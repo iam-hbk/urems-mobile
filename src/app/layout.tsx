@@ -58,23 +58,11 @@ export default function RootLayout({
             </SidebarTrigger> */}
             <SidebarInset>
               <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-                <SidebarTrigger className="-ml-1 w-4 h-4 text-gray-500" />
+                <SidebarTrigger className="-ml-1 h-4 w-4 text-gray-500" />
                 <Separator orientation="vertical" className="mr-2 h-4" />
-                <Breadcrumb>
-                  <BreadcrumbList>
-                    <BreadcrumbItem className="hidden md:block">
-                      <BreadcrumbLink href="#">
-                        Dashboard
-                      </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <AppBreadcrumbs />
-                  </BreadcrumbList>
-                </Breadcrumb>
-                
+                <AppBreadcrumbs />
               </header>
-              <div className="flex flex-1 flex-col">
-                {children}
-              </div>
+              <div className="flex flex-1 flex-col">{children}</div>
             </SidebarInset>
           </SidebarProvider>
           <Toaster />

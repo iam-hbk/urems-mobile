@@ -94,3 +94,28 @@ export const createFormResponse = async (payload: CreateFormResponsePayload): Pr
     throw error;
   }
 };
+
+/**
+ * Fetches a single form response by its ID.
+ * @param responseId The ID of the form response to fetch.
+ */
+export const fetchFormResponseById = async (
+  responseId: string,
+): Promise<DetailedFormResponse | null> => {
+  if (!responseId) {
+    console.warn("fetchFormResponseById called without responseId");
+    return null;
+  }
+  try {
+    // The API path seems to be /FormResponses/{id} rather than /api/FormResponses/{id}
+    // when using the wretch instance, which likely has a base URL configured.
+    const response = (await api.get(
+      `/FormResponses/${responseId}`,
+    )) as DetailedFormResponse;
+    return response;
+  } catch (error) {
+    console.error(`Failed to fetch form response with ID ${responseId}:`, error);
+    // Re-throw to allow react-query to handle the error state
+    throw error;
+  }
+};

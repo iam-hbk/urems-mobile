@@ -1,37 +1,26 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { usePathname, useParams } from "next/navigation";
+import React, { use } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { FormTemplate } from "@/types/form-template";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Eye,
-  EyeOffIcon,
-  Menu,
-  Search,
-  Command as CommandIcon,
-} from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { FormTemplate, DetailedFormResponse } from "@/types/form-template";
 import DynamicFormQuickLinks from "../../components/DynamicFormQuickLinks";
-import { fetchFormTemplateById } from "../../api";
+import { fetchFormTemplateById, fetchFormResponseById } from "../../api";
 // TODO: Adapt these components or create versions for FormTemplate
 // import AssessmentToolsSummary from "@/components/assessment-tools-summary";
 // import NotesDialog from "@/components/the-prf-form/notes-dialog";
 
+type Params = Promise<{
+  formId: string;
+  responseId: string;
+}>;
+
 export default function DynamicFormLayout({
   children,
+  params,
 }: Readonly<{
   children: React.ReactNode;
+  params: Params;
 }>) {
-  const params = useParams();
-  const formId = typeof params.formId === "string" ? params.formId : "";
-
+  const { formId, responseId } = use(params);
   const {
     data: formTemplate,
     isLoading: isLoadingTemplate,
@@ -42,6 +31,18 @@ export default function DynamicFormLayout({
     enabled: !!formId,
     staleTime: 1000 * 60 * 60, // 1 hour
     gcTime: 1000 * 60 * 60 * 24, // 24 hours
+  });
+
+  const {
+    data: formResponse,
+    isLoading: isLoadingResponse,
+    // error: responseError, // Available if needed
+  } = useQuery<DetailedFormResponse | null, Error>({
+    queryKey: ["formResponse", responseId],
+    queryFn: () => fetchFormResponseById(responseId),
+    enabled: !!responseId,
+    staleTime: 1000 * 60 * 5, // 5 minutes for response data
+    gcTime: 1000 * 60 * 60, // 1 hour
   });
 
   // Filter out empty strings
@@ -57,13 +58,7 @@ export default function DynamicFormLayout({
       )}
 
       <main className="grid w-full flex-grow grid-cols-1 justify-items-center p-4">
-        {isLoadingTemplate && !formTemplate ? (
-          <div className="p-8 text-center">
-            <p>Loading form details...</p>
-          </div>
-        ) : (
-          children
-        )}
+        {children}
       </main>
 
       {/* {formTemplate && <AssessmentToolsSummary formTemplate={formTemplate} />} */}
