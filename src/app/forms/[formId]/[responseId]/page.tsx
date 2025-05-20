@@ -63,15 +63,18 @@ const RootFormResponseSectionPage = (props: { params: Props }) => {
 
         {/* Right side: Progress Ring */}
         <div className="flex flex-col items-center justify-center">
-          <div className="flex h-full w-full items-center justify-center rounded-lg bg-red-500 p-4">
+          <div className="flex h-full w-full flex-col items-center justify-center space-y-6 rounded-lg p-4">
+            <h2 className="text-xl font-semibold">Form Completion Progress</h2>
             <ProgressRing
               progress={
                 formResponse.sectionStatuses.reduce(
                   (acc, curr) => acc + (curr.isCompleted ? 1 : 0),
                   0,
-                ) / formResponse.sectionStatuses.length
+                ) /
+                  formResponse.sectionStatuses.length +
+                20
               }
-              // className="scale-110 transform" // Make it slightly larger
+              className="scale-110 transform" // Make it slightly larger
             />
           </div>
         </div>
