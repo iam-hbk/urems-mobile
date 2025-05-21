@@ -48,7 +48,7 @@ const navigationData = {
         },
         {
           title: "PRF Forms",
-          url: "/prf",
+          url: "/forms",
           icon: FileText,
         },
         {

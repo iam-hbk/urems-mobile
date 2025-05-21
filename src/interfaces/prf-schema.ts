@@ -2,61 +2,6 @@ import { z } from "zod";
 import { PrimarySurveySchema } from "./prf-primary-survey-schema";
 import { VitalSignsSchema } from "./prf-vital-signs-schema";
 
-const PatientInformationSchema = z
-  .object({
-    age: z.number().optional(),
-    ageUnit: z.enum(["years", "months", "days"]).default("years"),
-    gender: z.enum(["male", "female"]).optional(),
-    patientName: z.string().optional(),
-    patientSurname: z.string().optional(),
-    id: z.string().optional(),
-    passport: z.string().optional(),
-  })
-  .superRefine((val, ctx) => {
-    // Access the parent context to check if unable to obtain information
-    const parentData = ctx.path?.[0] ? (ctx as any).parent : undefined;
-    const unableToObtainInfo =
-      parentData?.unableToObtainInformation?.status === true;
-
-    // Skip validation if unable to obtain information
-    if (unableToObtainInfo) return true;
-
-    // Check required fields when able to obtain information
-    if (val.age === undefined || val.age === null) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Age is required when able to obtain patient information",
-        path: ["age"],
-      });
-    }
-
-    if (!val.gender) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Gender is required when able to obtain patient information",
-        path: ["gender"],
-      });
-    }
-
-    if (!val.patientName || val.patientName.trim() === "") {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message:
-          "Patient name is required when able to obtain patient information",
-        path: ["patientName"],
-      });
-    }
-
-    if (!val.patientSurname || val.patientSurname.trim() === "") {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message:
-          "Patient surname is required when able to obtain patient information",
-        path: ["patientSurname"],
-      });
-    }
-  });
-
 export const PatientDetailsSchema = z.object({
   unableToObtainInformation: z.object({
     status: z.boolean().default(false),
