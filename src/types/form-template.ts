@@ -21,7 +21,9 @@ export type FormFieldType =
   | "Url"
   | "Phone"
   | "Time"
-  | "DateTime";
+  | "DateTime"
+  | "Signature"
+  | "Address";
 
 export interface FieldDefinition {
   id: string;

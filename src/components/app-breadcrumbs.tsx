@@ -63,12 +63,12 @@ const AppBreadcrumbs: React.FC = () => {
   const {
     data: formTemplate,
     isLoading: isLoadingTemplate,
-    // error: templateError, // Can be used for error display
   } = useQuery<FormTemplate | null, Error>({
     queryKey: ["formTemplate", formId],
-    queryFn: () =>
-      formId ? fetchFormTemplateById(formId) : Promise.resolve(null),
-    enabled: !!formId,
+    queryFn: async () => {
+      if (!formId) return null;
+      return fetchFormTemplateById(formId);
+    },
     staleTime: 1000 * 60 * 60, // 1 hour
     gcTime: 1000 * 60 * 60 * 24, // 24 hours
   });

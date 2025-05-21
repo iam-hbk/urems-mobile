@@ -259,7 +259,7 @@ export default function DynamicFormPage(props: { params: Params }) {
             ) : (
               <PlusIcon className="mr-2 h-4 w-4" />
             )}
-            Create New Response
+            Create New {`${formTemplate.title} Response`}
           </Button>
         </div>
         <p className="mt-1 text-gray-600">{formTemplate.description}</p>
