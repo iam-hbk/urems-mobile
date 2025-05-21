@@ -1,17 +1,10 @@
 "use client";
-import PRF_Summary from "@/components/prf-info";
-import { StoreInitializer } from "@/components/store-initializer";
-import PRFEditSummary from "@/components/the-prf-form/case-details-section";
 import { usePrfForms } from "@/hooks/prf/usePrfForms";
-import { EmployeeData } from "./profile/page";
 import { useQuery } from "@tanstack/react-query";
 import LoadingComponent from "@/components/loading";
 import { apiGetCrewEmployeeID } from "@/lib/api/crew-apis";
 import { TypeCrew } from "@/interfaces/crew";
 import { useZuStandCrewStore } from "@/lib/zuStand/crew";
-import { DataTable } from "@/components/prf-table/data-table";
-import { columns } from "@/components/prf-table/columns";
-import { ViewToggle } from "@/components/prf-table/view-toggle";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth/client";
 import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
@@ -20,8 +13,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Circle, AlertCircle } from "lucide-react";
-import { ChartContainer } from "@/components/ui/chart";
-import { PieChart, Pie, Cell } from "recharts";
+import {
+  ChartContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "@/components/ui/chart";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 

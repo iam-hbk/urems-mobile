@@ -355,6 +355,10 @@ function getPayloadConfigFromPayload(
     : config[key as keyof typeof config]
 }
 
+export const PieChart = RechartsPrimitive.PieChart
+export const Pie = RechartsPrimitive.Pie
+export const Cell = RechartsPrimitive.Cell
+
 export {
   ChartContainer,
   ChartTooltip,

@@ -236,7 +236,7 @@ const AppBreadcrumbs: React.FC = () => {
 
 
   return (
-    <Breadcrumb className="mb-4 hidden md:flex">
+    <Breadcrumb className="hidden md:flex">
       <BreadcrumbList>
         {finalBreadcrumbItems.map((item, index) => (
           <React.Fragment key={item.path + '-' + index}>
