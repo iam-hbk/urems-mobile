@@ -72,7 +72,7 @@ const RootFormResponseSectionPage = (props: { params: Props }) => {
                   0,
                 ) / formResponse.sectionStatuses.length
               }
-              className="scale-110 transform" // Make it slightly larger
+              className="scale-110 transform"
             />
           </div>
         </div>

@@ -22,7 +22,6 @@ type Params = Promise<{
 
 export default function DynamicFormSectionPage(props: { params: Params }) {
   const { formId, responseId, sectionId } = use(props.params);
-  const router = useRouter();
 
   const {
     data: formTemplate,

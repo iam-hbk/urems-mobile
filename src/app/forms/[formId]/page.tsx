@@ -31,6 +31,8 @@ import { Button } from "@/components/ui/button";
 import { PlusIcon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { FormResponsesTable } from "@/components/form-responses-table/FormResponsesTable";
+
 type Params = Promise<{ formId: string }>;
 
 interface UserResponsesForTemplateProps {
@@ -49,7 +51,7 @@ const UserResponsesForTemplate: React.FC<UserResponsesForTemplateProps> = ({
   } = useQuery<FormTemplateWithResponses | null, Error>({
     queryKey: ["formTemplateWithResponses", templateId],
     queryFn: () => fetchFormTemplateWithResponses(templateId),
-    enabled: !!templateId,
+    enabled: !!templateId && !!userId,
     staleTime: 1000 * 60 * 5,
   });
 
@@ -75,77 +77,14 @@ const UserResponsesForTemplate: React.FC<UserResponsesForTemplateProps> = ({
     );
   }
 
-  // TODO: This check will be done on the server side.
-  // const userResponses =
-  //   templateWithResponses?.formResponses.filter(
-  //     (resp) => resp.employeeId === userId,
-  //   ) || [];
-
-  const userResponses = templateWithResponses?.formResponses || [];
-
-  if (userResponses.length === 0) {
-    return (
-      <p className="mt-4 text-sm text-gray-600">
-        You have not created any responses for this form yet.
-      </p>
-    );
-  }
-
   return (
     <div className="mt-8">
       <h2 className="mb-3 text-xl font-semibold">Your Previous Responses</h2>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Response ID</TableHead>
-            <TableHead>Created At</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {userResponses.map((response) => (
-            <TableRow key={response.id} className="text-sm hover:bg-slate-50">
-              <TableCell>
-                <Link
-                  href={`/forms/${templateId}/${response.id}`}
-                  className="text-blue-600 hover:underline"
-                >
-                  #{response.id.substring(0, 8)}
-                </Link>
-              </TableCell>
-              <TableCell>
-                {new Date(response.createdAt).toLocaleDateString()}
-              </TableCell>
-              <TableCell>
-                {response.isCompleted ? (
-                  <Badge
-                    variant="default"
-                    className="bg-green-600 text-white hover:bg-green-700"
-                  >
-                    Completed
-                  </Badge>
-                ) : (
-                  <Badge
-                    variant="default"
-                    className="bg-yellow-500 text-white hover:bg-yellow-600"
-                  >
-                    In Progress
-                  </Badge>
-                )}
-              </TableCell>
-              <TableCell>
-                <Link
-                  href={`/forms/${templateId}/${response.id}`}
-                  className="text-green-600 hover:underline"
-                >
-                  Edit
-                </Link>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <FormResponsesTable
+        templateId={templateId}
+        initialResponses={templateWithResponses?.formResponses || []}
+        isLoadingInitialResponses={isLoadingResponses}
+      />
     </div>
   );
 };

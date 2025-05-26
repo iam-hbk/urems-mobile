@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/chart";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useRouter } from "next/navigation";
 
 // Mock TODO data
 const todoData = [
@@ -94,7 +95,7 @@ export default function Home() {
   const { zsSetEmployee } = useZuStandEmployeeStore();
   const { zsSetCrewID } = useZuStandCrewStore();
   const { data: session, loading: authLoading } = authClient.useSession();
-
+  const router = useRouter();
   // Use React Query for crew information
   const { data: crewData, error: crewError } = useQuery<TypeCrew | null, Error>(
     {
@@ -141,6 +142,13 @@ export default function Home() {
     }
   }, [session, zsSetEmployee]);
 
+  // Handle authentication redirect
+  useEffect(() => {
+    if (!authLoading && !session?.user) {
+      router.push("/login");
+    }
+  }, [authLoading, session?.user, router]);
+  
   // Show loading state
   if (authLoading) {
     return <LoadingComponent message="Checking authentication..." />;
@@ -148,7 +156,7 @@ export default function Home() {
 
   // Check authentication
   if (!session?.user) {
-    return null; // Let middleware handle the redirect
+    return <LoadingComponent message="Redirecting to login..." />;
   }
 
   // Show loading state for PRF data
