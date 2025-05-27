@@ -5,6 +5,7 @@ import {
   FormTemplateWithResponses,
   DetailedFormResponse,
   CreateFormResponsePayload,
+  FormResponseUpdateDto,
 } from "@/types/form-template";
 
 /**
@@ -76,7 +77,9 @@ export const fetchFormTemplateWithResponses = async (
  * Creates a new form response.
  * @param payload The data needed to create the form response.
  */
-export const createFormResponse = async (payload: CreateFormResponsePayload): Promise<DetailedFormResponse> => {
+export const createFormResponse = async (
+  payload: CreateFormResponsePayload,
+): Promise<DetailedFormResponse> => {
   try {
     // Ensure default values for optional IDs if not provided, as per example (0)
     const requestBody = {
@@ -86,7 +89,10 @@ export const createFormResponse = async (payload: CreateFormResponsePayload): Pr
       employeeId: payload.employeeId,
       formTemplateId: payload.formTemplateId,
     };
-    const newResponse = (await api.post(requestBody, "/FormResponses")) as DetailedFormResponse;
+    const newResponse = (await api.post(
+      requestBody,
+      "/FormResponses",
+    )) as DetailedFormResponse;
     return newResponse;
   } catch (error) {
     console.error("Failed to create form response:", error);
@@ -114,8 +120,32 @@ export const fetchFormResponseById = async (
     )) as DetailedFormResponse;
     return response;
   } catch (error) {
-    console.error(`Failed to fetch form response with ID ${responseId}:`, error);
+    console.error(
+      `Failed to fetch form response with ID ${responseId}:`,
+      error,
+    );
     // Re-throw to allow react-query to handle the error state
+    throw error;
+  }
+};
+
+/**
+ * Updates a form response.
+ * @param responseId The ID of the form response to update.
+ * @param payload The data needed to update the form response.
+ */
+export const apiUpdateFormResponse = async (
+  responseId: string,
+  payload: FormResponseUpdateDto,
+): Promise<DetailedFormResponse> => {
+  try {
+    const updatedResponse = (await api.put(
+      payload,
+      `/FormResponses/${responseId}`,
+    )) as DetailedFormResponse;
+    return updatedResponse;
+  } catch (error) {
+    console.error("Failed to update form response:", error);
     throw error;
   }
 };

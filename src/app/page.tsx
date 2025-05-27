@@ -141,7 +141,7 @@ export default function Home() {
       zsSetEmployee(session.user);
     }
   }, [session, zsSetEmployee]);
-
+  
   // Handle authentication redirect
   useEffect(() => {
     if (!authLoading && !session?.user) {

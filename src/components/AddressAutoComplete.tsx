@@ -22,9 +22,9 @@ import {
 import { toast } from "sonner";
 import { useDebounce } from "use-debounce";
 
-type AddressAutoCompleteProps = {
+export type AddressAutoCompleteProps = {
   name: string;
-  label: string;
+  label?: string;
   useCurrentLocation?: boolean;
   placeholder?: string;
   showGetCurrentLocationButton?: boolean;
@@ -193,7 +193,7 @@ const AddressAutoComplete: React.FC<AddressAutoCompleteProps> = ({
       name={name}
       render={({ field }) => (
         <FormItem className="relative">
-          <FormLabel>{label}</FormLabel>
+          {label && <FormLabel>{label}</FormLabel>}
           <FormControl>
             <div className="relative">
               <Input

@@ -42,6 +42,7 @@ export interface SubSection {
   name: string;
   parentSubSectionId?: string | null; // Optional, for nested subsections
   fieldDefinitions: FieldDefinition[];
+  isRepeatable?: boolean; // Added for repeatable subsections
 }
 
 export interface Section {
@@ -125,4 +126,24 @@ export interface CreateFormResponsePayload {
   vehicleId?: number | null;
   crewId?: number | null;
   // Any other fields required by POST /api/FormResponses, defaulting to 0 or null if optional
+}
+
+export interface FieldResponseUpdateDto {
+  fieldDefinitionId: string;
+  value: string; // Ensure this is always a string; complex objects/arrays should be JSON.stringified
+  entrySequenceNumber?: number; // Example showed 0, make it optional or default to 0
+}
+
+export interface SectionStatusUpdateDto {
+  sectionId: string;
+  isCompleted: boolean;
+}
+
+export interface FormResponseUpdateDto {
+  patientId?: number | null;
+  vehicleId?: number | null;
+  crewId?: number | null;
+  isCompleted?: boolean; // Represents the completion status of the ENTIRE form
+  fieldResponses: FieldResponseUpdateDto[];
+  sectionStatuses: SectionStatusUpdateDto[];
 } 
