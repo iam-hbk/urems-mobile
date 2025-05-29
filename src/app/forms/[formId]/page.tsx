@@ -89,7 +89,7 @@ const UserResponsesForTemplate: React.FC<UserResponsesForTemplateProps> = ({
   );
 };
 
-export default function DynamicFormPage(props: { params: Params }) {
+export default function FormPage(props: { params: Params }) {
   const { formId } = use(props.params);
   const router = useRouter();
   const queryClient = useQueryClient();

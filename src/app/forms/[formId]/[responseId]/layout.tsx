@@ -51,7 +51,7 @@ export default function DynamicFormLayout({
   // const [showCommandPalette, setShowCommandPalette] = useState(false);
 
   return (
-    <div className="flex w-full flex-col items-center overflow-auto">
+    <div className="flex w-full flex-col items-center overflow-auto relative">
       {formTemplate && formId && (
         <DynamicFormQuickLinks formTemplate={formTemplate} formId={formId} responseId={responseId} />
       )}
