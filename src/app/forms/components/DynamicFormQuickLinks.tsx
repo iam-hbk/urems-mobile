@@ -181,7 +181,13 @@ export default function DynamicFormQuickLinks({
                 asChild
                 key={section.id}
               >
-                <Link href={responseId ? `/forms/${formId}/${responseId}/${section.id}` : `/forms/${formId}`}>
+                <Link
+                  href={
+                    responseId
+                      ? `/forms/${formId}/${responseId}/${section.id}`
+                      : `/forms/${formId}`
+                  }
+                >
                   <Icon className="h-4 w-4 flex-shrink-0" />
                   <span className="truncate text-sm">{section.name}</span>
                   {isIndicatedAsRequired && !customizing && (

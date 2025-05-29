@@ -1,0 +1,491 @@
+"use client"
+
+import type { UseFormReturn } from "react-hook-form"
+import type { FieldDefinition, DetailedFormResponse } from "@/types/form-template"
+import { FormControl, FormField as ShadcnFormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { Upload, X } from "lucide-react"
+import { useState, useEffect } from "react"
+import DatePickerWithCalendarSelect from "@/components/date-picker-with-calendar-select"
+
+interface FormFieldProps {
+  fieldDefinition: FieldDefinition
+  form: UseFormReturn<any>
+  entryIndex: number
+  existingResponse?: DetailedFormResponse
+}
+
+export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingResponse }: FormFieldProps) {
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
+  const fieldName = `${fieldDefinition.name}_${entryIndex}`
+
+  const getDefaultValue = () => {
+    if (!existingResponse?.fieldResponses) {
+      // Check for default options
+      const defaultOption = fieldDefinition.fieldOptions?.find((opt) => opt.isDefault)
+      if (defaultOption) {
+        return fieldDefinition.type === "CheckboxGroup" ? [defaultOption.value] : defaultOption.value
+      }
+      return fieldDefinition.type === "CheckboxGroup" ? [] : ""
+    }
+
+    const response = existingResponse.fieldResponses.find(
+      (r) => r.fieldDefinitionId === fieldDefinition.id && (r.entrySequenceNumber || 0) === entryIndex,
+    )
+
+    if (!response) {
+      // Check for default options
+      const defaultOption = fieldDefinition.fieldOptions?.find((opt) => opt.isDefault)
+      if (defaultOption) {
+        return fieldDefinition.type === "CheckboxGroup" ? [defaultOption.value] : defaultOption.value
+      }
+      return fieldDefinition.type === "CheckboxGroup" ? [] : ""
+    }
+
+    switch (fieldDefinition.type) {
+      case "Boolean":
+        return response.value === "true"
+      case "Number":
+        return response.value ? Number(response.value) : ""
+      case "CheckboxGroup":
+        try {
+          return JSON.parse(response.value)
+        } catch {
+          return []
+        }
+      default:
+        return response.value || ""
+    }
+  }
+
+  // Set default value when component mounts
+  useEffect(() => {
+    const defaultValue = getDefaultValue()
+    if (defaultValue !== undefined && defaultValue !== "") {
+      form.setValue(fieldName, defaultValue)
+    }
+  }, [fieldName, form])
+
+  const handleFileUpload = (files: FileList | null) => {
+    if (files) {
+      const fileArray = Array.from(files)
+      setUploadedFiles((prev) => [...prev, ...fileArray])
+      form.setValue(fieldName, fileArray.map((f) => f.name).join(", "))
+    }
+  }
+
+  const removeFile = (index: number) => {
+    setUploadedFiles((prev) => {
+      const newFiles = prev.filter((_, i) => i !== index)
+      form.setValue(fieldName, newFiles.map((f) => f.name).join(", "))
+      return newFiles
+    })
+  }
+
+  const renderField = () => {
+    switch (fieldDefinition.type) {
+      case "Text":
+      case "Email":
+      case "Url":
+      case "Phone":
+      case "Password":
+        return (
+          <ShadcnFormField
+            control={form.control}
+            name={fieldName}
+            rules={{
+              required: fieldDefinition.isRequired ? fieldDefinition.errorMessage || "This field is required" : false,
+              pattern: fieldDefinition.pattern
+                ? {
+                    value: new RegExp(fieldDefinition.pattern),
+                    message: fieldDefinition.errorMessage || "Invalid format",
+                  }
+                : undefined,
+            }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  {fieldDefinition.label}
+                  {fieldDefinition.isRequired && <span className="text-destructive ml-1">*</span>}
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type={fieldDefinition.type.toLowerCase()}
+                    placeholder={`Enter ${fieldDefinition.label.toLowerCase()}`}
+                    {...field}
+                    value={field.value || ""}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )
+
+      case "TextArea":
+        return (
+          <ShadcnFormField
+            control={form.control}
+            name={fieldName}
+            rules={{
+              required: fieldDefinition.isRequired ? fieldDefinition.errorMessage || "This field is required" : false,
+            }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  {fieldDefinition.label}
+                  {fieldDefinition.isRequired && <span className="text-destructive ml-1">*</span>}
+                </FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder={`Enter ${fieldDefinition.label.toLowerCase()}`}
+                    className="min-h-[100px]"
+                    {...field}
+                    value={field.value || ""}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )
+
+      case "Number":
+        return (
+          <ShadcnFormField
+            control={form.control}
+            name={fieldName}
+            rules={{
+              required: fieldDefinition.isRequired ? fieldDefinition.errorMessage || "This field is required" : false,
+            }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  {fieldDefinition.label}
+                  {fieldDefinition.isRequired && <span className="text-destructive ml-1">*</span>}
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder={`Enter ${fieldDefinition.label.toLowerCase()}`}
+                    {...field}
+                    value={field.value || ""}
+                    onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : "")}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )
+
+      case "Date":
+        return (
+          <ShadcnFormField
+            control={form.control}
+            name={fieldName}
+            rules={{
+              required: fieldDefinition.isRequired ? fieldDefinition.errorMessage || "This field is required" : false,
+            }}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <DatePickerWithCalendarSelect
+                    label={`${fieldDefinition.label}${fieldDefinition.isRequired ? ' *' : ''}`}
+                    value={field.value ? new Date(field.value) : undefined}
+                    onChange={(date: Date | undefined) => {
+                      field.onChange(date ? date.toISOString().split('T')[0] : "")
+                    }}
+                    placeholder={`Select ${fieldDefinition.label.toLowerCase()}`}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )
+
+      case "Time":
+        return (
+          <ShadcnFormField
+            control={form.control}
+            name={fieldName}
+            rules={{
+              required: fieldDefinition.isRequired ? fieldDefinition.errorMessage || "This field is required" : false,
+            }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  {fieldDefinition.label}
+                  {fieldDefinition.isRequired && <span className="text-destructive ml-1">*</span>}
+                </FormLabel>
+                <FormControl>
+                  <Input type="time" {...field} value={field.value || ""} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )
+
+      case "DateTime":
+        return (
+          <ShadcnFormField
+            control={form.control}
+            name={fieldName}
+            rules={{
+              required: fieldDefinition.isRequired ? fieldDefinition.errorMessage || "This field is required" : false,
+            }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  {fieldDefinition.label}
+                  {fieldDefinition.isRequired && <span className="text-destructive ml-1">*</span>}
+                </FormLabel>
+                <FormControl>
+                  <Input type="datetime-local" {...field} value={field.value || ""} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )
+
+      case "Boolean":
+        return (
+          <ShadcnFormField
+            control={form.control}
+            name={fieldName}
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 ">
+                <FormControl>
+                  <Checkbox checked={field.value || false} onCheckedChange={field.onChange} />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>
+                    {fieldDefinition.label}
+                    {fieldDefinition.isRequired && <span className="text-destructive ml-1">*</span>}
+                  </FormLabel>
+                </div>
+              </FormItem>
+            )}
+          />
+        )
+
+      case "Select":
+        return (
+          <ShadcnFormField
+            control={form.control}
+            name={fieldName}
+            rules={{
+              required: fieldDefinition.isRequired ? fieldDefinition.errorMessage || "This field is required" : false,
+            }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  {fieldDefinition.label}
+                  {fieldDefinition.isRequired && <span className="text-destructive ml-1">*</span>}
+                </FormLabel>
+                <Select onValueChange={field.onChange} value={field.value || ""}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder={`Select ${fieldDefinition.label.toLowerCase()}`} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {fieldDefinition.fieldOptions?.map((option) => (
+                      <SelectItem key={option.id} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )
+
+      case "RadioGroup":
+        return (
+          <ShadcnFormField
+            control={form.control}
+            name={fieldName}
+            rules={{
+              required: fieldDefinition.isRequired ? fieldDefinition.errorMessage || "This field is required" : false,
+            }}
+            render={({ field }) => (
+              <FormItem className="space-y-3">
+                <FormLabel>
+                  {fieldDefinition.label}
+                  {fieldDefinition.isRequired && <span className="text-destructive ml-1">*</span>}
+                </FormLabel>
+                <FormControl>
+                  <RadioGroup
+                    onValueChange={field.onChange}
+                    value={field.value || ""}
+                    className="flex flex-col space-y-1"
+                  >
+                    {fieldDefinition.fieldOptions?.map((option) => (
+                      <div key={option.id} className="flex items-center space-x-2">
+                        <RadioGroupItem value={option.value} id={`${fieldName}_${option.id}`} />
+                        <Label htmlFor={`${fieldName}_${option.id}`}>{option.label}</Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )
+
+      case "CheckboxGroup":
+        return (
+          <ShadcnFormField
+            control={form.control}
+            name={fieldName}
+            rules={{
+              required: fieldDefinition.isRequired ? fieldDefinition.errorMessage || "This field is required" : false,
+            }}
+            render={({ field }) => (
+              <FormItem>
+                <div className="mb-4">
+                  <FormLabel>
+                    {fieldDefinition.label}
+                    {fieldDefinition.isRequired && <span className="text-destructive ml-1">*</span>}
+                  </FormLabel>
+                </div>
+                {fieldDefinition.fieldOptions?.map((option) => (
+                  <FormItem key={option.id} className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={(field.value || []).includes(option.value)}
+                        onCheckedChange={(checked) => {
+                          const currentValue = field.value || []
+                          if (checked) {
+                            field.onChange([...currentValue, option.value])
+                          } else {
+                            field.onChange(currentValue.filter((value: string) => value !== option.value))
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal">{option.label}</FormLabel>
+                  </FormItem>
+                ))}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )
+
+      case "File":
+      case "Image":
+        return (
+          <ShadcnFormField
+            control={form.control}
+            name={fieldName}
+            rules={{
+              required: fieldDefinition.isRequired ? fieldDefinition.errorMessage || "This field is required" : false,
+            }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  {fieldDefinition.label}
+                  {fieldDefinition.isRequired && <span className="text-destructive ml-1">*</span>}
+                </FormLabel>
+                <FormControl>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById(`file-${fieldName}`)?.click()}
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        Upload {fieldDefinition.type}
+                      </Button>
+                      <input
+                        id={`file-${fieldName}`}
+                        type="file"
+                        multiple
+                        accept={fieldDefinition.type === "Image" ? "image/*" : undefined}
+                        className="hidden"
+                        onChange={(e) => handleFileUpload(e.target.files)}
+                      />
+                    </div>
+                    {uploadedFiles.length > 0 && (
+                      <div className="space-y-1">
+                        {uploadedFiles.map((file, index) => (
+                          <div key={index} className="flex items-center justify-between bg-muted p-2 rounded">
+                            <span className="text-sm">{file.name}</span>
+                            <Button type="button" variant="ghost" size="sm" onClick={() => removeFile(index)}>
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )
+
+      case "Signature":
+        return (
+          <FormItem>
+            <FormLabel>
+              {fieldDefinition.label}
+              {fieldDefinition.isRequired && <span className="text-destructive ml-1">*</span>}
+            </FormLabel>
+            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
+              <p className="text-muted-foreground">Signature pad would be implemented here</p>
+              <Button type="button" variant="outline" className="mt-2">
+                Open Signature Pad
+              </Button>
+            </div>
+          </FormItem>
+        )
+
+      case "Address":
+        return (
+          <div className="space-y-4">
+            <FormLabel>
+              {fieldDefinition.label}
+              {fieldDefinition.isRequired && <span className="text-destructive ml-1">*</span>}
+            </FormLabel>
+            <div className="grid grid-cols-1 gap-4">
+              <Input placeholder="Street Address" />
+              <div className="grid grid-cols-2 gap-4">
+                <Input placeholder="City" />
+                <Input placeholder="State/Province" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <Input placeholder="ZIP/Postal Code" />
+                <Input placeholder="Country" />
+              </div>
+            </div>
+          </div>
+        )
+
+      default:
+        return (
+          <div className="p-4 border border-dashed border-muted-foreground/25 rounded">
+            <p className="text-muted-foreground">Field type "{fieldDefinition.type}" not implemented yet</p>
+          </div>
+        )
+    }
+  }
+
+  return <div className="space-y-2">{renderField()}</div>
+}

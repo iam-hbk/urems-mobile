@@ -41,8 +41,9 @@ export interface SubSection {
   id: string;
   name: string;
   parentSubSectionId?: string | null; // Optional, for nested subsections
-  fieldDefinitions: FieldDefinition[];
   isRepeatable?: boolean; // Added for repeatable subsections
+  fieldDefinitions: FieldDefinition[];
+  childSubSections: SubSection[] | null;
 }
 
 export interface Section {
@@ -50,7 +51,8 @@ export interface Section {
   name: string;
   isRequired: boolean;
   description?: string | null;
-  subSections: SubSection[];
+  directFields: FieldDefinition[] | null;
+  groupedSubSections: SubSection[] | null;
 }
 
 export interface FormTemplate {
