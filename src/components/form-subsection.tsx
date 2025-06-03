@@ -8,6 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface FormSubSectionProps {
   subSection: SubSection;
@@ -174,85 +180,118 @@ export function FormSubSection({
         )}
       </div>
 
-      {Array.from(
-        { length: Math.max(repeatCount, maxEntries) },
-        (_, entryIndex) => (
-          <Card
-            key={entryIndex}
-            className={subSection.isRepeatable ? "border-dashed" : ""}
-          >
-            {subSection.isRepeatable && (
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base">
-                    {subSection.name} #{entryIndex + 1}
-                  </CardTitle>
-                  <div className="flex space-x-2">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => duplicateEntry(entryIndex)}
-                      title="Duplicate this entry"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                    {repeatCount > 1 && (
+      {subSection.isRepeatable ? (
+        <Accordion type="single" collapsible className="w-full">
+          {Array.from({ length: Math.max(repeatCount, maxEntries) }, (_, entryIndex) => (
+            <AccordionItem className="border-none" key={entryIndex} value={`entry-${entryIndex}`}>
+              <Card className="border-dashed my-3">
+                <CardHeader className="p-2 px-4">
+                  <div className="flex items-center justify-between">
+                    <AccordionTrigger className="hover:no-underline">
+                      <CardTitle className="text-base">
+                        {subSection.name} #{entryIndex + 1}
+                      </CardTitle>
+                    </AccordionTrigger>
+                    <div className="flex space-x-2">
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() => removeRepeatableEntry(entryIndex)}
-                        className="text-destructive hover:text-destructive"
+                        onClick={() => duplicateEntry(entryIndex)}
+                        title="Duplicate this entry"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Copy className="h-4 w-4" />
                       </Button>
-                    )}
+                      {repeatCount > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeRepeatableEntry(entryIndex)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-            )}
+                </CardHeader>
 
-            <CardContent
-              className={cn({
-                "pt-0": subSection.isRepeatable,
-                "pt-6": !subSection.isRepeatable,
-              })}
-            >
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {subSection.fieldDefinitions.map((fieldDefinition) => (
-                  <FormFieldBuilder
-                    key={`${fieldDefinition.id}_${entryIndex}`}
-                    fieldDefinition={fieldDefinition}
-                    form={form}
-                    entryIndex={entryIndex}
-                    existingResponse={existingResponse}
-                  />
-                ))}
-              </div>
-
-              {/* Render child subsections with full width */}
-              {subSection.childSubSections &&
-                subSection.childSubSections.length > 0 && (
-                  <div className="mt-6 space-y-4">
-                    {subSection.childSubSections.map((childSubSection) => (
-                      <div
-                        key={`${childSubSection.id}_${entryIndex}`}
-                        className="w-full"
-                      >
-                        <FormSubSection
-                          subSection={childSubSection}
+                <AccordionContent>
+                  <CardContent className="pt-0">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      {subSection.fieldDefinitions.map((fieldDefinition) => (
+                        <FormFieldBuilder
+                          key={`${fieldDefinition.id}_${entryIndex}`}
+                          fieldDefinition={fieldDefinition}
                           form={form}
-                          responseId={responseId}
+                          entryIndex={entryIndex}
                           existingResponse={existingResponse}
                         />
-                      </div>
-                    ))}
-                  </div>
-                )}
-            </CardContent>
-          </Card>
-        ),
+                      ))}
+                    </div>
+
+                    {/* Render child subsections with full width */}
+                    {subSection.childSubSections &&
+                      subSection.childSubSections.length > 0 && (
+                        <div className="mt-6 space-y-4">
+                          {subSection.childSubSections.map((childSubSection) => (
+                            <div
+                              key={`${childSubSection.id}_${entryIndex}`}
+                              className="w-full"
+                            >
+                              <FormSubSection
+                                subSection={childSubSection}
+                                form={form}
+                                responseId={responseId}
+                                existingResponse={existingResponse}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                  </CardContent>
+                </AccordionContent>
+              </Card>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      ) : (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {subSection.fieldDefinitions.map((fieldDefinition) => (
+                <FormFieldBuilder
+                  key={`${fieldDefinition.id}_0`}
+                  fieldDefinition={fieldDefinition}
+                  form={form}
+                  entryIndex={0}
+                  existingResponse={existingResponse}
+                />
+              ))}
+            </div>
+
+            {/* Render child subsections with full width */}
+            {subSection.childSubSections &&
+              subSection.childSubSections.length > 0 && (
+                <div className="mt-6 space-y-4">
+                  {subSection.childSubSections.map((childSubSection) => (
+                    <div
+                      key={`${childSubSection.id}_0`}
+                      className="w-full"
+                    >
+                      <FormSubSection
+                        subSection={childSubSection}
+                        form={form}
+                        responseId={responseId}
+                        existingResponse={existingResponse}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+          </CardContent>
+        </Card>
       )}
     </div>
   );
