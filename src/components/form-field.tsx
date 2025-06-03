@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label"
 import { Upload, X } from "lucide-react"
 import { useState, useEffect } from "react"
 import DatePickerWithCalendarSelect from "@/components/date-picker-with-calendar-select"
+import { AddressInput } from "@/components/address-input"
 
 interface FormFieldProps {
   fieldDefinition: FieldDefinition
@@ -459,23 +460,13 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
 
       case "Address":
         return (
-          <div className="space-y-4">
-            <FormLabel>
-              {fieldDefinition.label}
-              {fieldDefinition.isRequired && <span className="text-destructive ml-1">*</span>}
-            </FormLabel>
-            <div className="grid grid-cols-1 gap-4">
-              <Input placeholder="Street Address" />
-              <div className="grid grid-cols-2 gap-4">
-                <Input placeholder="City" />
-                <Input placeholder="State/Province" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <Input placeholder="ZIP/Postal Code" />
-                <Input placeholder="Country" />
-              </div>
-            </div>
-          </div>
+          <AddressInput
+            name={fieldName}
+            control={form.control}
+            label={fieldDefinition.label}
+            isRequired={fieldDefinition.isRequired}
+            placeholder={`Enter ${fieldDefinition.label.toLowerCase()}`}
+          />
         )
 
       default:
