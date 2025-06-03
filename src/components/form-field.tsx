@@ -24,8 +24,8 @@ interface FormFieldProps {
 
 export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingResponse }: FormFieldProps) {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
-  const fieldName = `${fieldDefinition.name}_${entryIndex}`
-
+  const fieldName = `${fieldDefinition.id}_${entryIndex}`
+  
   const getDefaultValue = () => {
     if (!existingResponse?.fieldResponses) {
       // Check for default options
@@ -33,6 +33,8 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
       if (defaultOption) {
         return fieldDefinition.type === "CheckboxGroup" ? [defaultOption.value] : defaultOption.value
       }
+      // Set Boolean fields to false by default, CheckboxGroup to empty array, others to empty string
+      if (fieldDefinition.type === "Boolean") return false
       return fieldDefinition.type === "CheckboxGroup" ? [] : ""
     }
 
@@ -46,6 +48,8 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
       if (defaultOption) {
         return fieldDefinition.type === "CheckboxGroup" ? [defaultOption.value] : defaultOption.value
       }
+      // Set Boolean fields to false by default, CheckboxGroup to empty array, others to empty string
+      if (fieldDefinition.type === "Boolean") return false
       return fieldDefinition.type === "CheckboxGroup" ? [] : ""
     }
 
@@ -68,7 +72,8 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
   // Set default value when component mounts
   useEffect(() => {
     const defaultValue = getDefaultValue()
-    if (defaultValue !== undefined && defaultValue !== "") {
+    // Set the default value if it's not undefined (includes false for Boolean fields)
+    if (defaultValue !== undefined) {
       form.setValue(fieldName, defaultValue)
     }
   }, [fieldName, form])
@@ -263,10 +268,17 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
           <ShadcnFormField
             control={form.control}
             name={fieldName}
+            rules={{
+              // Don't use standard required validation for Boolean fields
+              // Our custom submit logic will handle untouched required fields
+            }}
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 ">
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                 <FormControl>
-                  <Checkbox checked={field.value || false} onCheckedChange={field.onChange} />
+                  <Checkbox 
+                    checked={field.value === true} 
+                    onCheckedChange={(checked) => field.onChange(checked === true)}
+                  />
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel>
@@ -274,6 +286,7 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
                     {fieldDefinition.isRequired && <span className="text-destructive ml-1">*</span>}
                   </FormLabel>
                 </div>
+                <FormMessage />
               </FormItem>
             )}
           />

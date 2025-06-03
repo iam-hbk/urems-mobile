@@ -65,7 +65,7 @@ export default function RootLayout({
               <div className="flex flex-1 flex-col">{children}</div>
             </SidebarInset>
           </SidebarProvider>
-          <Toaster />
+          <Toaster richColors />
         </QueryClientWrapper>
       </body>
     </html>

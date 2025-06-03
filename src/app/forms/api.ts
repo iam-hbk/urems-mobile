@@ -151,6 +151,12 @@ export const apiUpdateFormResponse = async (
       body: JSON.stringify(payload),
     });
 
+    // Check if the response was successful
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText || 'Request failed'}`);
+    }
+
     return { status: response.status };
 
   } catch (error: any) {

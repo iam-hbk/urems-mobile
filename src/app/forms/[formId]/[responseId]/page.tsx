@@ -67,10 +67,12 @@ const RootFormResponseSectionPage = (props: { params: Props }) => {
             <h2 className="text-xl font-semibold">Form Completion Progress</h2>
             <ProgressRing
               progress={
-                formResponse.sectionStatuses.reduce(
+                (formResponse.sectionStatuses.reduce(
                   (acc, curr) => acc + (curr.isCompleted ? 1 : 0),
                   0,
-                ) / formResponse.sectionStatuses.length
+                ) /
+                  formResponse.sectionStatuses.length) *
+                100
               }
               className="scale-110 transform"
             />

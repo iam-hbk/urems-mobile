@@ -43,6 +43,11 @@ export function AddressInput({
 }: AddressInputProps) {
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const [userExplicitlyWantsDetailed, setUserExplicitlyWantsDetailed] =
+    useState(false);
+  const [committedValueForCancel, setCommittedValueForCancel] = useState<
+    AddressData | string | null
+  >(null);
 
   const {
     field: { value, onChange, onBlur },
@@ -60,6 +65,31 @@ export function AddressInput({
       coordinates: undefined,
     } as AddressData,
   });
+
+  const isValueStructuredAddress =
+    typeof value === "object" && value !== null && "fullAddress" in value;
+  const currentFullAddress: string = isValueStructuredAddress
+    ? (value as AddressData).fullAddress
+    : typeof value === "string"
+      ? value
+      : "";
+
+  const showDetailedView = userExplicitlyWantsDetailed || !currentFullAddress;
+
+  const switchToSummaryView = () => {
+    const addressToTest =
+      typeof value === "object" && value !== null && "fullAddress" in value
+        ? (value as AddressData).fullAddress
+        : typeof value === "string"
+          ? value
+          : "";
+    if (addressToTest) {
+      setUserExplicitlyWantsDetailed(false);
+    } else {
+      setUserExplicitlyWantsDetailed(true);
+    }
+    setCommittedValueForCancel(null);
+  };
 
   const parseAddressComponents = (
     place: google.maps.places.PlaceResult,
@@ -108,6 +138,7 @@ export function AddressInput({
     if (place) {
       const addressData = parseAddressComponents(place);
       onChange(addressData);
+      switchToSummaryView();
     }
   };
 
@@ -127,7 +158,6 @@ export function AddressInput({
         try {
           const { latitude, longitude } = position.coords;
 
-          // Use Google Geocoding API to get address from coordinates
           const geocoder = new google.maps.Geocoder();
           const response = await geocoder.geocode({
             location: { lat: latitude, lng: longitude },
@@ -141,11 +171,13 @@ export function AddressInput({
               position: "top-center",
               richColors: true,
             });
+            switchToSummaryView();
           } else {
             toast.error("Unable to get address for current location", {
               position: "top-center",
               richColors: true,
             });
+            setUserExplicitlyWantsDetailed(true);
           }
         } catch (error) {
           console.error("Geocoding error:", error);
@@ -153,6 +185,7 @@ export function AddressInput({
             position: "top-center",
             richColors: true,
           });
+          setUserExplicitlyWantsDetailed(true);
         } finally {
           setIsLoadingLocation(false);
         }
@@ -160,6 +193,7 @@ export function AddressInput({
       (error) => {
         console.error("Geolocation error:", error);
         setIsLoadingLocation(false);
+        setUserExplicitlyWantsDetailed(true);
 
         switch (error.code) {
           case error.PERMISSION_DENIED:
@@ -185,13 +219,41 @@ export function AddressInput({
   };
 
   const handleInputChange = (field: keyof AddressData, newValue: string) => {
-    onChange({
-      ...value,
+    let currentAddressData: AddressData;
+    if (typeof value === "string") {
+      currentAddressData = {
+        street: "",
+        city: "",
+        state: "",
+        zipCode: "",
+        country: "",
+        fullAddress: value,
+        coordinates: undefined,
+      };
+    } else if (value && typeof value === "object" && "fullAddress" in value) {
+      currentAddressData = { ...(value as AddressData) };
+    } else {
+      currentAddressData = {
+        street: "",
+        city: "",
+        state: "",
+        zipCode: "",
+        country: "",
+        fullAddress: "",
+        coordinates: undefined,
+      };
+    }
+
+    const updatedAddressData = {
+      ...currentAddressData,
       [field]: newValue,
-    });
+    };
+
+    onChange(updatedAddressData);
   };
 
   const clearAddress = () => {
+    setCommittedValueForCancel(value);
     onChange({
       street: "",
       city: "",
@@ -201,16 +263,45 @@ export function AddressInput({
       fullAddress: "",
       coordinates: undefined,
     });
+    setUserExplicitlyWantsDetailed(true);
+  };
+
+  const handleEditDetailsClick = () => {
+    setCommittedValueForCancel(value);
+    setUserExplicitlyWantsDetailed(true);
+  };
+
+  const handleSummaryInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newFullAddress = e.target.value;
+    setCommittedValueForCancel(value);
+    onChange({
+      street: "",
+      city: "",
+      state: "",
+      zipCode: "",
+      country: "",
+      fullAddress: newFullAddress,
+      coordinates: undefined,
+    } as AddressData);
+    setUserExplicitlyWantsDetailed(true);
+  };
+
+  const handleCancelDetailedEdit = () => {
+    if (committedValueForCancel !== null) {
+      onChange(committedValueForCancel);
+    }
+    setUserExplicitlyWantsDetailed(false);
+    setCommittedValueForCancel(null);
   };
 
   const hasValue =
-    value &&
-    (value.fullAddress ||
-      value.street ||
-      value.city ||
-      value.state ||
-      value.zipCode ||
-      value.country);
+    currentFullAddress ||
+    (isValueStructuredAddress &&
+      ((value as AddressData).street ||
+        (value as AddressData).city ||
+        (value as AddressData).state ||
+        (value as AddressData).zipCode ||
+        (value as AddressData).country));
 
   return (
     <LoadScript
@@ -257,62 +348,116 @@ export function AddressInput({
         </div>
 
         <div className="grid grid-cols-1 gap-4">
-          <Autocomplete
-            onLoad={(autocomplete) => {
-              autocompleteRef.current = autocomplete;
-            }}
-            onPlaceChanged={handlePlaceSelect}
-            options={{
-              types: ["address"],
-              componentRestrictions: undefined,
-            }}
-          >
-            <Input
-              placeholder={placeholder}
-              value={value?.fullAddress || ""}
-              onChange={(e) => handleInputChange("fullAddress", e.target.value)}
-              onBlur={onBlur}
-              disabled={disabled}
-              className={error ? "border-destructive" : ""}
-            />
-          </Autocomplete>
+          {showDetailedView ? (
+            <>
+              <Autocomplete
+                onLoad={(autocomplete) => {
+                  autocompleteRef.current = autocomplete;
+                }}
+                onPlaceChanged={handlePlaceSelect}
+                options={{
+                  types: ["address"],
+                  componentRestrictions: undefined,
+                }}
+              >
+                <Input
+                  placeholder={placeholder}
+                  value={currentFullAddress}
+                  onChange={(e) =>
+                    handleInputChange("fullAddress", e.target.value)
+                  }
+                  onBlur={onBlur}
+                  disabled={disabled}
+                  className={error ? "border-destructive" : ""}
+                />
+              </Autocomplete>
 
-          <Input
-            placeholder="Street Address"
-            value={value?.street || ""}
-            onChange={(e) => handleInputChange("street", e.target.value)}
-            disabled={disabled}
-          />
+              <Input
+                placeholder="Street Address"
+                value={
+                  isValueStructuredAddress ? (value as AddressData).street : ""
+                }
+                onChange={(e) => handleInputChange("street", e.target.value)}
+                disabled={disabled}
+              />
 
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              placeholder="City"
-              value={value?.city || ""}
-              onChange={(e) => handleInputChange("city", e.target.value)}
-              disabled={disabled}
-            />
-            <Input
-              placeholder="State/Province"
-              value={value?.state || ""}
-              onChange={(e) => handleInputChange("state", e.target.value)}
-              disabled={disabled}
-            />
-          </div>
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  placeholder="City"
+                  value={
+                    isValueStructuredAddress ? (value as AddressData).city : ""
+                  }
+                  onChange={(e) => handleInputChange("city", e.target.value)}
+                  disabled={disabled}
+                />
+                <Input
+                  placeholder="State/Province"
+                  value={
+                    isValueStructuredAddress ? (value as AddressData).state : ""
+                  }
+                  onChange={(e) => handleInputChange("state", e.target.value)}
+                  disabled={disabled}
+                />
+              </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              placeholder="ZIP/Postal Code"
-              value={value?.zipCode || ""}
-              onChange={(e) => handleInputChange("zipCode", e.target.value)}
-              disabled={disabled}
-            />
-            <Input
-              placeholder="Country"
-              value={value?.country || ""}
-              onChange={(e) => handleInputChange("country", e.target.value)}
-              disabled={disabled}
-            />
-          </div>
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  placeholder="ZIP/Postal Code"
+                  value={
+                    isValueStructuredAddress
+                      ? (value as AddressData).zipCode
+                      : ""
+                  }
+                  onChange={(e) => handleInputChange("zipCode", e.target.value)}
+                  disabled={disabled}
+                />
+                <Input
+                  placeholder="Country"
+                  value={
+                    isValueStructuredAddress
+                      ? (value as AddressData).country
+                      : ""
+                  }
+                  onChange={(e) => handleInputChange("country", e.target.value)}
+                  disabled={disabled}
+                />
+              </div>
+
+              {committedValueForCancel !== null && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCancelDetailedEdit}
+                  disabled={disabled}
+                  className="mt-2 w-full border-destructive hover:bg-destructive/10 hover:text-destructive sm:w-auto"
+                >
+                  Cancel
+                </Button>
+              )}
+            </>
+          ) : (
+            <div className="flex flex-row items-center justify-center space-x-2">
+              <Input
+                placeholder={placeholder}
+                value={currentFullAddress}
+                readOnly={true}
+                onBlur={onBlur}
+                disabled={true}
+                className={error ? "border-destructive" : ""}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                // size="sm"
+                onClick={handleEditDetailsClick}
+                disabled={disabled}
+                className="m-0 w-full sm:w-auto"
+              >
+                Edit Address Details
+              </Button>
+            </div>
+          )}
         </div>
 
         {error && <p className="text-sm text-destructive">{error.message}</p>}
