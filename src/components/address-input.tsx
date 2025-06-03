@@ -3,13 +3,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Control, useController } from "react-hook-form";
 import { LoadScript, Autocomplete } from "@react-google-maps/api";
-import { MapPin, Loader2, X } from "lucide-react";
+import { MapPin, X, Loader } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { FormLabel } from "./ui/form";
 import { toast } from "sonner";
 
-const libraries: ("places")[] = ["places"];
+const libraries: "places"[] = ["places"];
 
 export interface AddressData {
   street: string;
@@ -43,7 +43,7 @@ export function AddressInput({
 }: AddressInputProps) {
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
-  
+
   const {
     field: { value, onChange, onBlur },
     fieldState: { error },
@@ -62,7 +62,7 @@ export function AddressInput({
   });
 
   const parseAddressComponents = (
-    place: google.maps.places.PlaceResult
+    place: google.maps.places.PlaceResult,
   ): AddressData => {
     const components = place.address_components || [];
     const addressData: AddressData = {
@@ -113,7 +113,10 @@ export function AddressInput({
 
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
-      toast.error("Geolocation is not supported by this browser");
+      toast.error("Geolocation is not supported by this browser", {
+        position: "top-center",
+        richColors: true,
+      });
       return;
     }
 
@@ -123,7 +126,7 @@ export function AddressInput({
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
-          
+
           // Use Google Geocoding API to get address from coordinates
           const geocoder = new google.maps.Geocoder();
           const response = await geocoder.geocode({
@@ -134,13 +137,22 @@ export function AddressInput({
             const addressData = parseAddressComponents(response.results[0]);
             addressData.coordinates = { lat: latitude, lng: longitude };
             onChange(addressData);
-            toast.success("Location detected successfully");
+            toast.success("Location detected successfully", {
+              position: "top-center",
+              richColors: true,
+            });
           } else {
-            toast.error("Unable to get address for current location");
+            toast.error("Unable to get address for current location", {
+              position: "top-center",
+              richColors: true,
+            });
           }
         } catch (error) {
           console.error("Geocoding error:", error);
-          toast.error("Failed to get address from location");
+          toast.error("Failed to get address from location", {
+            position: "top-center",
+            richColors: true,
+          });
         } finally {
           setIsLoadingLocation(false);
         }
@@ -148,7 +160,7 @@ export function AddressInput({
       (error) => {
         console.error("Geolocation error:", error);
         setIsLoadingLocation(false);
-        
+
         switch (error.code) {
           case error.PERMISSION_DENIED:
             toast.error("Location access denied by user");
@@ -168,7 +180,7 @@ export function AddressInput({
         enableHighAccuracy: true,
         timeout: 10000,
         maximumAge: 60000,
-      }
+      },
     );
   };
 
@@ -191,14 +203,14 @@ export function AddressInput({
     });
   };
 
-  const hasValue = value && (
-    value.fullAddress || 
-    value.street || 
-    value.city || 
-    value.state || 
-    value.zipCode || 
-    value.country
-  );
+  const hasValue =
+    value &&
+    (value.fullAddress ||
+      value.street ||
+      value.city ||
+      value.state ||
+      value.zipCode ||
+      value.country);
 
   return (
     <LoadScript
@@ -209,7 +221,7 @@ export function AddressInput({
         <div className="flex items-center justify-between">
           <FormLabel>
             {label}
-            {isRequired && <span className="text-destructive ml-1">*</span>}
+            {isRequired && <span className="ml-1 text-destructive">*</span>}
           </FormLabel>
           <div className="flex space-x-2">
             <Button
@@ -221,7 +233,7 @@ export function AddressInput({
               className="h-8"
             >
               {isLoadingLocation ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader className="h-4 w-4 animate-spin" />
               ) : (
                 <MapPin className="h-4 w-4" />
               )}
@@ -303,10 +315,8 @@ export function AddressInput({
           </div>
         </div>
 
-        {error && (
-          <p className="text-sm text-destructive">{error.message}</p>
-        )}
+        {error && <p className="text-sm text-destructive">{error.message}</p>}
       </div>
     </LoadScript>
   );
-} 
+}
