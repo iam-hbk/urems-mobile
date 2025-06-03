@@ -9,17 +9,20 @@ import type {
   FieldResponse,
   FieldDefinition,
   SubSection,
+  FormResponseUpdateDto,
+  FieldResponseUpdateDto,
+  SectionStatusUpdateDto,
 } from "@/types/form-template";
 import { FormSubSection } from "./form-subsection";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Save, Send, ArrowLeft, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { Form } from "@/components/ui/form";
 import Link from "next/link";
 import { FormFieldBuilder } from "@/components/form-field";
+import { apiUpdateFormResponse } from "@/app/forms/api";
+import { useMutation } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 
 interface SectionFormBuilderProps {
   section: Section;
@@ -37,6 +40,27 @@ export function SectionFormBuilder({
   existingResponse,
 }: SectionFormBuilderProps) {
   const [isCompleted, setIsCompleted] = useState(false);
+
+  // Define the mutation function
+  const mutationFn = async (variables: {
+    responseId: string;
+    payload: FormResponseUpdateDto;
+  }) => {
+    return apiUpdateFormResponse(variables.responseId, variables.payload);
+  };
+
+  const sectionMutation = useMutation({
+    mutationFn,
+    onSuccess: (data, variables) => { // variables here are what's passed to mutate
+      toast.success(`${section.name} has been saved.`);
+      console.log("Mutation successful, API Response Status:", data.status);
+      // Potentially invalidate queries or navigate here if needed
+    },
+    onError: (error: any, variables) => {
+      console.error("Error submitting section data via mutation:", error);
+      toast.error(`There was an error saving ${section.name}. ${error.message || ""}`);
+    },
+  });
 
   // Create default values from existing response for this section
   const getDefaultValues = () => {
@@ -110,44 +134,74 @@ export function SectionFormBuilder({
     }
   }, [existingResponse, section.id]);
 
-  const onSubmit = async (data: any) => {
-    try {
-      console.log("Section submission data:", data);
+  const onSubmit = async (hookFormData: any) => { // Renamed data to hookFormData to avoid conflict
+    console.log("Section submission data from react-hook-form:", hookFormData);
 
-      // Filter out data that doesn't belong to any field in this section
-      const directFieldNames = (section.directFields || []).map(
-        (fd) => fd.name,
-      );
-      const subSectionFieldNames = (section.groupedSubSections || [])
-        .flatMap((ss: SubSection) => ss.fieldDefinitions)
-        .map((fd) => fd.name);
-      const allValidFieldKeysPrefixes = [
-        ...directFieldNames,
-        ...subSectionFieldNames,
-      ];
+    const directFieldDefs = section.directFields || [];
+    const subSectionFieldDefs = (section.groupedSubSections || []).flatMap(
+      (ss: SubSection) => ss.fieldDefinitions,
+    );
+    const allFieldDefsInSection = [
+      ...directFieldDefs,
+      ...subSectionFieldDefs,
+    ];
 
-      const sectionData: Record<string, any> = {};
-      for (const key in data) {
-        // Assuming key format is fieldName_entrySequenceNumber or just fieldName
-        const fieldNamePrefix = key.split("_")[0];
-        if (allValidFieldKeysPrefixes.includes(fieldNamePrefix)) {
-          sectionData[key] = data[key];
-        }
+    const sectionDataToProcess: Record<string, any> = {};
+    const allValidFieldKeysPrefixes = allFieldDefsInSection.map(fd => fd.name);
+
+    for (const key in hookFormData) {
+      const fieldNamePrefix = key.split("_")[0];
+      if (allValidFieldKeysPrefixes.includes(fieldNamePrefix)) {
+        sectionDataToProcess[key] = hookFormData[key];
       }
-      console.log("Filtered section submission data:", sectionData);
-
-      // Here you would typically send the data to your API
-      // const response = await updateSectionResponse(responseId, section.id, sectionData)
-
-      toast.success(`${section.name} has been saved.`);
-    } catch (error) {
-      toast.error("There was an error saving your section data.");
     }
-  };
+    console.log("Filtered section submission data:", sectionDataToProcess);
 
-  const handleCompletionToggle = (checked: boolean) => {
-    setIsCompleted(checked);
-    // Here you would update the section status in your API
+    const fieldResponsesPayload: FieldResponseUpdateDto[] = [];
+    for (const key in sectionDataToProcess) {
+      const fieldNamePrefix = key.split("_")[0];
+      // Assuming entrySequenceNumber is part of the key if it's greater than 0 for repeatable fields/subsections
+      // For direct fields or single entry fields, it might be 0 or not present in the key.
+      // This logic might need adjustment based on how repeatable fields are keyed.
+      const entrySequenceParts = key.split("_");
+      const entrySequenceNumber = entrySequenceParts.length > 1 && !isNaN(parseInt(entrySequenceParts[entrySequenceParts.length -1])) ? parseInt(entrySequenceParts[entrySequenceParts.length -1]) : 0;
+
+
+      const fieldDef = allFieldDefsInSection.find(fd => fd.name === fieldNamePrefix);
+      if (fieldDef) {
+        let valueToSave = sectionDataToProcess[key];
+
+        // Check if the field is an Address and the value is an object
+        if (fieldDef.type === "Address" && typeof valueToSave === "object" && valueToSave !== null && "fullAddress" in valueToSave) {
+          valueToSave = String(valueToSave.fullAddress || ""); // Use fullAddress or empty string if undefined
+        } else if (fieldDef.type === "CheckboxGroup" && Array.isArray(valueToSave)) {
+          valueToSave = JSON.stringify(valueToSave);
+        } else {
+          valueToSave = String(valueToSave);
+        }
+
+        fieldResponsesPayload.push({
+          fieldDefinitionId: fieldDef.id,
+          value: valueToSave,
+          entrySequenceNumber: entrySequenceNumber, // Make sure DTO supports this or adjust
+        });
+      }
+    }
+
+    const sectionStatusPayload: SectionStatusUpdateDto[] = [{
+      sectionId: section.id,
+      isCompleted: isCompleted, // isCompleted state from SectionFormBuilder
+    }];
+
+    const updatePayload: FormResponseUpdateDto = {
+      fieldResponses: fieldResponsesPayload,
+      sectionStatuses: sectionStatusPayload,
+    };
+
+    console.log("Payload to send to API via mutation:");
+    console.dir(updatePayload, { depth: null });
+
+    sectionMutation.mutate({ responseId, payload: updatePayload });
   };
 
   // Get navigation info
@@ -208,23 +262,30 @@ export function SectionFormBuilder({
                 type="button"
                 variant="outline"
                 onClick={() => form.handleSubmit(onSubmit)()}
+                disabled={sectionMutation.isPending}
               >
-                <Save className="mr-2 h-4 w-4" />
+                {sectionMutation.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )}
                 Save Section
               </Button>
 
               {nextSection ? (
                 <Link href={`/forms/${formId}/${responseId}/${nextSection.id}`}>
-                  <Button type="submit">
+                  <Button type="submit" disabled={sectionMutation.isPending}>
+                    {sectionMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Save & Continue
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    {!sectionMutation.isPending && <ArrowRight className="ml-2 h-4 w-4" />}
                   </Button>
                 </Link>
               ) : (
                 <Link href={`/forms/${formId}/${responseId}`}>
-                  <Button type="submit">
-                    <Send className="mr-2 h-4 w-4" />
+                  <Button type="submit" disabled={sectionMutation.isPending}>
+                    {sectionMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Save & Return to Overview
+                    {!sectionMutation.isPending && <Send className="ml-2 h-4 w-4" />}
                   </Button>
                 </Link>
               )}

@@ -1,4 +1,5 @@
 import api from "@/lib/wretch";
+import { UREM__ERP_API_BASE } from "@/lib/wretch";
 import {
   FormTemplate,
   FormTemplateSummary,
@@ -137,15 +138,30 @@ export const fetchFormResponseById = async (
 export const apiUpdateFormResponse = async (
   responseId: string,
   payload: FormResponseUpdateDto,
-): Promise<DetailedFormResponse> => {
+): Promise<{status: number}> => {
+  const url = `${UREM__ERP_API_BASE}/api/FormResponses/${responseId}`;
+
   try {
-    const updatedResponse = (await api.put(
-      payload,
-      `/FormResponses/${responseId}`,
-    )) as DetailedFormResponse;
-    return updatedResponse;
-  } catch (error) {
-    console.error("Failed to update form response:", error);
-    throw error;
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        // Add any other necessary headers, like Authorization, if needed
+      },
+      body: JSON.stringify(payload),
+    });
+
+    return { status: response.status };
+
+  } catch (error: any) {
+    console.error(`Failed to update form response at ${url}:`, error);
+    // Check if it's a network error or an error with a status property
+    if (error && typeof error.status === 'number') {
+      throw error; // Re-throw if it has a status (like an HTTP error object)
+    } else {
+      // For generic errors (e.g., network failure), throw a new error or handle as appropriate
+      // It might be useful to throw an error object that React Query can inspect for a status
+      throw new Error(error.message || "Network error or an unexpected issue occurred");
+    }
   }
 };
