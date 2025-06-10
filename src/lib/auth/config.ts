@@ -1,6 +1,6 @@
 import { EmployeeData } from "@/app/profile/page";
 
-export type Session = {
+export type TypeSession = {
   user: EmployeeData;
   expires: string;
 };
@@ -8,8 +8,10 @@ export type Session = {
 export type AuthConfig = {
   baseUrl: string;
   apiPath: string;
-  session?: Session;
+  session?: TypeSession;
 };
+
+export const UserTokenCookieName = 'userToken';
 
 export const authConfig: AuthConfig = {
   baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',

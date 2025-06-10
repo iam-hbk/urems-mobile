@@ -71,6 +71,9 @@ export default function PatientHandoverForm() {
   });
 
   function onSubmit(values: PatientHandoverType) {
+    if (!zsEmployee) { // no needed .. just for building
+      return;
+    }
     const prfUpdateValue: PRF_FORM = {
       prfFormId: prfId,
       prfData: {
@@ -81,7 +84,7 @@ export default function PatientHandoverForm() {
           isOptional: false,
         },
       },
-      EmployeeID: zsEmployee?.employeeNumber.toString() || "2" // fallback
+      EmployeeID: zsEmployee.id || "2" // fallback
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {

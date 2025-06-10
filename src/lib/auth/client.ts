@@ -1,41 +1,51 @@
 'use client';
 
 import { create } from 'zustand';
-import { Session, authConfig } from './config';
+import { authConfig, TypeSession, UserTokenCookieName } from './config';
+import { TypeLoginForm } from '@/types/auth';
+import { apiLogin } from './api';
+import { toast } from 'sonner';
+import { getCookie, setCookie } from '@/utils/cookies';
 
 interface AuthStore {
-  session: Session | null;
+  session: TypeSession | null;
+  zsSessionToken: string | null;
+  zsSetSessionToken: (token: string) => void;
   loading: boolean;
   initialized: boolean;
-  setSession: (session: Session | null) => void;
+  setSession: (session: TypeSession | null) => void;
   setLoading: (loading: boolean) => void;
   setInitialized: (initialized: boolean) => void;
 }
 
 const useAuthStore = create<AuthStore>((set) => ({
   session: null,
+  zsSessionToken: null,
   loading: true,
   initialized: false,
+  zsSetSessionToken: (token) => set({ zsSessionToken: token }),
   setSession: (session) => set({ session }),
   setLoading: (loading) => set({ loading }),
   setInitialized: (initialized) => set({ initialized }),
 }));
 
+
 // Initialize the auth state
 if (typeof window !== 'undefined') {
+
   // Check for existing session
   const checkSession = async () => {
     try {
-      const res = await fetch('/api/auth/check-session');
-      if (res.ok) {
-        const session = await res.json();
-        if (session) {
-          useAuthStore.getState().setSession(session);
-        }
+      const cookieValue = await getCookie(UserTokenCookieName);
+
+      if (cookieValue) {
+        useAuthStore.getState().zsSetSessionToken(cookieValue);
       }
-    } catch (error) {
-      console.error('Failed to check session:', error);
-    } finally {
+    } catch (error: unknown) {
+      const m = (error instanceof Error) ? error.message : "Failed to check session";
+      toast.error(m);
+    }
+    finally {
       useAuthStore.getState().setLoading(false);
       useAuthStore.getState().setInitialized(true);
     }
@@ -49,30 +59,26 @@ if (typeof window !== 'undefined') {
 
 export const authClient = {
   signIn: {
-    credentials: async (credentials: { employeeNumber: string; password: string }) => {
+    credentials: async (credentials: TypeLoginForm) => {
       try {
         useAuthStore.getState().setLoading(true);
-        const res = await fetch(`${authConfig.baseUrl}${authConfig.apiPath}/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(credentials),
-          credentials: 'include', // Important for cookies
-        });
-        
-        if (!res.ok) {
+
+        const res = await apiLogin(credentials);
+
+        if (!res) {
           throw new Error('Authentication failed');
         }
-        
-        const session = await res.json();
-        if (!session || !session.user) {
-          throw new Error('Invalid session data received');
-        }
-        
-        useAuthStore.getState().setSession(session);
-        return session;
+
+        // store in cookie
+        await setCookie(UserTokenCookieName, res.token);
+
+        // might not be useful because of cookie
+        useAuthStore.getState().zsSetSessionToken(res.token);
+
+        return res.token;
+
       } catch (error) {
-        useAuthStore.getState().setSession(null);
-        throw error;
+        throw error as Error;
       } finally {
         useAuthStore.getState().setLoading(false);
       }
@@ -85,11 +91,11 @@ export const authClient = {
         method: 'POST',
         credentials: 'include', // Important for cookies
       });
-      
+
       if (!res.ok) {
         throw new Error('Logout failed');
       }
-      
+
       useAuthStore.getState().setSession(null);
     } catch (error) {
       console.error('Logout error:', error);
@@ -99,9 +105,17 @@ export const authClient = {
     }
   },
   useSession: () => {
-    const { session, loading, initialized } = useAuthStore();
+    const {
+      session,
+      loading,
+      initialized,
+      zsSessionToken
+    } = useAuthStore();
+
+    // 
     return {
       data: session,
+      sessionToken: zsSessionToken,
       loading: loading || !initialized,
     };
   },

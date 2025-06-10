@@ -1,59 +1,44 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import { Suspense, useState } from "react";
+import { EyeClosedIcon, EyeIcon } from "lucide-react";
+import { TypeLoginForm } from "@/types/auth";
 import { authClient } from "@/lib/auth/client";
-import { Suspense } from "react";
 
-const loginFormSchema = z.object({
-  employeeNumber: z.string().min(1, "Employee number is required"),
-  password: z.string().min(1, "Password is required"),
-});
-
-type LoginFormValues = z.infer<typeof loginFormSchema>;
 
 const LoginForm = () => {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('from') || '/';
-  
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginFormSchema),
-    defaultValues: {
-      employeeNumber: "",
-      password: "",
-    },
-  });
+  const [formData, setFormData] = useState<TypeLoginForm>({ email: "", password: "" });
+  const [showPwd, setShowPwd] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const router = useRouter();
 
-  async function onSubmit(data: LoginFormValues) {
+
+  async function onSubmit() {
+    setLoading(true);
     try {
-      const session = await authClient.signIn.credentials(data);
-      if (session) {
-        toast.success("Login successful");
-        // Add a small delay to ensure the session is properly set
-        setTimeout(() => {
-          router.push(redirectTo);
-          router.refresh(); // Force a refresh to ensure new session is picked up
-        }, 100);
-      } else {
-        toast.error("Login failed");
+      const sessionToken = await authClient.signIn.credentials(formData);
+
+      if (sessionToken) {
+        // store token
+        router.push(redirectTo);
+        router.refresh();
       }
-    } catch (error) {
-      console.error("Login error:", error);
-      toast.error("Invalid credentials");
+      else {
+        toast.error("Failed to login");
+      }
+    }
+    catch (error: unknown) {
+      const m = (error instanceof Error) ? error.message : "Unknown error login";
+      toast.error(m);
+    }
+    finally {
+      setLoading(false);
     }
   }
 
@@ -64,42 +49,29 @@ const LoginForm = () => {
           <h1 className="text-3xl font-bold">Welcome Back</h1>
           <p className="text-gray-500">Please sign in to continue</p>
         </div>
-        
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="employeeNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Employee Number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter your employee number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="Enter your password" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
-            <Button type="submit" className="w-full">
-              Sign In
+        {/*  */}
+        <form
+          onSubmit={(e) => { e.preventDefault(); onSubmit() }}
+          className="space-y-6 flex flex-col gap-y-[1rem] " >
+
+          <Input type='email' placeholder='Enter email' value={formData.email}
+            onChange={e => setFormData({ ...formData, email: e.target.value })} />
+
+          <div className=' flex flex-row gap-x-[1rem] ' >
+            <Input
+              type={showPwd ? 'text' : 'password'}
+              placeholder='Enter password' value={formData.password}
+              onChange={e => setFormData({ ...formData, password: e.target.value })} />
+            <Button onClick={() => setShowPwd(!showPwd)} >
+              {showPwd ? <EyeClosedIcon /> : <EyeIcon />}
             </Button>
-          </form>
-        </Form>
+          </div>
+
+          <Button disabled={loading} type="submit" className="w-full">
+            Sign In
+          </Button>
+        </form>
       </div>
     </div>
   );

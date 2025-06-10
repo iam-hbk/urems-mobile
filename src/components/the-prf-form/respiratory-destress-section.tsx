@@ -111,6 +111,9 @@ export default function RespiratoryDistressAssessmentForm() {
   });
 
   function onSubmit(values: RespiratoryDistressType) {
+    if (!zsEmployee) { // no needed .. just for building
+      return;
+    }
     const prfUpdateValue: PRF_FORM = {
       prfFormId: prfId,
       prfData: {
@@ -121,7 +124,7 @@ export default function RespiratoryDistressAssessmentForm() {
           isOptional: false,
         },
       },
-      EmployeeID: zsEmployee?.employeeNumber.toString() || "2" // fallback
+      EmployeeID: zsEmployee.id || "2" // fallback
 
     };
 
