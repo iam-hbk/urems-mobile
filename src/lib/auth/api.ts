@@ -2,6 +2,7 @@
 'use server';
 
 import { TypeLoginForm } from "@/types/auth";
+import { UREM__ERP_API_BASE } from "../wretch";
 
 
 // login
@@ -20,13 +21,13 @@ export async function apiLogin(data: TypeLoginForm) {
       method: "POST",
       headers: myHeaders,
       body: raw,
-      redirect: "follow"
+      redirect: "follow",
+      credentials: 'include',
     };
 
-    const res = await fetch("http://localhost:7089/api/auth/login", requestOptions);
-
+    const res = await fetch(`${UREM__ERP_API_BASE}/api/auth/login`, requestOptions);
     if (!res.ok) {
-      throw new Error("Error login user");
+      throw new Error("Invalid login credentials");
     }
 
     const results = await res.json();
@@ -34,7 +35,6 @@ export async function apiLogin(data: TypeLoginForm) {
     return results;
 
   } catch (error: unknown) { // poor coding styles
-    console.log(error);
-    return null;
+    throw error as Error
   }
 }

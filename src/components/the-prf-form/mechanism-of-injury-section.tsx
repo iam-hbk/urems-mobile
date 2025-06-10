@@ -70,7 +70,7 @@ export default function MechanismOfInjuryForm() {
           isOptional: false,
         },
       },
-      EmployeeID: zsEmployee?.employeeNumber.toString(),
+      EmployeeID: zsEmployee.id,
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {

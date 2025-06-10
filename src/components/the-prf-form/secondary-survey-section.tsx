@@ -232,6 +232,10 @@ export default function SecondarySurveyForm({
     console.log("VALUES -> ", values);
     if (!form.formState.isDirty) return;
 
+    if (!zsEmployee) { // no needed .. just for building
+      return;
+    }
+
     const prfUpdateValue: PRF_FORM = {
       prfFormId: prfId,
       prfData: {
@@ -242,7 +246,7 @@ export default function SecondarySurveyForm({
           isOptional: false,
         },
       },
-      EmployeeID: zsEmployee?.employeeNumber.toString() || "",
+      EmployeeID: zsEmployee.id || "",
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
@@ -267,9 +271,9 @@ export default function SecondarySurveyForm({
     const errorMessages = Object.entries(errors)
       .map(([_, error]: [string, any]) => error?.message)
       .filter(Boolean);
-    
+
     const errorMessage = errorMessages[0] || "Please fill in all required fields";
-    
+
     toast.error(errorMessage, {
       duration: 3000,
       position: "top-right",

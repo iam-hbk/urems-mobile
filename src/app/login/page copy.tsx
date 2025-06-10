@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { authClient } from "@/lib/auth/client";
+// import { authClient } from "@/lib/auth/client";
 import { Suspense } from "react";
 
 const loginFormSchema = z.object({
@@ -30,6 +30,7 @@ const LoginForm = () => {
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('from') || '/';
 
+
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
@@ -40,7 +41,11 @@ const LoginForm = () => {
 
   async function onSubmit(data: LoginFormValues) {
     try {
-      const session = await authClient.signIn.credentials(data);
+
+      if (!data) return;
+
+      // const session = await authClient.signIn.credentials(data);
+      const session = null;
       if (session) {
         toast.success("Login successful");
         // Add a small delay to ensure the session is properly set

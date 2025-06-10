@@ -1,5 +1,5 @@
+import { TypeSession } from '@/lib/auth/config';
 import { NextResponse } from 'next/server';
-import { Session } from '@/lib/auth/config';
 
 export async function GET(request: Request) {
   try {
@@ -23,8 +23,8 @@ export async function GET(request: Request) {
 
     // Parse and validate the session
     try {
-      const session = JSON.parse(decodeURIComponent(sessionCookie)) as Session;
-      
+      const session = JSON.parse(decodeURIComponent(sessionCookie)) as TypeSession;
+
       // Check if session is expired
       if (new Date(session.expires) < new Date()) {
         return NextResponse.json(null);

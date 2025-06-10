@@ -94,7 +94,7 @@ const navigationData = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { zsEmployee, zsClearemployee } = useZuStandEmployeeStore();
   const router = useRouter();
-  const { state,isMobile } = useSidebar();
+  const { state, isMobile } = useSidebar();
 
   const handleLogout = async () => {
     try {
@@ -109,6 +109,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       zsClearemployee();
       toast.success("Logged out successfully");
       router.push("/login");
+
     } catch (error) {
       toast.error("Failed to logout. Please try again.");
     }
@@ -130,7 +131,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         >
           UREMS PRF
         </span>
-        
+
       </SidebarHeader>
       <SidebarContent>
         {navigationData.mainMenu.map((section) => (

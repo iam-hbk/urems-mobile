@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { Session } from '@/lib/auth/config';
+import { TypeSession } from '@/lib/auth/config';
 import { EmployeeData } from '@/app/profile/page';
 
 // Mock user for testing
@@ -38,7 +37,7 @@ const MOCK_USER: EmployeeData = {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    
+
     // In a real app, you would validate credentials here
     // For now, just check if employeeNumber matches our mock user
     if (body.employeeNumber !== MOCK_USER.employeeNumber.toString()) {
@@ -49,7 +48,7 @@ export async function POST(request: Request) {
     }
 
     // Create session
-    const session: Session = {
+    const session: TypeSession = {
       user: MOCK_USER,
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
     };

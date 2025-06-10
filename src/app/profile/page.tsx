@@ -9,14 +9,14 @@ import {
   CalendarIcon,
   CarIcon,
   IdCardIcon,
-  Loader,
   MailIcon,
   PhoneIcon,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { UREM__ERP_API_BASE } from "@/lib/wretch";
 import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 import LoadingComponent from "@/components/loading";
+import { useGetEmployeeInformation } from "@/hooks/employee/useEmployee";
+import { Button, Input } from "react-aria-components";
+import ChangePasswordForm from "@/components/changePasswordForm";
 
 interface ContactDetails {
   cellNumber: string;
@@ -82,25 +82,13 @@ export default function EmployeeProfile() {
     data: employeeData,
     isLoading,
     error,
-  } = useQuery<EmployeeData>({
-    queryKey: ["employeeData", "2"],
-    queryFn: async () => {
-      const response = await fetch(
-        `${UREM__ERP_API_BASE}/api/Employee/EmployeeWithDetails/2`,
-      );
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      return response.json();
-    },
-  });
+  } = useGetEmployeeInformation();
 
   useEffect(() => {
     if (employeeData) {
-      console.log(employeeData);
       zsSetEmployee(employeeData);
     }
-  }, [employeeData, zsSetEmployee]);
+  }, [employeeData]);
 
   const getInitials = (name: string) => {
     return name
@@ -120,7 +108,6 @@ export default function EmployeeProfile() {
     return <p>No data found</p>;
   }
 
-
   return (
     <div className="container mx-auto p-6">
       <Card className="mx-auto w-full max-w-3xl">
@@ -128,21 +115,21 @@ export default function EmployeeProfile() {
           <Avatar className="h-20 w-20">
             <AvatarImage
               src={`/placeholder.svg?height=80&width=80`}
-              alt={employeeData.person.firstName}
+              alt={employeeData.firstName}
             />
             <AvatarFallback>
               {getInitials(
-                `${employeeData.person.firstName} ${employeeData.person.lastName}`,
+                `${employeeData.firstName} ${employeeData.lastName}`,
               )}
             </AvatarFallback>
           </Avatar>
           <div>
-            <CardTitle>{`${employeeData.person.firstName} ${employeeData.person.lastName}`}</CardTitle>
+            <CardTitle>{`${employeeData.firstName} ${employeeData.lastName}`}</CardTitle>
             <p className="text-sm text-muted-foreground">
               Employee #{employeeData.employeeNumber}
             </p>
             <Badge variant="secondary" className="mt-2">
-              {employeeData.employeeType.typeDescription}
+              {employeeData.employeeType || "Emp type"}
             </Badge>
           </div>
         </CardHeader>
@@ -159,21 +146,19 @@ export default function EmployeeProfile() {
                   <dt className="font-medium">Date of Birth</dt>
                   <dd className="flex items-center gap-2">
                     <CalendarIcon className="h-4 w-4" />
-                    {format(
-                      new Date(employeeData.person.dateOfBirth),
-                      "MMMM d, yyyy",
-                    )}
+                    {employeeData.dateOfBirth}
+                    {/* {format(new Date(employeeData.dateOfBirth), "MMMM d, yyyy",)} */}
                   </dd>
                 </div>
                 <div>
                   <dt className="font-medium">Gender</dt>
-                  <dd className="capitalize">{employeeData.person.gender}</dd>
+                  <dd className="capitalize">{employeeData.gender}</dd>
                 </div>
-                <div>
+                <div className=" uppercase ">
                   <dt className="font-medium">Initials</dt>
-                  <dd>{employeeData.person.initials}</dd>
+                  <dd>{employeeData.initials}</dd>
                 </div>
-                {employeeData.person.personIdentifications.map((id, index) => (
+                {/* {employeeData.person.personIdentifications.map((id, index) => (
                   <div key={index}>
                     <dt className="font-medium">
                       {id.identification.identificationType.identificationType1}
@@ -183,17 +168,17 @@ export default function EmployeeProfile() {
                       {id.identification.identification1}
                     </dd>
                   </div>
-                ))}
+                ))} */}
               </dl>
             </TabsContent>
             <TabsContent value="contact" className="mt-4">
-              {employeeData.person.personContactDetails.map(
+              {/* {employeeData.person.personContactDetails.map( */}
+              {[0].map(
                 (contact, index) => (
                   <div key={index} className="mb-4">
                     <h3 className="mb-2 font-medium">
                       {
-                        contact.contactDetails.contactDetailsTypeNavigation
-                          .typeDescription
+                        // contact.contactDetails.contactDetailsTypeNavigation.typeDescription
                       }{" "}
                       Contact
                     </h3>
@@ -201,8 +186,10 @@ export default function EmployeeProfile() {
                       <div>
                         <dt className="text-sm text-muted-foreground">Email</dt>
                         <dd className="flex items-center gap-2">
-                          <MailIcon className="h-4 w-4" />
-                          {contact.contactDetails.email}
+                          <a href={`mailto:${employeeData.email}`} >
+                            <MailIcon className="h-4 w-4" />
+                            {employeeData.email}
+                          </a>
                         </dd>
                       </div>
                       <div>
@@ -211,10 +198,10 @@ export default function EmployeeProfile() {
                         </dt>
                         <dd className="flex items-center gap-2">
                           <PhoneIcon className="h-4 w-4" />
-                          {contact.contactDetails.cellNumber}
+                          {/* {contact.contactDetails.cellNumber} */}
                         </dd>
                       </div>
-                      {contact.contactDetails.telephoneNumber && (
+                      {/* {contact.contactDetails.telephoneNumber && (
                         <div>
                           <dt className="text-sm text-muted-foreground">
                             Telephone
@@ -224,7 +211,7 @@ export default function EmployeeProfile() {
                             {contact.contactDetails.telephoneNumber}
                           </dd>
                         </div>
-                      )}
+                      )} */}
                     </dl>
                   </div>
                 ),
@@ -261,6 +248,10 @@ export default function EmployeeProfile() {
             </TabsContent>
           </Tabs>
         </CardContent>
+      </Card>
+
+      <Card className=" mt-[2rem] mx-auto w-full max-w-3xl " >
+        <ChangePasswordForm />
       </Card>
     </div>
   );

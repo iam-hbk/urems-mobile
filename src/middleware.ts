@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { Session } from './lib/auth/config'
+import { UserTokenCookieName } from './lib/auth/config'
+import { getCookie } from './utils/cookies'
 
 // This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
@@ -48,25 +49,30 @@ export async function middleware(request: NextRequest) {
   ]
 
   // Get the session from cookie
-  const sessionCookie = request.cookies.get('auth_session')?.value
-  let session: Session | null = null
+  // const sessionCookie = request.cookies.get('auth_session')?.value
 
-  if (sessionCookie) {
-    try {
-      const parsedSession = JSON.parse(sessionCookie) as Session
-      // Check if session is expired
-      if (new Date(parsedSession.expires) < new Date()) {
-        session = null
-      } else {
-        session = parsedSession
-      }
-    } catch {
-      session = null
-    }
+  // using next/headers
+  const cookieUserToken = await getCookie(UserTokenCookieName);
+  let sessionToken: string | null = null;
+
+  // if cookie expired or wasn't set, will return undefined
+  if (cookieUserToken) {
+    sessionToken = cookieUserToken;
+    // try {
+    //   const parsedSession = JSON.parse(sessionCookie) as TypeSession
+    //   // Check if session is expired
+    //   if (new Date(parsedSession.expires) < new Date()) {
+    //     session = null
+    //   } else {
+    //     session = parsedSession
+    //   }
+    // } catch {
+    //   session = null
+    // }
   }
 
   // Check if the current path is a protected route
-  const isProtectedRoute = protectedRoutes.some(route => 
+  const isProtectedRoute = protectedRoutes.some(route =>
     pathname === route || // Exact match
     (route !== '/' && pathname.startsWith(route)) // Starts with but not root
   )
@@ -75,7 +81,7 @@ export async function middleware(request: NextRequest) {
   const isPublicRoute = publicRoutes.some(route => pathname === route)
 
   // If accessing a protected route and not authenticated
-  if (isProtectedRoute && !session) {
+  if (isProtectedRoute && !sessionToken) {
     const loginUrl = new URL('/login', request.url)
     // Add the original URL as a query parameter for redirect after login
     loginUrl.searchParams.set('from', pathname)
@@ -83,7 +89,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // If accessing public route (like login) while authenticated
-  if (isPublicRoute && session) {
+  if (isPublicRoute && sessionToken) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 

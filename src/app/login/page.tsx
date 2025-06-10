@@ -7,8 +7,7 @@ import { toast } from "sonner";
 import { Suspense, useState } from "react";
 import { EyeClosedIcon, EyeIcon } from "lucide-react";
 import { TypeLoginForm } from "@/types/auth";
-import { apiLogin } from "@/lib/auth/api";
-
+import { authClient } from "@/lib/auth/client";
 
 
 const LoginForm = () => {
@@ -20,23 +19,25 @@ const LoginForm = () => {
   const router = useRouter();
 
 
-
   async function onSubmit() {
     setLoading(true);
     try {
-      const res = await apiLogin(formData);
-      console.log(res);
-      if (res && res.token) {
+      const sessionToken = await authClient.signIn.credentials(formData);
+
+      if (sessionToken) {
         // store token
-        toast.success("Login successful");
-        router.push("/");
-      } else {
+        router.push(redirectTo);
+        router.refresh();
+      }
+      else {
         toast.error("Failed to login");
       }
-    } catch (error) {
-      console.error("Login error:", error);
-      toast.error("Invalid credentials");
-    } finally {
+    }
+    catch (error: unknown) {
+      const m = (error instanceof Error) ? error.message : "Unknown error login";
+      toast.error(m);
+    }
+    finally {
       setLoading(false);
     }
   }

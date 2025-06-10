@@ -24,6 +24,7 @@ import { ChartContainer } from "@/components/ui/chart";
 import { PieChart, Pie, Cell } from "recharts";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useGetEmployeeInformation } from "@/hooks/employee/useEmployee";
 
 // Mock TODO data
 const todoData = [
@@ -44,19 +45,19 @@ const tasks = [
 
 // Mock inventory alerts
 const inventoryAlerts = [
-  { 
+  {
     item: "Oxygen Tank",
     status: "low",
     details: "2/4 tanks remaining",
     priority: "high"
   },
-  { 
+  {
     item: "Morphine",
     status: "expiring",
     details: "Expires in 30 days",
     priority: "medium"
   },
-  { 
+  {
     item: "Bandages",
     status: "low",
     details: "20% remaining",
@@ -96,7 +97,8 @@ export default function Home() {
   const { data: prfs_, error, isLoading } = usePrfForms();
   const { zsSetEmployee } = useZuStandEmployeeStore();
   const { zsSetCrewID } = useZuStandCrewStore();
-  const { data: session, loading: authLoading } = authClient.useSession();
+  const { data: session, loading: authLoading, sessionToken } = authClient.useSession();
+  const { data: employeeData, } = useGetEmployeeInformation();
 
   // Use React Query for crew information
   const { data: crewData, error: crewError } = useQuery<TypeCrew | null, Error>(
@@ -139,10 +141,10 @@ export default function Home() {
 
   // Set employee data in store
   useEffect(() => {
-    if (session?.user) {
-      zsSetEmployee(session.user);
+    if (employeeData) {
+      zsSetEmployee(employeeData);
     }
-  }, [session, zsSetEmployee]);
+  }, [session, employeeData]);
 
   // Show loading state
   if (authLoading) {
@@ -205,11 +207,10 @@ export default function Home() {
             </div>
             <div className="w-full space-y-2">
               {tasks.map((task, index) => (
-                <div 
-                  key={index} 
-                  className={`flex items-center justify-between rounded-md border p-2 ${
-                    task.status === 'completed' ? 'bg-primary/5 border-primary/20' : 'bg-muted/5'
-                  }`}
+                <div
+                  key={index}
+                  className={`flex items-center justify-between rounded-md border p-2 ${task.status === 'completed' ? 'bg-primary/5 border-primary/20' : 'bg-muted/5'
+                    }`}
                 >
                   <div className="flex items-center gap-2">
                     <Circle className={`h-2 w-2 ${task.status === 'completed' ? 'fill-primary' : 'fill-muted'}`} />
@@ -235,9 +236,9 @@ export default function Home() {
             <ul className="space-y-4">
               <li className="flex items-center gap-3">
                 <Avatar className="h-10 w-10 border">
-                  <AvatarImage 
-                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${session.user.person.firstName}${session.user.person.lastName}`} 
-                    alt={`${session.user.person.firstName} ${session.user.person.lastName}`} 
+                  <AvatarImage
+                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${session.user.person.firstName}${session.user.person.lastName}`}
+                    alt={`${session.user.person.firstName} ${session.user.person.lastName}`}
                   />
                   <AvatarFallback>
                     {getInitials(`${session.user.person.firstName} ${session.user.person.lastName}`)}
@@ -254,9 +255,9 @@ export default function Home() {
               {/* Example additional crew members */}
               <li className="flex items-center gap-3">
                 <Avatar className="h-10 w-10 border">
-                  <AvatarImage 
-                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=JaneSmith`} 
-                    alt="Jane Smith" 
+                  <AvatarImage
+                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=JaneSmith`}
+                    alt="Jane Smith"
                   />
                   <AvatarFallback>JS</AvatarFallback>
                 </Avatar>
@@ -270,9 +271,9 @@ export default function Home() {
               </li>
               <li className="flex items-center gap-3">
                 <Avatar className="h-10 w-10 border">
-                  <AvatarImage 
-                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=JohnDoe`} 
-                    alt="John Doe" 
+                  <AvatarImage
+                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=JohnDoe`}
+                    alt="John Doe"
                   />
                   <AvatarFallback>JD</AvatarFallback>
                 </Avatar>
@@ -297,18 +298,17 @@ export default function Home() {
             <div className="space-y-4">
               {inventoryAlerts.map((alert, index) => (
                 <div key={index} className="flex items-start gap-3">
-                  <AlertCircle className={`h-4 w-4 flex-shrink-0 ${
-                    alert.priority === 'high' ? 'text-destructive' :
+                  <AlertCircle className={`h-4 w-4 flex-shrink-0 ${alert.priority === 'high' ? 'text-destructive' :
                     alert.priority === 'medium' ? 'text-orange-500' :
-                    'text-muted-foreground'
-                  }`} />
+                      'text-muted-foreground'
+                    }`} />
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
                       <p className="font-medium">{alert.item}</p>
                       <Badge variant={
                         alert.priority === 'high' ? 'destructive' :
-                        alert.priority === 'medium' ? 'default' :
-                        'secondary'
+                          alert.priority === 'medium' ? 'default' :
+                            'secondary'
                       }>
                         {alert.status}
                       </Badge>

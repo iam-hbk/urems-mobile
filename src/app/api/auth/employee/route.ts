@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
 import { UREM__ERP_API_BASE } from '@/lib/wretch'
 
 export async function GET() {

@@ -141,7 +141,7 @@ export default function ProceduresForm() {
           isOptional: false,
         },
       },
-      EmployeeID: zsEmployee?.employeeNumber.toString(),
+      EmployeeID: zsEmployee.id,
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
@@ -166,9 +166,9 @@ export default function ProceduresForm() {
     const errorMessages = Object.entries(errors)
       .map(([_, error]: [string, any]) => error?.message)
       .filter(Boolean);
-    
+
     const errorMessage = errorMessages[0] || "Please fill in all required fields";
-    
+
     toast.error(errorMessage, {
       duration: 3000,
       position: "top-right",

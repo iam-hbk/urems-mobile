@@ -167,7 +167,7 @@ export default function DynamicFormPage(props: { params: Params }) {
     gcTime: 1000 * 60 * 60 * 24,
   });
 
-  const { data: session, loading: authLoading } = authClient.useSession();
+  const { data: session, loading: authLoading, sessionToken } = authClient.useSession();
   const userId = session?.user?.employeeNumber
     ? Number(session.user.employeeNumber)
     : undefined;
