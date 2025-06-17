@@ -23,6 +23,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import AppBreadcrumbs from "@/components/app-breadcrumbs";
+import { AuthProvider } from "@/components/auth-provider";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -49,22 +50,24 @@ export default function RootLayout({
         )}
       >
         <QueryClientWrapper>
-          <SidebarProvider defaultOpen={false}>
-            <AppSidebar />
-            {/* <SidebarTrigger className="m-4 md:hidden fixed top-0 left-0">
+          <AuthProvider>
+            <SidebarProvider defaultOpen={false}>
+              <AppSidebar />
+              {/* <SidebarTrigger className="m-4 md:hidden fixed top-0 left-0">
               <Button variant="ghost" size="icon">
                 <Menu className="h-6 w-6" />
               </Button>
             </SidebarTrigger> */}
-            <SidebarInset>
-              <header className="sticky top-0 z-50 flex h-16 shrink-0 items-center gap-2 border-b px-4 bg-background/80 backdrop-blur-sm">
-                <SidebarTrigger className="-ml-1 h-4 w-4 text-gray-500" />
-                <Separator orientation="vertical" className="mr-2 h-4" />
-                <AppBreadcrumbs />
-              </header>
-              <div className="flex flex-1 flex-col">{children}</div>
-            </SidebarInset>
-          </SidebarProvider>
+              <SidebarInset>
+                <header className="sticky top-0 z-50 flex h-16 shrink-0 items-center gap-2 border-b px-4 bg-background/80 backdrop-blur-sm">
+                  <SidebarTrigger className="-ml-1 h-4 w-4 text-gray-500" />
+                  <Separator orientation="vertical" className="mr-2 h-4" />
+                  <AppBreadcrumbs />
+                </header>
+                <div className="flex flex-1 flex-col">{children}</div>
+              </SidebarInset>
+            </SidebarProvider>
+          </AuthProvider>
           <Toaster richColors />
         </QueryClientWrapper>
       </body>

@@ -35,44 +35,38 @@ export const usePrfForms = () => {
   return useQuery({
     queryKey: ["prfForms"],
     queryFn: async () => {
-      try {
-        const data = await fetchPrfForms();
-        const processedData = data.map((prf) => {
-          try {
-            if (needsDoubleParsing(prf)) {
-              // Double parse
-              const outerParsed = {
-                ...prf,
-                prfData: JSON.parse(prf.prfData as string),
-              };
-              return {
-                ...outerParsed,
-                prfData: JSON.parse(outerParsed.prfData as string),
-              };
-            } else {
-              // Single parse
-              return {
-                ...prf,
-                prfData: JSON.parse(prf.prfData as string),
-              };
-            }
-          } catch (parseError) {
-            console.error(
-              `Error parsing prfData for prfFormId ${prf.prfFormId}:`,
-              parseError,
-            );
-            return prf; // Return the original object on error
+      const data = await fetchPrfForms();
+      const processedData = data.map((prf) => {
+        try {
+          if (needsDoubleParsing(prf)) {
+            // Double parse
+            const outerParsed = {
+              ...prf,
+              prfData: JSON.parse(prf.prfData as string),
+            };
+            return {
+              ...outerParsed,
+              prfData: JSON.parse(outerParsed.prfData as string),
+            };
+          } else {
+            // Single parse
+            return {
+              ...prf,
+              prfData: JSON.parse(prf.prfData as string),
+            };
           }
-        });
+        } catch (parseError) {
+          console.error(
+            `Error parsing prfData for prfFormId ${prf.prfFormId}:`,
+            parseError,
+          );
+          return prf; // Return the original object on error
+        }
+      });
 
-        setPrfForms(processedData); // Store in Zustand on success
-        // console.log("*****************Processed data:", processedData);
-        return processedData;
-      } catch (error) {
-        const err = error as WretchError;
-        toast.error(`Error fetching PRF forms -> ${err.json.title}`);
-        throw error; // Re-throw the error to let useQuery handle it
-      }
+      setPrfForms(processedData); // Store in Zustand on success
+      // console.log("*****************Processed data:", processedData);
+      return processedData;
     },
   });
 };

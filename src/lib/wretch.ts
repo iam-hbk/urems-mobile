@@ -12,6 +12,9 @@ const api = wretch(`${UREM__ERP_API_BASE}/api`)
     throw new Error("Bad request: " + error.message);
   })
   .catcher(401, (error: WretchError) => {
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
     console.error("Unauthorized:", error.message);
     throw new Error("Unauthorized access: " + error.message);
   })

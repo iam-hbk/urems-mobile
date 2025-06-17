@@ -6,6 +6,7 @@ import { TypeLoginForm } from '@/types/auth';
 import { apiLogin } from './api';
 import { toast } from 'sonner';
 import { getCookie, setCookie } from '@/utils/cookies';
+import { useEffect } from 'react';
 
 interface AuthStore {
   session: TypeSession | null;
@@ -28,34 +29,6 @@ const useAuthStore = create<AuthStore>((set) => ({
   setLoading: (loading) => set({ loading }),
   setInitialized: (initialized) => set({ initialized }),
 }));
-
-
-// Initialize the auth state
-if (typeof window !== 'undefined') {
-
-  // Check for existing session
-  const checkSession = async () => {
-    try {
-      const cookieValue = await getCookie(UserTokenCookieName);
-
-      if (cookieValue) {
-        useAuthStore.getState().zsSetSessionToken(cookieValue);
-      }
-    } catch (error: unknown) {
-      const m = (error instanceof Error) ? error.message : "Failed to check session";
-      toast.error(m);
-    }
-    finally {
-      useAuthStore.getState().setLoading(false);
-      useAuthStore.getState().setInitialized(true);
-    }
-  };
-
-  // Only run if not initialized
-  if (!useAuthStore.getState().initialized) {
-    checkSession();
-  }
-}
 
 export const authClient = {
   signIn: {
@@ -111,6 +84,29 @@ export const authClient = {
       initialized,
       zsSessionToken
     } = useAuthStore();
+
+    useEffect(() => {
+      if (initialized) {
+        return;
+      }
+      const checkSession = async () => {
+        try {
+          const cookieValue = await getCookie(UserTokenCookieName);
+
+          if (cookieValue) {
+            useAuthStore.getState().zsSetSessionToken(cookieValue);
+          }
+        } catch (error: unknown) {
+          const m = (error instanceof Error) ? error.message : "Failed to check session";
+          toast.error(m);
+        }
+        finally {
+          useAuthStore.getState().setLoading(false);
+          useAuthStore.getState().setInitialized(true);
+        }
+      };
+      checkSession();
+    }, [initialized]);
 
     // 
     return {
