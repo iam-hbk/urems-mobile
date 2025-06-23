@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import { UREM__ERP_API_BASE } from '@/lib/wretch'
+import { API_BASE_URL } from '@/lib/wretch'
 
 export async function GET() {
   try {
     const response = await fetch(
-      `${UREM__ERP_API_BASE}/api/Employee/EmployeeWithDetails/2`
+      `${API_BASE_URL}/api/Employee/EmployeeWithDetails/2`
     )
 
     if (!response.ok) {

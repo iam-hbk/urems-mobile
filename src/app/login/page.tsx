@@ -1,86 +1,137 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useRouter, useSearchParams } from "next/navigation";
-import { toast } from "sonner";
-import { Suspense, useState } from "react";
-import { EyeClosedIcon, EyeIcon } from "lucide-react";
-import { TypeLoginForm } from "@/types/auth";
-import { authClient } from "@/lib/auth/client";
+import { PasswordInput } from "@/components/ui/password-input";
+import { useLoginMutation } from "@/hooks/auth/useLogin";
+import { useSessionQuery } from "@/hooks/auth/useSession";
+import { schemaLoginForm, type LoginPayload } from "@/schema/auth";
+import Image from "next/image";
+import Link from "next/link";
+import { Loader } from "lucide-react";
 
-
-const LoginForm = () => {
-  const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('from') || '/';
-  const [formData, setFormData] = useState<TypeLoginForm>({ email: "", password: "" });
-  const [showPwd, setShowPwd] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
+export default function LoginPage() {
   const router = useRouter();
+  const { data: session, isLoading: isSessionLoading } = useSessionQuery();
+  const loginMutation = useLoginMutation();
 
+  const form = useForm<LoginPayload>({
+    resolver: zodResolver(schemaLoginForm),
+    defaultValues: {
+      email: "hbk@urems.com",
+      password: "@Urems2020",
+    },
+  });
 
-  async function onSubmit() {
-    setLoading(true);
-    try {
-      const sessionToken = await authClient.signIn.credentials(formData);
+  const onSubmit = (values: LoginPayload) => {
+    loginMutation.mutate(values);
+  };
 
-      if (sessionToken) {
-        // store token
-        router.push(redirectTo);
-        router.refresh();
-      }
-      else {
-        toast.error("Failed to login");
-      }
+  useEffect(() => {
+    if (session) {
+      router.replace("/dashboard");
     }
-    catch (error: unknown) {
-      const m = (error instanceof Error) ? error.message : "Unknown error login";
-      toast.error(m);
-    }
-    finally {
-      setLoading(false);
-    }
+  }, [session, router]);
+
+  // Display a loading state while checking for an active session
+  if (isSessionLoading) {
+    return <Loader className="h-12 w-12 animate-spin" />;
+  }
+
+  // Don't render the form if a session is found
+  if (session) {
+    return null;
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-md space-y-8 rounded-lg border p-6 shadow-lg">
-        <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold">Welcome Back</h1>
-          <p className="text-gray-500">Please sign in to continue</p>
+    <div className="flex h-full items-center justify-center bg-background">
+      <div className="w-full max-w-md space-y-8 rounded-lg p-8 shadow-lg">
+        <div className="flex justify-center">
+          <Image
+            src="/urems-erp.png"
+            alt="UREMS Logo"
+            width={120}
+            height={40}
+            priority
+          />
         </div>
 
-        {/*  */}
-        <form
-          onSubmit={(e) => { e.preventDefault(); onSubmit() }}
-          className="space-y-6 flex flex-col gap-y-[1rem] " >
+        <div className="text-center">
+          <h1 className="text-2xl font-bold tracking-tight">Welcome Back</h1>
+          <p className="text-sm text-muted-foreground">
+            Enter your credentials to access your account.
+          </p>
+        </div>
 
-          <Input type='email' placeholder='Enter email' value={formData.email}
-            onChange={e => setFormData({ ...formData, email: e.target.value })} />
-
-          <div className=' flex flex-row gap-x-[1rem] ' >
-            <Input
-              type={showPwd ? 'text' : 'password'}
-              placeholder='Enter password' value={formData.password}
-              onChange={e => setFormData({ ...formData, password: e.target.value })} />
-            <Button onClick={() => setShowPwd(!showPwd)} >
-              {showPwd ? <EyeClosedIcon /> : <EyeIcon />}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="name@example.com"
+                      autoComplete="email"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <PasswordInput
+                      autoComplete="current-password"
+                      placeholder="Enter your password"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loginMutation.isPending}
+            >
+              Sign In
+              {loginMutation.isPending && (
+                <Loader className="ml-2 h-4 w-4 animate-spin" />
+              )}
             </Button>
-          </div>
-
-          <Button disabled={loading} type="submit" className="w-full">
-            Sign In
-          </Button>
-        </form>
+            <div className="text-center">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-muted-foreground transition-colors hover:text-primary"
+              >
+                Forgot your password?
+              </Link>
+            </div>
+          </form>
+        </Form>
       </div>
     </div>
-  );
-};
-
-export default function LoginPage() {
-  return (
-    <Suspense>
-      <LoginForm />
-    </Suspense>
   );
 }

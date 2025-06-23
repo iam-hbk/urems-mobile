@@ -1,5 +1,25 @@
-import { schemaChangePasswordForm, schemaLoginForm } from "@/schema/auth";
+import { schemaChangePasswordForm, schemaLoginForm, schemaForgotPasswordForm, schemaResetPasswordForm, schemaConfirmEmailForm } from "@/schema/auth";
 import * as z from "zod";
 
-export type TypeLoginForm = z.infer<typeof schemaLoginForm>;
+export type LoginPayload = {
+  email: string;
+  password?: string;
+};
+
+export type LoginResponse = {
+  message: string;
+  userId: string;
+};
+
+export type TypeLoginForm = {
+  email: string;
+  password?: string | undefined;
+};
+
 export type TypeChangePasswordForm = z.infer<typeof schemaChangePasswordForm>;
+
+export type TypeForgotPasswordForm = z.infer<typeof schemaForgotPasswordForm>;
+
+export type TypeResetPasswordForm = z.infer<typeof schemaResetPasswordForm>;
+
+export type TypeConfirmEmailForm = z.infer<typeof schemaConfirmEmailForm>;

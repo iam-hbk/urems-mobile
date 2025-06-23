@@ -2,7 +2,7 @@
 import React, { use } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { FormTemplate } from "@/types/form-template";
-import { fetchFormTemplateById } from "../api";
+import { fetchFormTemplateById } from "@/lib/api/dynamic-forms-api";
 
 // TODO: Adapt these components or create versions for FormTemplate
 // import AssessmentToolsSummary from "@/components/assessment-tools-summary";

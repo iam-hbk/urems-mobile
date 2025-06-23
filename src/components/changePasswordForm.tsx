@@ -1,66 +1,151 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from './ui/input';
+import { PasswordInput } from './ui/password-input';
 import { Button } from './ui/button';
 import { toast } from 'sonner';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "./ui/form";
 import { TypeChangePasswordForm } from '@/types/auth';
-import { useChangePassword } from '@/hooks/employee/useEmployee';
+import { useChangePasswordMutation } from '@/hooks/auth/useChangePassword';
+import { schemaChangePasswordForm } from '@/schema/auth';
+import { Loader } from "lucide-react";
+import { z } from 'zod';
 
+// Extended form interface for client-side confirm password validation
+interface ChangePasswordFormData extends TypeChangePasswordForm {
+  confirmPassword: string;
+}
 
 export default function ChangePasswordForm() {
-  const [formData, setFormData] = useState<TypeChangePasswordForm>({ currentPassword: "", newPassword: "", confirmPassword: "" });
-  const [loading, setLoading] = useState(false);
-  const mutation = useChangePassword()
+  const mutation = useChangePasswordMutation();
 
+  const form = useForm<ChangePasswordFormData>({
+    resolver: zodResolver(schemaChangePasswordForm.extend({
+      confirmPassword: z.string().min(1, "Please confirm your new password"),
+    })),
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
 
-  async function onSubmit() {
-    setLoading(true)
-    try {
-
-      if (formData.confirmPassword !== formData.newPassword) {
-        toast.error("Confirm password do not match new password");
+  const onSubmit = (values: ChangePasswordFormData) => {
+    if (values.confirmPassword !== values.newPassword) {
+      toast.error("Confirm password does not match new password");
         return;
       }
 
-      mutation.mutateAsync(formData);
+    // Only send currentPassword and newPassword to the API
+    const apiPayload: TypeChangePasswordForm = {
+      currentPassword: values.currentPassword,
+      newPassword: values.newPassword,
+    };
 
-      setFormData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    mutation.mutate(apiPayload, {
+      onSuccess: () => {
+        form.reset();
+      },
+    });
+  };
 
-    } catch (error: unknown) {
-      toast.error((error as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (<div className="w-full space-y-8 rounded-lg border p-6 shadow-lg">
+  return (
+    <div className="w-full space-y-8 rounded-lg border p-6 shadow-lg">
     <div className="space-y-2 text-center">
       <h1 className="text-3xl font-bold">Change Password</h1>
+        <p className="text-sm text-muted-foreground">
+          Update your current password to a new one.
+        </p>
     </div>
 
-    <form
-      onSubmit={(e) => { e.preventDefault(); onSubmit() }}
-      className=" flex flex-col gap-y-[1rem] " >
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="currentPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Current Password</FormLabel>
+                <FormControl>
+                  <PasswordInput
+                    placeholder="Enter current password"
+                    autoComplete="current-password"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-      <Input
-        placeholder='Enter current password'
-        value={formData.currentPassword}
-        onChange={e => setFormData({ ...formData, currentPassword: e.target.value })} />
+          <FormField
+            control={form.control}
+            name="newPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>New Password</FormLabel>
+                <FormControl>
+                  <PasswordInput
+                    placeholder="Enter new password"
+                    autoComplete="new-password"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+                <div className="text-xs text-muted-foreground space-y-1 mt-2">
+                  <p>Password must contain:</p>
+                  <ul className="list-disc list-inside space-y-0.5">
+                    <li>At least 6 characters</li>
+                    <li>One uppercase letter (A-Z)</li>
+                    <li>One lowercase letter (a-z)</li>
+                    <li>One digit (0-9)</li>
+                    <li>One special character</li>
+                  </ul>
+                </div>
+              </FormItem>
+            )}
+          />
 
-      <Input
-        placeholder='Enter new password' value={formData.newPassword}
-        onChange={e => setFormData({ ...formData, newPassword: e.target.value })} />
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Confirm New Password</FormLabel>
+                <FormControl>
+                  <PasswordInput
+                    placeholder="Confirm new password"
+                    autoComplete="new-password"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-      <Input
-        placeholder='Enter confirm password' value={formData.confirmPassword}
-        onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })} />
-
-      <Button disabled={loading} type="submit" className="w-full mt-[2rem] ">
-        Confirm
+          <Button 
+            type="submit" 
+            className="w-full mt-6"
+            disabled={mutation.isPending}
+          >
+            Change Password
+            {mutation.isPending && (
+              <Loader className="ml-2 h-4 w-4 animate-spin" />
+            )}
       </Button>
     </form>
-
+      </Form>
   </div>
-  )
+  );
 }

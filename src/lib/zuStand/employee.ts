@@ -1,22 +1,14 @@
-
-
-import { TypeEmployeeData } from "@/types/employee";
 import { create } from "zustand";
-// import { persist } from "zustand/middleware";
+import { UserData } from "../auth/dal";
 
-
-interface useZuStandEmployeeStoreItems {
-  zsEmployee: null | TypeEmployeeData;
-  zsSetEmployee: (val: TypeEmployeeData) => void;
-  zsClearemployee: () => void;
+interface useZuStandEmployeeStoreProps {
+  zsEmployee: null | UserData;
+  zsSetEmployee: (val: UserData) => void;
 }
 
-export const useZuStandEmployeeStore = create<useZuStandEmployeeStoreItems>()(
-  // persist(
+export const useZuStandEmployeeStore = create<useZuStandEmployeeStoreProps>()(
   (set) => ({
     zsEmployee: null,
     zsSetEmployee: (val) => set({ zsEmployee: val }),
-    zsClearemployee: () => set({ zsEmployee: null }),
-  })
-  // ,  )
+  }),
 );

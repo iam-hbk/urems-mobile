@@ -3,35 +3,23 @@
 import {
   FormTemplate,
   FormTemplateWithResponses,
-  FormResponseSummary as UserFormResponseSummary,
   DetailedFormResponse,
 } from "@/types/form-template";
-import FormSectionRenderer from "@/components/dynamic-form/FormSectionRenderer";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import React, { use } from "react";
 import {
   fetchFormTemplateById,
   fetchFormTemplateWithResponses,
   createFormResponse,
-} from "../api";
-import Link from "next/link";
+} from "@/lib/api/dynamic-forms-api";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth/client";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
 } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, Loader2 } from "lucide-react";
-import { toast } from "sonner";
-
 import { FormResponsesTable } from "@/components/form-responses-table/FormResponsesTable";
+import { toast } from "sonner";
 
 type Params = Promise<{ formId: string }>;
 

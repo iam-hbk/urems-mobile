@@ -1,14 +1,14 @@
+"use client";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import { TabsContent } from "@/components/ui/tabs";
 import { 
   Ambulance, 
   Clipboard, 
   FileText, 
   AlertTriangle,
-  CheckCircle2,
   Clock,
   Users
 } from "lucide-react";

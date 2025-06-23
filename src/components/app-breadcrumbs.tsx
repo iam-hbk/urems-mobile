@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { FormTemplate } from "@/types/form-template";
-import { fetchFormTemplateById } from "@/app/forms/api";
+import { fetchFormTemplateById } from "@/lib/api/dynamic-forms-api";
 
 interface BreadcrumbPart {
   name: React.ReactNode;

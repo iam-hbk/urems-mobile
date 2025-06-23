@@ -1,118 +1,67 @@
-'use client';
+"use client";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
-import { create } from 'zustand';
-import { authConfig, TypeSession, UserTokenCookieName } from './config';
-import { TypeLoginForm } from '@/types/auth';
-import { apiLogin } from './api';
-import { toast } from 'sonner';
-import { getCookie, setCookie } from '@/utils/cookies';
-import { useEffect } from 'react';
+export type UserData = {
+  firstName: string;
+  lastName: string;
+  initials: string;
+  gender: string;
+  id: string;
+  email: string;
+  userName: string;
+};
 
-interface AuthStore {
-  session: TypeSession | null;
-  zsSessionToken: string | null;
-  zsSetSessionToken: (token: string) => void;
+export type ClientSession = {
+  user: UserData;
+  sessionToken: string;
+};
+
+export type UseSessionReturn = {
+  data: ClientSession | null;
   loading: boolean;
-  initialized: boolean;
-  setSession: (session: TypeSession | null) => void;
-  setLoading: (loading: boolean) => void;
-  setInitialized: (initialized: boolean) => void;
-}
+  sessionToken: string | null;
+};
 
-const useAuthStore = create<AuthStore>((set) => ({
-  session: null,
-  zsSessionToken: null,
-  loading: true,
-  initialized: false,
-  zsSetSessionToken: (token) => set({ zsSessionToken: token }),
-  setSession: (session) => set({ session }),
-  setLoading: (loading) => set({ loading }),
-  setInitialized: (initialized) => set({ initialized }),
-}));
+// Custom hook for session management
+export const useSession = () => {
+  const {
+    data: session,
+    isLoading: loading,
+    isError,
+  } = useQuery<ClientSession | null>({
+    queryKey: ["session"],
+    queryFn: async () => {
+      try {
+        const response = await fetch("/api/auth/session", {
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          const sessionData = await response.json();
+          if (sessionData && Object.keys(sessionData).length > 0) {
+            return sessionData;
+          }
+          return null;
+        }
+        return null;
+      } catch (error) {
+        console.error("Failed to fetch session:", error);
+        return null;
+      }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: true,
+  });
+
+  return {
+    data: isError ? null : session,
+    loading,
+    sessionToken: session?.sessionToken || null,
+  };
+};
 
 export const authClient = {
-  signIn: {
-    credentials: async (credentials: TypeLoginForm) => {
-      try {
-        useAuthStore.getState().setLoading(true);
-
-        const res = await apiLogin(credentials);
-
-        if (!res) {
-          throw new Error('Authentication failed');
-        }
-
-        // store in cookie
-        await setCookie(UserTokenCookieName, res.token);
-
-        // might not be useful because of cookie
-        useAuthStore.getState().zsSetSessionToken(res.token);
-
-        return res.token;
-
-      } catch (error) {
-        throw error as Error;
-      } finally {
-        useAuthStore.getState().setLoading(false);
-      }
-    }
-  },
-  signOut: async () => {
-    try {
-      useAuthStore.getState().setLoading(true);
-      const res = await fetch(`${authConfig.baseUrl}${authConfig.apiPath}/logout`, {
-        method: 'POST',
-        credentials: 'include', // Important for cookies
-      });
-
-      if (!res.ok) {
-        throw new Error('Logout failed');
-      }
-
-      useAuthStore.getState().setSession(null);
-    } catch (error) {
-      console.error('Logout error:', error);
-      throw error;
-    } finally {
-      useAuthStore.getState().setLoading(false);
-    }
-  },
-  useSession: () => {
-    const {
-      session,
-      loading,
-      initialized,
-      zsSessionToken
-    } = useAuthStore();
-
-    useEffect(() => {
-      if (initialized) {
-        return;
-      }
-      const checkSession = async () => {
-        try {
-          const cookieValue = await getCookie(UserTokenCookieName);
-
-          if (cookieValue) {
-            useAuthStore.getState().zsSetSessionToken(cookieValue);
-          }
-        } catch (error: unknown) {
-          const m = (error instanceof Error) ? error.message : "Failed to check session";
-          toast.error(m);
-        }
-        finally {
-          useAuthStore.getState().setLoading(false);
-          useAuthStore.getState().setInitialized(true);
-        }
-      };
-      checkSession();
-    }, [initialized]);
-
-    // 
-    return {
-      data: session,
-      sessionToken: zsSessionToken,
-      loading: loading || !initialized,
-    };
-  },
-}; 
+  useSession,
+};

@@ -1,16 +1,14 @@
-import { apiChangePassword, apiGetUserInformation } from "@/lib/api/apiEmployee"
-import { TypeChangePasswordForm } from "@/types/auth";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { toast } from "sonner";
+import { apiGetUserInformation } from "@/lib/api/apiEmployee"
+import { useQuery } from "@tanstack/react-query"
 
 
-export const useGetEmployeeInformation = () => {
+export const useGetEmployeeInformation = (userId: string) => {
 
   return useQuery({
     queryKey: ['getEmployee'],
     queryFn: async () => {
       try {
-        const res = await apiGetUserInformation();
+        const res = await apiGetUserInformation(userId);
         return res
       }
       catch (error: unknown) {
@@ -18,19 +16,4 @@ export const useGetEmployeeInformation = () => {
       }
     }
   });
-}
-
-export const useChangePassword = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (passwords: TypeChangePasswordForm) => {
-      await apiChangePassword(passwords);
-      toast.success("Password successfully changed.");
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-    onSuccess: () => { }
-  })
 }
