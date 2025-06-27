@@ -61,7 +61,7 @@ const RootFormResponseSectionPage = (props: { params: Props }) => {
     <div className="container mx-auto space-y-8 px-2 py-4 md:px-0">
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <div className="md:col-span-2">
-          <ResponseMetaCard data={formResponse} />
+          <ResponseMetaCard response={formResponse} template={formTemplate} />
         </div>
 
         <div className="flex flex-col items-center justify-center">

@@ -1,10 +1,6 @@
 "use client";
 import React, { use } from "react";
 import DynamicFormQuickLinks from "../../components/DynamicFormQuickLinks";
-import {
-  useFormTemplate,
-  useFormResponse,
-} from "@/hooks/dynamic-forms/use-dynamic-forms";
 // TODO: Adapt these components or create versions for FormTemplate
 // import AssessmentToolsSummary from "@/components/assessment-tools-summary";
 // import NotesDialog from "@/components/the-prf-form/notes-dialog";
@@ -21,18 +17,10 @@ export default function DynamicFormLayout({
   children: React.ReactNode;
   params: Params;
 }>) {
-  const { formId, responseId } = use(params);
-  const {
-    data: formTemplate,
-    isLoading: isLoadingTemplate,
-    // error: templateError, // Available if needed
-  } = useFormTemplate(formId);
-
-  const {
-    data: formResponse,
-    isLoading: isLoadingResponse,
-    // error: responseError, // Available if needed
-  } = useFormResponse(responseId);
+  // We still need to destructure params to avoid Next.js errors, 
+  // but the DynamicFormQuickLinks component now gets the data from the URL itself
+  // Prefix with underscore to indicate intentionally unused
+  const { formId: _formId, responseId: _responseId } = use(params);
 
   // TODO: Adapt QuickLinks, StepperView, CommandPalette for FormTemplate
   // const [showQuickLinks, setShowQuickLinks] = useState<boolean>(true);
@@ -40,13 +28,7 @@ export default function DynamicFormLayout({
 
   return (
     <div className="flex w-full flex-col items-center overflow-auto relative">
-      {formTemplate && formId && (
-        <DynamicFormQuickLinks
-          formTemplate={formTemplate}
-          formId={formId}
-          responseId={responseId}
-        />
-      )}
+      <DynamicFormQuickLinks />
 
       <main className="grid w-full flex-grow grid-cols-1 justify-items-center p-4">
         {children}

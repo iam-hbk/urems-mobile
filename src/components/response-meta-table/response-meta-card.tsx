@@ -1,12 +1,13 @@
 "use client";
 
-import { DetailedFormResponse } from "@/types/form-template";
+import { DetailedFormResponse, FormTemplateSummary } from "@/types/form-template";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle, Calendar, Clock, User, Truck, Users, Building } from "lucide-react";
 
 interface ResponseMetaCardProps {
-  data: DetailedFormResponse;
+  response: DetailedFormResponse;
+  template: FormTemplateSummary;
 }
 
 const formatDate = (dateString: string | undefined) => {
@@ -18,7 +19,7 @@ const formatDate = (dateString: string | undefined) => {
   }
 };
 
-export function ResponseMetaCard({ data }: ResponseMetaCardProps) {
+export function ResponseMetaCard({ response, template }: ResponseMetaCardProps) {
   const MetaItem = ({ icon: Icon, label, value }: { icon: any; label: string; value: React.ReactNode }) => (
     <div className="flex items-center gap-2">
       <Icon className="h-4 w-4 text-muted-foreground" />
@@ -34,9 +35,9 @@ export function ResponseMetaCard({ data }: ResponseMetaCardProps) {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-lg">
-                {data.formTemplate?.title || "Untitled Form"}
+                {template.title}
               </h3>
-              {data.isCompleted ? (
+              {response.isCompleted ? (
                 <Badge variant="default" className="bg-green-500 hover:bg-green-600">
                   <CheckCircle className="mr-1 h-3 w-3" /> Completed
                 </Badge>
@@ -50,12 +51,12 @@ export function ResponseMetaCard({ data }: ResponseMetaCardProps) {
               <MetaItem
                 icon={Calendar}
                 label="Created"
-                value={formatDate(data.createdAt)}
+                value={formatDate(response.createdAt)}
               />
               <MetaItem
                 icon={Clock}
                 label="Last Updated"
-                value={formatDate(data.updatedAt)}
+                value={formatDate(response.updatedAt)}
               />
             </div>
           </div>
@@ -68,22 +69,22 @@ export function ResponseMetaCard({ data }: ResponseMetaCardProps) {
             <MetaItem
               icon={User}
               label="Patient ID"
-              value={data.patientId || "N/A"}
+              value={response.patientId || "N/A"}
             />
             <MetaItem
               icon={Truck}
               label="Vehicle ID"
-              value={data.vehicleId || "N/A"}
+              value={response.vehicleId || "N/A"}
             />
             <MetaItem
               icon={Users}
               label="Crew ID"
-              value={data.crewId || "N/A"}
+              value={response.crewId || "N/A"}
             />
             <MetaItem
               icon={Building}
               label="Employee ID"
-              value={data.employeeId || "N/A"}
+              value={response.employeeId || "N/A"}
             />
           </div>
         </div>
