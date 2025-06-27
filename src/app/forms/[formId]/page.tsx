@@ -1,144 +1,51 @@
 "use client";
 
-import {
-  FormTemplate,
-  FormTemplateWithResponses,
-  DetailedFormResponse,
-} from "@/types/form-template";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import React, { use } from "react";
-import {
-  fetchFormTemplateById,
-  fetchFormTemplateWithResponses,
-  createFormResponse,
-} from "@/lib/api/dynamic-forms-api";
+import React, { use, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth/client";
-import {
-} from "@/components/ui/table";
+import { useSessionQuery } from "@/hooks/auth/useSession";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, Loader2 } from "lucide-react";
-import { FormResponsesTable } from "@/components/form-responses-table/FormResponsesTable";
-import { toast } from "sonner";
+import {
+  useFormTemplate,
+  useCreateFormResponse,
+} from "@/hooks/dynamic-forms/use-dynamic-forms";
+import UserResponsesForTemplate from "./components/UserResponsesForTemplate";
 
 type Params = Promise<{ formId: string }>;
-
-interface UserResponsesForTemplateProps {
-  templateId: string;
-  userId: number | undefined;
-}
-
-const UserResponsesForTemplate: React.FC<UserResponsesForTemplateProps> = ({
-  templateId,
-  userId,
-}) => {
-  const {
-    data: templateWithResponses,
-    isLoading: isLoadingResponses,
-    error: responsesError,
-  } = useQuery<FormTemplateWithResponses | null, Error>({
-    queryKey: ["formTemplateWithResponses", templateId],
-    queryFn: () => fetchFormTemplateWithResponses(templateId),
-    enabled: !!templateId && !!userId,
-    staleTime: 1000 * 60 * 5,
-  });
-
-  if (!userId) {
-    return (
-      <div className="px-1 py-2 text-sm italic text-gray-500">
-        User session not available.
-      </div>
-    );
-  }
-  if (isLoadingResponses) {
-    return (
-      <div className="px-1 py-2 text-sm italic text-gray-500">
-        Loading your responses...
-      </div>
-    );
-  }
-  if (responsesError) {
-    return (
-      <div className="px-1 py-2 text-sm italic text-red-500">
-        Error loading responses: {responsesError.message}
-      </div>
-    );
-  }
-
-  return (
-    <div className="mt-8">
-      <h2 className="mb-3 text-xl font-semibold">Your Previous Responses</h2>
-      <FormResponsesTable
-        templateId={templateId}
-        initialResponses={templateWithResponses?.formResponses || []}
-        isLoadingInitialResponses={isLoadingResponses}
-      />
-    </div>
-  );
-};
 
 export default function FormPage(props: { params: Params }) {
   const { formId } = use(props.params);
   const router = useRouter();
-  const queryClient = useQueryClient();
 
   const {
     data: formTemplate,
     isLoading: isLoadingTemplate,
     error: templateError,
-  } = useQuery<FormTemplate | null, Error>({
-    queryKey: ["formTemplate", formId],
-    queryFn: () => fetchFormTemplateById(formId),
-    enabled: !!formId,
-    staleTime: 1000 * 60 * 60,
-    gcTime: 1000 * 60 * 60 * 24,
+  } = useFormTemplate(formId);
+
+  const { data: session, isLoading: authLoading, error: authError } = useSessionQuery();
+  const userId = session?.user?.id;
+
+  // Redirect to login if not authenticated and not loading
+  useEffect(() => {
+    if (!authLoading && !session) {
+      router.push("/login");
+    }
+  }, [authLoading, session, router]);
+
+  const createResponseMutation = useCreateFormResponse({
+    formTemplateId: formId,
+    sections: formTemplate?.sections,
   });
 
-  const { data: session, loading: authLoading, sessionToken } = authClient.useSession();
-  const userId = session?.user?.employeeNumber
-    ? Number(session.user.employeeNumber)
-    : undefined;
-
-  const createResponseMutation = useMutation<DetailedFormResponse, Error, void>(
-    {
-      mutationFn: async () => {
-        if (!formTemplate || !userId) {
-          throw new Error("Form template or user ID is not available.");
-        }
-        return createFormResponse({
-          formTemplateId: formTemplate.id,
-          employeeId: userId,
-          patientId: 0,
-          vehicleId: 0,
-          crewId: 0,
-        });
-      },
-      onSuccess: (newResponseData) => {
-        toast.success("New form response created successfully!");
-        queryClient.invalidateQueries({
-          queryKey: ["formTemplateWithResponses", formTemplate?.id],
-        });
-
-        const firstSectionId = formTemplate?.sections?.[0]?.id;
-        if (firstSectionId) {
-          router.push(
-            `/forms/${formTemplate!.id}/${newResponseData.id}/${firstSectionId}`,
-          );
-        } else {
-          toast.info("Form has no sections. Staying on current page.");
-          router.push(
-            `/forms/${formTemplate!.id}/${newResponseData.id}`,
-          );
-        }
-      },
-      onError: (error) => {
-        toast.error(`Failed to create response: ${error.message}`);
-      },
-    },
-  );
-
   const handleCreateNewResponse = () => {
-    createResponseMutation.mutate();
+    if (!userId) return;
+    createResponseMutation.mutate({
+      employeeId: userId,
+      patientId: 0,
+      vehicleId: 0,
+      crewId: 0,
+    });
   };
 
   if (isLoadingTemplate || authLoading) {
@@ -149,12 +56,17 @@ export default function FormPage(props: { params: Params }) {
     );
   }
 
+  // Don't render anything if redirecting to login
+  if (!session) {
+    return null;
+  }
+
   if (templateError) {
     return (
       <div className="container mx-auto p-4 text-red-500">
         <h1>Error Loading Form Template</h1>
         <p>Could not load the form template with ID: {formId}.</p>
-        <p>Details: {templateError.message}</p>
+        <p>Details: {templateError.detail}</p>
       </div>
     );
   }

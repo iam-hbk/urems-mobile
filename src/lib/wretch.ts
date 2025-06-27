@@ -17,7 +17,17 @@ const toResult = async <T>(res: Response): Promise<Result<T, ApiError>> => {
   try {
     const json = (await res.json().catch(() => ({}))) as unknown;
 
-    return res.ok ? ok(json as T) : err(json as ApiError);
+    if (res.ok) {
+      // Check if the API response is wrapped in a "value" property and unwrap it
+      const data =
+        json && typeof json === "object" && "value" in json
+          ? (json as { value: T }).value
+          : (json as T);
+
+      return ok(data);
+    } else {
+      return err(json as ApiError);
+    }
   } catch (e) {
     return err({
       type: "NetworkError",

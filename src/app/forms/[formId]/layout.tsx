@@ -1,8 +1,6 @@
 "use client";
 import React, { use } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { FormTemplate } from "@/types/form-template";
-import { fetchFormTemplateById } from "@/lib/api/dynamic-forms-api";
+import { useFormTemplate } from "@/hooks/dynamic-forms/use-dynamic-forms";
 
 // TODO: Adapt these components or create versions for FormTemplate
 // import AssessmentToolsSummary from "@/components/assessment-tools-summary";
@@ -25,13 +23,7 @@ export default function FormLayout({
     data: formTemplate,
     isLoading: isLoadingTemplate,
     // error: templateError, // Available if needed
-  } = useQuery<FormTemplate | null, Error>({
-    queryKey: ["formTemplate", formId],
-    queryFn: () => fetchFormTemplateById(formId),
-    enabled: !!formId,
-    staleTime: 1000 * 60 * 60, // 1 hour
-    gcTime: 1000 * 60 * 60 * 24, // 24 hours
-  });
+  } = useFormTemplate(formId);
 
   return (
     <div className="flex w-full flex-col items-center overflow-auto">
@@ -40,7 +32,7 @@ export default function FormLayout({
           <div className="p-8 text-center">
             <p>Loading form details...</p>
           </div>
-        ) : ( 
+        ) : (
           children
         )}
       </main>

@@ -8,6 +8,8 @@ import type {
   TypeConfirmEmailForm,
 } from "@/types/auth";
 import type { Session } from "./dal";
+import { ok, err, type Result } from "neverthrow";
+import type { ApiError } from "@/types/api";
 
 /**
  * Logs the user in by calling the backend API directly.
@@ -31,19 +33,32 @@ export const logout = () => {
  * This doesn't use the wretch api because it calls the Next.js API route.
  * wretch api is only for backend to backend calls with dotnet base url.
  */
-export const getSession = async (): Promise<Session | null> => {
+export const getSession = async (): Promise<
+  Result<Pick<Session, "user"> | null, ApiError>
+> => {
   try {
     const res = await fetch("/api/auth/session");
-    if (!res.ok) return null;
+    if (!res.ok) {
+      return err({
+        type: "AuthenticationError",
+        title: "Session fetch failed",
+        status: res.status,
+        detail: `Failed to fetch session: ${res.statusText}`,
+      });
+    }
     const session = await res.json();
     // The session object from the API can be null if not authenticated
-    return session.user ? session : null;
+    return ok(session.user ? { user: session.user } : null);
   } catch (error) {
     console.error("Failed to fetch session:", error);
-    return null;
+    return err({
+      type: "NetworkError",
+      title: "Network error during session fetch",
+      status: 0,
+      detail: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 };
-
 /**
  * Change password for authenticated user
  */

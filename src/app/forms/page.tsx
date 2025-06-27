@@ -1,19 +1,14 @@
 "use client";
 
 import { FormTemplateSummary } from "@/types/form-template";
-import Link from "next/link";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchFormTemplates } from "@/lib/api/dynamic-forms-api";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import LegacyPrfPage from "@/components/legacy-prf-page";
+import { Separator } from "@/components/ui/separator";
+import { FormsDataTable } from "@/components/forms-table/forms-data-table";
+import { formsColumns } from "@/components/forms-table/columns";
 
 export default function FormsListPage() {
   const {
@@ -48,50 +43,24 @@ export default function FormsListPage() {
 
   return (
     <div className="container mx-auto p-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Available Forms</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {!formTemplates || formTemplates.value.length === 0 ? (
-            <p>No form templates found.</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[40%]">Form Title</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Last Updated</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {formTemplates.value.map((template) => (
-                  <TableRow key={template.id} className="hover:bg-slate-50">
-                    <TableCell className="font-medium">
-                      {template.title}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {template.description}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {new Date(template.updatedAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <Link
-                        href={`/forms/${template.id}`}
-                        className="font-medium text-indigo-600 hover:text-indigo-900"
-                      >
-                        Open Form Details
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      <div className="space-y-6 p-4">
+        <h2 className="text-2xl font-bold">Available Forms</h2>
+
+        {formTemplates && !formTemplates.isErr() ? (
+          <FormsDataTable columns={formsColumns} data={formTemplates.value} />
+        ) : (
+          <div className="py-8 text-center">
+            <p className="text-muted-foreground">No form templates found.</p>
+          </div>
+        )}
+
+        <Separator />
+
+        <div>
+          <h2 className="mb-4 text-2xl font-bold">Legacy PRF Forms</h2>
+          <LegacyPrfPage />
+        </div>
+      </div>
     </div>
   );
 }

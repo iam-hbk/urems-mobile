@@ -3,9 +3,7 @@
 import { SectionFormBuilder } from "@/components/section-form-builder"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { fetchFormResponseById, fetchFormTemplateById } from "@/app/forms/api"
-import { useQuery } from "@tanstack/react-query"
-import { DetailedFormResponse, FormTemplate } from "@/types/form-template"
+import { useFormTemplate, useFormResponse } from "@/hooks/dynamic-forms/use-dynamic-forms"
 import { use } from "react";
 
 interface SectionPageProps {
@@ -22,22 +20,14 @@ export default function SectionPage({ params }: SectionPageProps) {
   const {
     data: formResponse,
     isLoading: isLoadingResponse,
-    isError: isErrorResponse,
-  } = useQuery<DetailedFormResponse | null>({
-    queryKey: ["formResponse", responseId],
-    queryFn: () => fetchFormResponseById(responseId),
-    enabled: !!responseId,
-  })
+    error: responseError,
+  } = useFormResponse(responseId);
 
   const {
     data: formTemplate,
     isLoading: isLoadingTemplate,
-    isError: isErrorTemplate,
-  } = useQuery<FormTemplate | null>({
-    queryKey: ["formTemplate", formId],
-    queryFn: () => fetchFormTemplateById(formId),
-    enabled: !!formId,
-  })
+    error: templateError,
+  } = useFormTemplate(formId);
 
   if (isLoadingResponse || isLoadingTemplate) {
     return (
@@ -47,13 +37,13 @@ export default function SectionPage({ params }: SectionPageProps) {
     )
   }
 
-  if (isErrorResponse || isErrorTemplate) {
+  if (responseError || templateError) {
     return (
       <div className="container mx-auto py-8 px-4">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-destructive">Error Loading Data</h1>
           <p className="text-muted-foreground mt-2">
-            There was an error fetching the form data. Please try again later.
+            {responseError?.detail || templateError?.detail || "There was an error fetching the form data. Please try again later."}
           </p>
           <Link href={`/forms`}>
             <Button className="mt-4">Back to Forms List</Button>

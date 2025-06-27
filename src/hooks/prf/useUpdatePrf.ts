@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/lib/store";
 import { PRF_FORM } from "@/interfaces/prf-form";
-import { UREM__ERP_API_BASE } from "@/lib/wretch";
+import { API_BASE_URL } from "@/lib/wretch";
 
 const updatePrfForm = async (updatedPrf: PRF_FORM) => {
   try {
@@ -18,7 +18,7 @@ const updatePrfForm = async (updatedPrf: PRF_FORM) => {
     console.log("Sending", cleanPayload);
 
     const response = await fetch(
-      `${UREM__ERP_API_BASE}/api/PrfForm/${cleanPayload.prfFormId}`,
+      `${API_BASE_URL}/api/PrfForm/${cleanPayload.prfFormId}`,
       {
         method: "PUT",
         headers: {

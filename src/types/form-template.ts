@@ -123,7 +123,7 @@ export interface FormTemplateWithResponses extends FormTemplate {
 
 export interface CreateFormResponsePayload {
   formTemplateId: string;
-  employeeId: number;
+  employeeId: string;
   patientId?: number | null;
   vehicleId?: number | null;
   crewId?: number | null;
