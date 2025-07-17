@@ -34,7 +34,9 @@ export const columns: ColumnDef<PRF_FORM>[] = [
       <DataTableColumnHeader column={column} title="Date" />
     ),
     cell: ({ row }) => {
-      return format(new Date(row.getValue("createdAt")), "PPP");
+      console.log("ROW - CREATE_AT",row.getValue("createdAt"));
+      return row.getValue("createdAt");
+      // return format(new Date(row.getValue("createdAt")), "PPP");
     },
     filterFn: "dateRange" as any, // Using type assertion as the custom filter is defined in data-table.tsx
   },

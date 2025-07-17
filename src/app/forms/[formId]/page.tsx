@@ -23,7 +23,10 @@ export default function FormPage(props: { params: Params }) {
     error: templateError,
   } = useFormTemplate(formId);
 
-  const { data: session, isLoading: authLoading, error: authError } = useSessionQuery();
+  const {
+    data: session,
+    isLoading: authLoading,
+  } = useSessionQuery();
   const userId = session?.user?.id;
 
   // Redirect to login if not authenticated and not loading

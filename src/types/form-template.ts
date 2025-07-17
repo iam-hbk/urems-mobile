@@ -101,7 +101,7 @@ export interface FormResponseSummary {
   patientId?: number | null;
   vehicleId?: number | null;
   crewId?: number | null;
-  employeeId: number; // Assuming this is always present for user filtering
+  employeeId: string; // Assuming this is always present for user filtering
   formTemplateId: string;
   isCompleted: boolean;
   createdAt: string; // Or Date
@@ -148,4 +148,4 @@ export interface FormResponseUpdateDto {
   isCompleted?: boolean; // Represents the completion status of the ENTIRE form
   fieldResponses: FieldResponseUpdateDto[];
   sectionStatuses: SectionStatusUpdateDto[];
-} 
+}
