@@ -168,7 +168,7 @@ export const translateResponseToPrf = (
   const caseDetailsStatus = response.sectionStatuses.find(
     (s) => s.sectionId === "67b3e91c-a96a-48d9-ac51-b5bd2a2a24eb", // Case Details Section ID
   );
-
+  
   const prf: PRF_FORM = {
     prfFormId: response.id,
     EmployeeID: response.employeeId,
