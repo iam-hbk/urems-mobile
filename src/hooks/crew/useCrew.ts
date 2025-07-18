@@ -1,15 +1,25 @@
 import { apiGetCrewEmployeeID } from "@/lib/api/crew-apis";
 import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { redirect } from "next/navigation";
+import { getUser } from "@/lib/auth/dal";
 import { WretchError } from "wretch";
+import { toast } from "sonner";
 
-
-export function useGetCrewEmployeeID(id: string) {
+export function useGetCrewEmployeeID() {
   return useQuery({
-    queryKey: ['crewemployeeID', id],
+    queryKey: ['crewemployeeID'],
     queryFn: async () => {
       try {
-        const res = await apiGetCrewEmployeeID(id);
+        const employeeData = await getUser();
+
+        if (employeeData.isErr()) {
+          redirect("/login");
+        }
+
+        const userData = employeeData.value
+
+        const res = await apiGetCrewEmployeeID(userData.id);
+
         return res;
         // 
       } catch (error: unknown) {

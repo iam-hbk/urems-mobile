@@ -1,11 +1,13 @@
+
 import { MailIcon } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getUser, UserData } from "@/lib/auth/dal";
 import { redirect } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import { getUser, UserData } from "@/lib/auth/dal";
 import ChangePasswordForm from "@/components/changePasswordForm";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EMPLOYEE_TYPE } from "@/utils/constant";
 
 // Re-export UserData as EmployeeData for compatibility if needed elsewhere,
 // but it's better to refactor other files to use UserData directly.
@@ -13,9 +15,9 @@ export type { UserData as EmployeeData };
 
 function getInitials(name: string) {
   return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
+    // .split(" ")
+    // .map((n) => n[0])
+    // .join("")
     .toUpperCase();
 }
 
@@ -28,7 +30,8 @@ export default async function EmployeeProfilePage() {
   }
 
   const userData = employeeData.value;
-  
+  // console.log(userData)
+
   return (
     <div className="container mx-auto p-6">
       <Card className="mx-auto w-full max-w-3xl">
@@ -36,24 +39,38 @@ export default async function EmployeeProfilePage() {
           <Avatar className="h-20 w-20">
             <AvatarImage
               src={`/placeholder.svg?height=80&width=80`}
-              alt={userData.firstName}
+              alt={userData.person.firstName}
             />
             <AvatarFallback>
               {getInitials(
-                `${userData.firstName} ${userData.lastName}`,
+                `${userData.person.initials
+                || `${userData.person.firstName[0]}${userData.person.lastName[0]} `} `
               )}
             </AvatarFallback>
           </Avatar>
           <div>
-            <CardTitle>{`${userData.firstName} ${userData.lastName}`}</CardTitle>
+            <CardTitle className="capitalize  ">
+              {`${userData.person.firstName} ${userData.person.lastName}`}</CardTitle>
             <p className="text-sm text-muted-foreground">
-              {userData.userName}
+              {userData.person.userName}
             </p>
             <Badge variant="secondary" className="mt-2 mr-2">
-              {userData.role || "Role"}
+              {/* {userData.role || "Role"} */}
+              {"Role"}
             </Badge>
             <Badge variant="outline" className="mt-2 mr-2">
-              {userData.employeeType || "Emp type"}
+              {
+                (
+                  Number(userData.employeeTypeId) === 1
+                  || Number(userData.employeeTypeId) === 2
+                  || Number(userData.employeeTypeId) === 3) ?
+                  EMPLOYEE_TYPE[Number(userData.employeeTypeId) as keyof typeof EMPLOYEE_TYPE]
+                  :
+                  "Emp type"
+              }
+            </Badge>
+            <Badge variant="outline" className="mt-2 mr-2">
+              Employee #{userData.employeeNumber}
             </Badge>
           </div>
         </CardHeader>
@@ -68,11 +85,11 @@ export default async function EmployeeProfilePage() {
               <dl className="grid grid-cols-2 gap-4">
                 <div>
                   <dt className="font-medium">Gender</dt>
-                  <dd className="capitalize">{userData.gender}</dd>
+                  <dd className="capitalize">{userData.person.gender}</dd>
                 </div>
                 <div className="uppercase">
                   <dt className="font-medium">Initials</dt>
-                  <dd>{userData.initials}</dd>
+                  <dd>{userData.person.initials}</dd>
                 </div>
               </dl>
             </TabsContent>
@@ -83,9 +100,9 @@ export default async function EmployeeProfilePage() {
                   <div>
                     <dt className="text-sm text-muted-foreground">Email</dt>
                     <dd className="flex items-center gap-2">
-                      <a href={`mailto:${userData.email}`}>
+                      <a href={`mailto:${userData.person.email}`}>
                         <MailIcon className="h-4 w-4" />
-                        {userData.email}
+                        {userData.person.email}
                       </a>
                     </dd>
                   </div>

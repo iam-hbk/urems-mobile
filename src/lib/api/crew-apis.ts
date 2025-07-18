@@ -1,4 +1,4 @@
-import api from "../wretch";
+import api, { API_BASE_URL } from "../wretch";
 import { err, ok, Result } from "neverthrow";
 import type { ApiError } from "@/types/api";
 import { TypeCrew } from "@/interfaces/crew";
@@ -18,4 +18,40 @@ export async function apiGetCrewEmployeeID(
 
   const result = await api.get<TypeCrew>(`/api/Crew/${employeeID}`);
   return result;
+}
+
+// used this because, i need to pass the user token from the cookie
+// get crew by employee id
+export async function apiCrewGetEmployee(token: string, employeeId: string) {
+  try {
+    if (!employeeId) throw new Error("Invalid employee id provided.");
+    if (!token) throw new Error("Invalid token. User not authenticated");
+
+    const myHeaders = new Headers();
+    myHeaders.append("accept", "text/plain");
+    myHeaders.append("Authorization", `Bearer ${token}`);
+
+    const requestOptions: RequestInit = {
+      method: "GET",
+      headers: myHeaders,
+      redirect: "follow"
+    };
+
+    const response = await fetch(`${API_BASE_URL}/api/Crew/${employeeId}`, requestOptions)
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    const data = await response.json();
+
+    return { data: data, message: '' };
+
+  }
+  catch (error: unknown) {
+    return {
+      message: (error as Error).message,
+      data: null
+    }
+  }
 }
