@@ -30,12 +30,12 @@ export async function deleteCookie(name: string) {
 
   const cookieObj = await cookies();
 
-  // cookieObj.delete(name);
+  cookieObj.delete(name);
 
-  cookieObj.set({
-    name,
-    value: '',
-    maxAge: 0,
-    path: '/'
-  })
+  // cookieObj.set({
+  //   name,
+  //   value: '',
+  //   maxAge: 0,
+  //   path: '/'
+  // })
 }

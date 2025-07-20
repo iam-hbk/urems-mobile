@@ -23,6 +23,13 @@ export const useLogoutMutation = () => {
       router.push("/login");
     },
     onError: (error) => {
+      // when api fails, send user to login, token might have expired
+      deleteCookie(cookieNameUserId)
+      deleteCookie(UserTokenCookieName)
+
+      queryClient.setQueryData(["session"], null);
+      router.push("/login");
+
       toast.error(error.message || "Logout failed. Please try again.");
     },
   });

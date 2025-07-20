@@ -17,7 +17,7 @@ export interface typeEmployee {
   // typeIdentityPerson - to find all info, but also needs to change the api to allow all
   // person: typeIdentityPerson;
   person: typePerson;
-  certificates: [];
   employeeType: typeEmployeeTypes;
+  certificates: [];
   stockTransfers: [];
 }

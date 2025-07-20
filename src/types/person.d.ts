@@ -4,9 +4,9 @@ export interface typeEmployee {
   employeeNumber: string;
   employeeTypeId: number;
   personId: string;
-  certificates: [];
   employeeType: EmployeeType;
   person: typeIdentityPerson;
+  certificates: [];
   stockTransfers: [];
 }
 
