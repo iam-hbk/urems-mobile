@@ -1,35 +1,37 @@
-import { apiCrewGetCurrent, apiGetCrewEmployeeID } from "@/lib/api/crew-apis";
+import { apiCrewGetCurrent, apiCrewGetCurrentv1, apiCrewGetEmployee, apiGetCrewEmployeeID } from "@/lib/api/crew-apis";
 import { useQuery } from "@tanstack/react-query";
 import { redirect } from "next/navigation";
-import { getUser } from "@/lib/auth/dal";
 import { WretchError } from "wretch";
 import { toast } from "sonner";
 import { getCookie } from "@/utils/cookies";
 import { cookieNameUserId } from "@/utils/constant";
 import { UserTokenCookieName } from "@/lib/auth/config";
-import { Err } from "neverthrow";
-import { typeCrew } from "@/types/crew";
+import { typeCrew, typeCrewInfoV1 } from "@/types/crew";
 
 export function useGetCrewEmployeeID() {
+
+  // returns -> typeCrewInfoV1[]
   return useQuery({
     queryKey: ['crewEmployeeID'],
     queryFn: async () => {
       try {
-        const employeeData = await getUser();
+        const token = await getCookie(UserTokenCookieName)
+        const userId = await getCookie(cookieNameUserId)
 
-        if (employeeData.isErr()) {
-          redirect("/login");
+        if (!token || !userId) {
+          throw new Error("Invalid user session, please try again");
         }
 
-        const userData = employeeData.value
+        const { data, error } = await apiCrewGetEmployee(userId, token);
 
-        const res = await apiGetCrewEmployeeID(userData.id);
+        if (error) throw new Error(error);
 
-        return res;
+        return data;
         // 
       } catch (error: unknown) {
         const err = error as WretchError;
         toast.error(`Error Fetching Employee Crew ID -> ${err.json.title}`);
+        // redirect("/login");
       }
     }
   })
@@ -67,6 +69,33 @@ export function useCrewGetCurrent() {
             return aa - bb; // descending : bb - aa
           });
         }
+
+        return data;
+
+      } catch (error: unknown) {
+        const err = error as WretchError;
+        toast.error(`Error Fetching Employee Current Crew ID -> ${err.json.title}`);
+      }
+    }
+  })
+}
+
+export function useCrewGetCurrentv1() {
+
+  return useQuery<typeCrewInfoV1>({
+    queryKey: ['crewEmployeeID'],
+    queryFn: async () => {
+      try {
+        const token = await getCookie(UserTokenCookieName)
+        const userId = await getCookie(cookieNameUserId)
+
+        if (!token || !userId) {
+          throw new Error("Invalid user session, please try again");
+        }
+
+        const { data, error } = await apiCrewGetCurrentv1(userId, token);
+
+        if (error) throw new Error(error);
 
         return data;
 

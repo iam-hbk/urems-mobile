@@ -12,123 +12,50 @@ import {
   Clock,
   Users
 } from "lucide-react";
-import { useCrewGetCurrent } from "@/hooks/crew/useCrew";
+import { useCrewGetCurrentv1 } from "@/hooks/crew/useCrew";
 import LoadingComponent from "@/components/loading";
 import { crewShiftDate, crewShiftStatus } from "@/utils/convert";
 import { useEffect, useState } from "react";
-import { typeShiftStatus } from "@/types/crew";
-
-const todoData = [
-  { name: "Completed", value: 5, color: "#4ade80" },
-  { name: "Pending", value: 3, color: "#f87171" },
-  { name: "In Progress", value: 2, color: "#60a5fa" },
-];
-
-const crewMembers = [
-  {
-    name: "Dr. Sarah Johnson",
-    role: "Lead Paramedic",
-    hpcaNumber: "HP12345",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=frank",
-    status: "On Duty"
-  },
-  {
-    name: "James Wilson",
-    role: "EMT",
-    hpcaNumber: "HP67890",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=paul",
-    status: "On Duty"
-  },
-  {
-    name: "Maria Garcia",
-    role: "Emergency Nurse",
-    hpcaNumber: "HP11223",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=mike",
-    status: "Break"
-  }
-];
-
-const avatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=frank"
-
-const inventoryItems = [
-  {
-    name: "Oxygen Tanks",
-    current: 2,
-    required: 5,
-    priority: "High",
-    status: "Critical"
-  },
-  {
-    name: "Morphine",
-    current: 8,
-    required: 10,
-    priority: "Medium",
-    status: "Warning"
-  },
-  {
-    name: "Bandages",
-    current: 45,
-    required: 50,
-    priority: "Low",
-    status: "Good"
-  }
-];
-
-const activeCases = [
-  {
-    id: "PRF-2024-001",
-    patient: "John Doe",
-    status: "In Progress",
-    priority: "High",
-    timeElapsed: "45m"
-  },
-  {
-    id: "PRF-2024-002",
-    patient: "Jane Smith",
-    status: "Pending",
-    priority: "Medium",
-    timeElapsed: "15m"
-  }
-];
-
+import { typeCrewEmployee, typeShiftStatus } from "@/types/crew";
+import { activeCases, AvatarProfileImage, inventoryItems, todoData } from "@/utils/constant";
 
 export default function DashboardPage() {
   const [shiftStatus, setShiftStatus] = useState<typeShiftStatus>('future');
-  const { data, isLoading } = useCrewGetCurrent();
+  const { data, isLoading } = useCrewGetCurrentv1();
 
   useEffect(() => {
     if (data) {
       setShiftStatus(
-        crewShiftStatus(data[0].startTime, data[0].endTime)
+        crewShiftStatus(data.crew.startTime, data.crew.endTime)
       );
     }
   }, [data])
 
-  if (isLoading) {
-    return <LoadingComponent />
-  }
+  if (isLoading) { return <LoadingComponent /> }
+
+  // return <div className="" >Blah</div>
 
   return (
     <div className="container mx-auto p-6">
       <div className="flex items-center justify-between mb-8 sm:flex-row sm:gap-y-0 gap-y-[1rem] flex-col">
         <h1 className="text-3xl font-bold">Welcome to Romeo 1</h1>
         {
-          data ? <div className="flex items-center gap-4 flex-col sm:flex-row ">
+          data && data.crew ? <div className="flex items-center gap-4 flex-col sm:flex-row ">
             {/* start time */}
             <Badge variant="outline"
               className={`px-4 py-2 ${shiftStatus === 'current' ? 'bg-green-600 text-white' : shiftStatus === 'future' ? 'bg-orange-600 text-white' : 'bg-white'} `}>
               <Clock className={`w-4 h-4 mr-2`} />
-              Shift: {`${crewShiftDate(data[0].startTime)}`}
+              Shift: {`${crewShiftDate(data.crew.startTime)}`}
             </Badge>
             {/* end time */}
             <Badge variant="outline"
               className={`px-4 py-2 bg-red-600 text-white`}>
               <Clock className={`w-4 h-4 mr-2`} />
-              Shift: {`${crewShiftDate(data[0].endTime)}`}
+              Shift: {`${crewShiftDate(data.crew.endTime)}`}
             </Badge>
             <Badge variant="outline" className="px-4 py-2">
               <Users className="w-4 h-4 mr-2" />
-              Crew: 1/3
+              Crew: {data.employees.length}
             </Badge>
           </div>
             :
@@ -280,15 +207,15 @@ export default function DashboardPage() {
 
           <CardContent>
             <div className=" flex flex-col gap-y-[1rem] sm:flex-row sm:gap-x-[1rem]  ">
-              {data && data.map((member, index) => (
-                <div key={index} className=" w-[32%] flex items-center gap-4 border rounded-lg p-4">
+              {data && data.employees.map((member: typeCrewEmployee, index) => (
+                <div key={index} className=" w-full sm:w-[50%] md:w-[32%] flex items-center gap-4 border rounded-lg p-4">
                   <Avatar className="w-12 h-12">
-                    <AvatarImage src={avatar} />
-                    <AvatarFallback className="uppercase ">{member.employee.person.initials}</AvatarFallback>
+                    <AvatarImage src={AvatarProfileImage} />
+                    <AvatarFallback className="uppercase ">{member.initials}</AvatarFallback>
                   </Avatar>
                   <div>
                     <div className="font-medium capitalize ">
-                      {member.employee.person.firstName} {member.employee.person.lastName}
+                      {member.firstName} {member.lastName}
                     </div>
                     <div className="text-sm text-gray-500">{"Role"}</div>
                     <div className="text-sm text-gray-500">HPCA: {'hpcaNumber'}</div>

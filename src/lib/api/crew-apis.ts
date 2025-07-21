@@ -1,7 +1,7 @@
 'use server'
 
 import api, { API_BASE_URL } from "../wretch";
-import { err, ok, Result } from "neverthrow";
+import { err, Result } from "neverthrow";
 import type { ApiError } from "@/types/api";
 import { TypeCrew } from "@/interfaces/crew";
 
@@ -20,42 +20,6 @@ export async function apiGetCrewEmployeeID(
 
   const result = await api.get<TypeCrew>(`/api/Crew/${employeeID}`);
   return result;
-}
-
-// used this because, i need to pass the user token from the cookie
-// get crew by employee id
-export async function apiCrewGetEmployee(token: string, employeeId: string) {
-  try {
-    if (!employeeId) throw new Error("Invalid employee id provided.");
-    if (!token) throw new Error("Invalid token. User not authenticated");
-
-    const myHeaders = new Headers();
-    myHeaders.append("accept", "text/plain");
-    myHeaders.append("Authorization", `Bearer ${token}`);
-
-    const requestOptions: RequestInit = {
-      method: "GET",
-      headers: myHeaders,
-      redirect: "follow"
-    };
-
-    const response = await fetch(`${API_BASE_URL}/api/Crew/${employeeId}`, requestOptions)
-
-    if (!response.ok) {
-      throw new Error(response.statusText);
-    }
-
-    const data = await response.json();
-
-    return { data: data, message: '' };
-
-  }
-  catch (error: unknown) {
-    return {
-      message: (error as Error).message,
-      data: null
-    }
-  }
 }
 
 // get crew that is current or future
@@ -86,6 +50,76 @@ export async function apiCrewGetCurrent(employeeId: string, token: string) {
     return { data: data, error: null };
 
   } catch (error: unknown) {
+    return {
+      error: (error as Error).message,
+      data: null
+    }
+  }
+}
+
+// get crew that is current or future
+export async function apiCrewGetCurrentv1(employeeId: string, token: string) {
+  try {
+
+    if (!employeeId) throw new Error("Invalid employee id provided.");
+    if (!token) throw new Error("Invalid token. User not authenticated");
+
+    const myHeaders = new Headers();
+    myHeaders.append("accept", "text/plain");
+    myHeaders.append("Authorization", `Bearer ${token}`);
+
+    const requestOptions: RequestInit = {
+      method: "GET",
+      headers: myHeaders,
+      redirect: "follow"
+    };
+
+    const response = await fetch(`${API_BASE_URL}/api/Crew/current-v1/${employeeId}`, requestOptions)
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    const data = await response.json();
+
+    return { data: data, error: null };
+
+  } catch (error: unknown) {
+    return {
+      error: (error as Error).message,
+      data: null
+    }
+  }
+}
+
+// get all employee crews, 
+export async function apiCrewGetEmployee(employeeId: string, token: string) {
+  try {
+    if (!employeeId) throw new Error("Invalid employee id provided.");
+    if (!token) throw new Error("Invalid token. User not authenticated");
+
+    const myHeaders = new Headers();
+    myHeaders.append("accept", "text/plain");
+    myHeaders.append("Authorization", `Bearer ${token}`);
+
+    const requestOptions: RequestInit = {
+      method: "GET",
+      headers: myHeaders,
+      redirect: "follow"
+    };
+
+    const response = await fetch(`${API_BASE_URL}/api/Crew/${employeeId}`, requestOptions)
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    const data = await response.json();
+
+    return { data: data, error: null };
+
+  }
+  catch (error: unknown) {
     return {
       error: (error as Error).message,
       data: null
