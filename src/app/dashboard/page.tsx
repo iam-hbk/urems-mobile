@@ -38,7 +38,7 @@ export default function DashboardPage() {
   return (
     <div className="container mx-auto p-6">
       <div className="flex items-center justify-between mb-8 sm:flex-row sm:gap-y-0 gap-y-[1rem] flex-col">
-        <h1 className="text-3xl font-bold">Welcome to Romeo 1</h1>
+        <h1 className="text-3xl font-bold">Welcome</h1>
         {
           data && data.crew ? <div className="flex items-center gap-4 flex-col sm:flex-row ">
             {/* start time */}

@@ -36,6 +36,8 @@ import { useZuStandCrewStore } from "@/lib/zuStand/crew";
 import { DatePicker, Group } from "react-aria-components";
 import { DateInput } from "../ui/datefield-rac";
 import { CalendarDate } from "@internationalized/date";
+import { getCookie } from "@/utils/cookies";
+import { cookieNameUserId } from "@/utils/constant";
 
 export type CaseDetailsType = z.infer<typeof CaseDetailsSchema>;
 
@@ -88,12 +90,11 @@ const PRFEditSummary = ({
   });
 
   const onSubmit = async (values: z.infer<typeof CaseDetailsSchema>) => {
-    if (!zsEmployee) {
-      toast.error("No Employee Information Found", {
-        duration: 3000,
-        position: "top-right",
-      });
-      return;
+    const userId = await getCookie(cookieNameUserId);
+
+    if (!userId) {
+      toast.error("No employee Id");
+      return
     }
 
     const prf: PRF_FORM = {
@@ -106,7 +107,7 @@ const PRFEditSummary = ({
           isOptional: false,
         },
       },
-      EmployeeID: zsEmployee.id,
+      EmployeeID: userId,
       CrewID: zsCrewID?.toString(),
     };
 
