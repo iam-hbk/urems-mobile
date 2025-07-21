@@ -24,7 +24,7 @@ export default function DashboardPage() {
   const { data, isLoading } = useCrewGetCurrentv1();
 
   useEffect(() => {
-    if (data) {
+    if (data && data.crew) {
       setShiftStatus(
         crewShiftStatus(data.crew.startTime, data.crew.endTime)
       );
@@ -207,7 +207,7 @@ export default function DashboardPage() {
 
           <CardContent>
             <div className=" flex flex-col gap-y-[1rem] sm:flex-row sm:gap-x-[1rem]  ">
-              {data && data.employees.map((member: typeCrewEmployee, index) => (
+              {data && data.employees && data.employees.map((member: typeCrewEmployee, index) => (
                 <div key={index} className=" w-full sm:w-[50%] md:w-[32%] flex items-center gap-4 border rounded-lg p-4">
                   <Avatar className="w-12 h-12">
                     <AvatarImage src={AvatarProfileImage} />
