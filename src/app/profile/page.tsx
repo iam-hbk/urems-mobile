@@ -1,125 +1,36 @@
-"use client";
-import { useEffect, useState } from "react";
-import { format } from "date-fns";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+import { MailIcon } from "lucide-react";
+import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { getUser, UserData } from "@/lib/auth/dal";
+import ChangePasswordForm from "@/components/changePasswordForm";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  CalendarIcon,
-  CarIcon,
-  IdCardIcon,
-  Loader,
-  MailIcon,
-  PhoneIcon,
-} from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { UREM__ERP_API_BASE } from "@/lib/wretch";
-import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
-import LoadingComponent from "@/components/loading";
+import { EMPLOYEE_TYPE } from "@/utils/constant";
 
-interface ContactDetails {
-  cellNumber: string;
-  email: string;
-  telephoneNumber: string;
-  contactDetailsType: number;
-  contactDetailsTypeNavigation: {
-    typeDescription: string;
-  };
+// Re-export UserData as EmployeeData for compatibility if needed elsewhere,
+// but it's better to refactor other files to use UserData directly.
+export type { UserData as EmployeeData };
+
+function getInitials(name: string) {
+  return name
+    // .split(" ")
+    // .map((n) => n[0])
+    // .join("")
+    .toUpperCase();
 }
 
-interface PersonIdentification {
-  isPrimary: boolean;
-  identification: {
-    identification1: string;
-    identificationType: {
-      identificationType1: string;
-    };
-  };
-}
+export default async function EmployeeProfilePage() {
+  const employeeData = await getUser();
 
-interface Person {
-  personId: number;
-  firstName: string;
-  secondName: string;
-  lastName: string;
-  dateOfBirth: string;
-  initials: string;
-  gender: string;
-  personContactDetails: Array<{
-    isPrimary: boolean;
-    contactDetails: ContactDetails;
-  }>;
-  personIdentifications: PersonIdentification[];
-}
-
-interface EmployeeType {
-  employeeTypeId: number;
-  typeDescription: string;
-}
-
-interface VehicleDto {
-  vehicleId?: number;
-  vehicleName: string;
-  vehicleLicense: string;
-  vehicleRegistrationNumber: string;
-  VINNumber: string;
-  vehicleTypeID: number;
-}
-
-export interface EmployeeData {
-  employeeNumber: number;
-  employeeType: EmployeeType;
-  person: Person;
-  assignedVehicle: VehicleDto | null;
-}
-
-export default function EmployeeProfile() {
-  const { zsSetEmployee } = useZuStandEmployeeStore()
-  const [activeTab, setActiveTab] = useState("personal");
-
-  const {
-    data: employeeData,
-    isLoading,
-    error,
-  } = useQuery<EmployeeData>({
-    queryKey: ["employeeData", "2"],
-    queryFn: async () => {
-      const response = await fetch(
-        `${UREM__ERP_API_BASE}/api/Employee/EmployeeWithDetails/2`,
-      );
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      return response.json();
-    },
-  });
-
-  useEffect(() => {
-    if (employeeData) {
-      console.log(employeeData);
-      zsSetEmployee(employeeData);
-    }
-  }, [employeeData, zsSetEmployee]);
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
-
-  if (isLoading) {
-    return (<LoadingComponent message="Setting up your profile..." />);
-  }
-  if (error) {
-    return <p>Error: {error.message}</p>;
-  }
-  if (!employeeData) {
-    return <p>No data found</p>;
+  if (employeeData.isErr()) {
+    // This will be caught by the middleware, but it's good practice to have it.
+    redirect("/login");
   }
 
+  const userData = employeeData.value;
+  // console.log(userData)
 
   return (
     <div className="container mx-auto p-6">
@@ -128,136 +39,78 @@ export default function EmployeeProfile() {
           <Avatar className="h-20 w-20">
             <AvatarImage
               src={`/placeholder.svg?height=80&width=80`}
-              alt={employeeData.person.firstName}
+              alt={userData.person.firstName}
             />
             <AvatarFallback>
               {getInitials(
-                `${employeeData.person.firstName} ${employeeData.person.lastName}`,
+                `${userData.person.initials
+                || `${userData.person.firstName[0]}${userData.person.lastName[0]} `} `
               )}
             </AvatarFallback>
           </Avatar>
           <div>
-            <CardTitle>{`${employeeData.person.firstName} ${employeeData.person.lastName}`}</CardTitle>
+            <CardTitle className="capitalize  ">
+              {`${userData.person.firstName} ${userData.person.lastName}`}</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Employee #{employeeData.employeeNumber}
+              {userData.person.userName}
             </p>
-            <Badge variant="secondary" className="mt-2">
-              {employeeData.employeeType.typeDescription}
+            <Badge variant="secondary" className="mt-2 mr-2">
+              {/* {userData.role || "Role"} */}
+              {"Role"}
+            </Badge>
+            <Badge variant="outline" className="mt-2 mr-2">
+              {
+                (
+                  Number(userData.employeeTypeId) === 1
+                  || Number(userData.employeeTypeId) === 2
+                  || Number(userData.employeeTypeId) === 3) ?
+                  EMPLOYEE_TYPE[Number(userData.employeeTypeId) as keyof typeof EMPLOYEE_TYPE]
+                  :
+                  "Emp type"
+              }
+            </Badge>
+            <Badge variant="outline" className="mt-2 mr-2">
+              Employee #{userData.employeeNumber}
             </Badge>
           </div>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <Tabs defaultValue="personal">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="personal">Personal</TabsTrigger>
               <TabsTrigger value="contact">Contact</TabsTrigger>
-              <TabsTrigger value="vehicle">Vehicle</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
             <TabsContent value="personal" className="mt-4">
               <dl className="grid grid-cols-2 gap-4">
                 <div>
-                  <dt className="font-medium">Date of Birth</dt>
-                  <dd className="flex items-center gap-2">
-                    <CalendarIcon className="h-4 w-4" />
-                    {format(
-                      new Date(employeeData.person.dateOfBirth),
-                      "MMMM d, yyyy",
-                    )}
-                  </dd>
-                </div>
-                <div>
                   <dt className="font-medium">Gender</dt>
-                  <dd className="capitalize">{employeeData.person.gender}</dd>
+                  <dd className="capitalize">{userData.person.gender}</dd>
                 </div>
-                <div>
+                <div className="uppercase">
                   <dt className="font-medium">Initials</dt>
-                  <dd>{employeeData.person.initials}</dd>
+                  <dd>{userData.person.initials}</dd>
                 </div>
-                {employeeData.person.personIdentifications.map((id, index) => (
-                  <div key={index}>
-                    <dt className="font-medium">
-                      {id.identification.identificationType.identificationType1}
-                    </dt>
-                    <dd className="flex items-center gap-2">
-                      <IdCardIcon className="h-4 w-4" />
-                      {id.identification.identification1}
-                    </dd>
-                  </div>
-                ))}
               </dl>
             </TabsContent>
             <TabsContent value="contact" className="mt-4">
-              {employeeData.person.personContactDetails.map(
-                (contact, index) => (
-                  <div key={index} className="mb-4">
-                    <h3 className="mb-2 font-medium">
-                      {
-                        contact.contactDetails.contactDetailsTypeNavigation
-                          .typeDescription
-                      }{" "}
-                      Contact
-                    </h3>
-                    <dl className="grid grid-cols-2 gap-4">
-                      <div>
-                        <dt className="text-sm text-muted-foreground">Email</dt>
-                        <dd className="flex items-center gap-2">
-                          <MailIcon className="h-4 w-4" />
-                          {contact.contactDetails.email}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm text-muted-foreground">
-                          Cell Number
-                        </dt>
-                        <dd className="flex items-center gap-2">
-                          <PhoneIcon className="h-4 w-4" />
-                          {contact.contactDetails.cellNumber}
-                        </dd>
-                      </div>
-                      {contact.contactDetails.telephoneNumber && (
-                        <div>
-                          <dt className="text-sm text-muted-foreground">
-                            Telephone
-                          </dt>
-                          <dd className="flex items-center gap-2">
-                            <PhoneIcon className="h-4 w-4" />
-                            {contact.contactDetails.telephoneNumber}
-                          </dd>
-                        </div>
-                      )}
-                    </dl>
-                  </div>
-                ),
-              )}
-            </TabsContent>
-            <TabsContent value="vehicle" className="mt-4">
-              {employeeData.assignedVehicle ? (
+              <div className="mb-4">
+                <h3 className="mb-2 font-medium">Contact</h3>
                 <dl className="grid grid-cols-2 gap-4">
                   <div>
-                    <dt className="font-medium">Vehicle Name</dt>
+                    <dt className="text-sm text-muted-foreground">Email</dt>
                     <dd className="flex items-center gap-2">
-                      <CarIcon className="h-4 w-4" />
-                      {employeeData.assignedVehicle.vehicleName}
+                      <a href={`mailto:${userData.person.email}`}>
+                        <MailIcon className="h-4 w-4" />
+                        {userData.person.email}
+                      </a>
                     </dd>
-                  </div>
-                  <div>
-                    <dt className="font-medium">License</dt>
-                    <dd>{employeeData.assignedVehicle.vehicleLicense}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-medium">Registration Number</dt>
-                    <dd>
-                      {employeeData.assignedVehicle.vehicleRegistrationNumber}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="font-medium">VIN Number</dt>
-                    <dd>{employeeData.assignedVehicle.VINNumber}</dd>
                   </div>
                 </dl>
-              ) : (
-                <p>No vehicle assigned</p>
-              )}
+              </div>
+            </TabsContent>
+            <TabsContent value="settings" className="mt-4">
+              <ChangePasswordForm />
             </TabsContent>
           </Tabs>
         </CardContent>

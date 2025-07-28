@@ -16,15 +16,12 @@ const nextConfig: NextConfig = {
   // output: "standalone", // for docker, must produce standalone, cause there is no image
   experimental: {
     serverActions: {
-      bodySizeLimit: '3mb',
-    },
-    turbo: {
+      bodySizeLimit: "3mb",
     },
   },
+  turbopack: {},
   images: {
-    remotePatterns: [
-
-    ],
+    remotePatterns: [],
   },
   reactStrictMode: true,
   // exclude  net which is for server side to be bundled with client side
@@ -44,31 +41,32 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: '/service-worker.js',
+        source: "/service-worker.js",
         headers: [
           {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            key: "X-Content-Type-Options",
+            value: "nosniff",
           },
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
+            key: "X-Frame-Options",
+            value: "DENY",
           },
           {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
           },
           {
-            key: 'Content-Type',
-            value: 'application/javascript; charset=utf-8',
+            key: "Content-Type",
+            value: "application/javascript; charset=utf-8",
           },
           {
-            key: 'Cache-Control',
-            value: 'no-cache, no-store, must-revalidate',
+            key: "Cache-Control",
+            value: "no-cache, no-store, must-revalidate",
           },
           {
-            key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self'; connect-src 'self' https://urems-backend-dev.up.railway.app",
+            key: "Content-Security-Policy",
+            value:
+              "default-src 'self'; script-src 'self'; connect-src 'self' https://urems-backend-dev.up.railway.app",
           },
         ],
       },
@@ -90,16 +88,17 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value: "default-src 'self'; script-src 'self'; connect-src 'self' https://urems-backend-dev.up.railway.app",
+            value:
+              "default-src 'self'; script-src 'self'; connect-src 'self' https://urems-backend-dev.up.railway.app",
           },
         ],
       },
-    ]
+    ];
   },
-}
+};
 
 export default withPWA({
-  ...nextConfig
+  ...nextConfig,
 });
 
 // export default nextConfig;

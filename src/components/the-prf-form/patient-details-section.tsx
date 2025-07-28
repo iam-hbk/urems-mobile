@@ -57,7 +57,7 @@ type PatientDetailsFormProps = {
 
 type AgeUnit = "years" | "months" | "days";
 
-const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
+const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
   const { zsEmployee } = useZuStandEmployeeStore();
   const prfId = usePathname().split("/")[2];
 
@@ -298,7 +298,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
         },
         ...prf_from_store?.prfData,
       },
-      EmployeeID: zsEmployee?.employeeNumber.toString(), // employeeID is required.
+      EmployeeID: zsEmployee.id, // employeeID is required.
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
@@ -359,7 +359,7 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
                   form.formState.errors.patientName ||
                   form.formState.errors.patientSurname ||
                   form.formState.errors.id ||
-                  form.formState.errors.passport  
+                  form.formState.errors.passport
               })}
             >
               <h4

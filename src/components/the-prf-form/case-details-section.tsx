@@ -28,14 +28,15 @@ import { toast } from "sonner";
 import { FileEdit, Loader2, MoveRight, Plus } from "lucide-react";
 import { PRF_FORM } from "@/interfaces/prf-form";
 import { useCreatePrf } from "@/hooks/prf/useCreatePrf";
-import { useRouter } from "next/navigation";
 import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
 import { CaseDetailsSchema } from "@/interfaces/prf-schema";
-import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 import { useZuStandCrewStore } from "@/lib/zuStand/crew";
 import { DatePicker, Group } from "react-aria-components";
 import { DateInput } from "../ui/datefield-rac";
 import { CalendarDate } from "@internationalized/date";
+import { getCookie } from "@/utils/cookies";
+import { cookieNameUserId } from "@/utils/constant";
+import { useSessionQuery } from "@/hooks/auth/useSession";
 
 export type CaseDetailsType = z.infer<typeof CaseDetailsSchema>;
 
@@ -50,10 +51,9 @@ const PRFEditSummary = ({
   action = "create",
   initialData,
 }: CaseDetailsFormProps) => {
-  const router = useRouter();
   const createPrfQuery = useCreatePrf();
   const updatePrfQuery = useUpdatePrf();
-  const { zsEmployee } = useZuStandEmployeeStore();
+  const { data: session } = useSessionQuery();
   const { zsCrewID, zsVehicle } = useZuStandCrewStore();
   const dialogCloseRef = React.useRef<HTMLButtonElement>(null);
   const form = useForm<z.infer<typeof CaseDetailsSchema>>({
@@ -88,7 +88,7 @@ const PRFEditSummary = ({
   });
 
   const onSubmit = async (values: z.infer<typeof CaseDetailsSchema>) => {
-    if (!zsEmployee) {
+    if (!session?.user.id) {
       toast.error("No Employee Information Found", {
         duration: 3000,
         position: "top-right",
@@ -106,51 +106,22 @@ const PRFEditSummary = ({
           isOptional: false,
         },
       },
-      EmployeeID: zsEmployee?.employeeNumber.toString(),
+      EmployeeID: session?.user.id,
       CrewID: zsCrewID?.toString(),
     };
 
     if (action === "create") {
-      createPrfQuery.mutate(prf, {
-        onSuccess: (data, v, context) => {
-          toast.success("Form Summary Updated", {
-            duration: 3000,
-            position: "top-right",
-          });
-
-          router.push(`/edit-prf/${data?.prfFormId}`);
-          dialogCloseRef.current?.click();
-        },
-        onError: (error) => {
-          toast.error("An error occurred", {
-            duration: 3000,
-            position: "top-right",
-          });
-        },
-      });
+      createPrfQuery.mutate(prf);
     } else {
-      updatePrfQuery.mutate(prf, {
-        onSuccess: (data, v, context) => {
-          toast.success("Form Summary Updated", {
-            duration: 3000,
-            position: "top-right",
-          });
-
-          router.push(`/edit-prf/${data?.prfFormId}`);
-          dialogCloseRef.current?.click();
-        },
-        onError: (error) => {
-          toast.error("An error occurred", {
-            duration: 3000,
-            position: "top-right",
-          });
-        },
-      });
+      updatePrfQuery.mutate({
+        prfFormId: initialData?.prfFormId,
+        prfData: { case_details: prf.prfData.case_details },
+      } as PRF_FORM);
     }
+    dialogCloseRef.current?.click();
   };
-
   const onSkipForNow = async () => {
-    if (!zsEmployee) {
+    if (!session?.user.id) {
       toast.error("No Employee Information Found", {
         duration: 3000,
         position: "top-right",
@@ -159,30 +130,12 @@ const PRFEditSummary = ({
     }
     const prf: PRF_FORM = {
       prfData: {},
-      EmployeeID: zsEmployee?.employeeNumber.toString(),
+      EmployeeID: session?.user.id,
     };
     if (action === "create") {
-      createPrfQuery.mutate(prf, {
-        onSuccess: (data, v, context) => {
-          toast.success("You have successfully created a new empty PRF", {
-            duration: 3000,
-            position: "top-right",
-          });
-
-          router.push(`/edit-prf/${data?.prfFormId}`);
-        },
-        onError: (error) => {
-          toast.error("An error occurred", {
-            duration: 3000,
-            position: "top-right",
-          });
-        },
-      });
+      createPrfQuery.mutate(prf);
     }
-  };
-
-  const onClear = () => {
-    form.reset();
+    dialogCloseRef.current?.click();
   };
 
   return (
@@ -197,7 +150,10 @@ const PRFEditSummary = ({
           {buttonTitle}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent
+        className="sm:max-w-2xl"
+        aria-describedby="case-details-dialog"
+      >
         <DialogHeader>
           <DialogTitle>Patient Report Form Case Details</DialogTitle>
           <DialogDescription>

@@ -1,94 +1,87 @@
 import { useQuery } from "@tanstack/react-query";
-import api from "../../lib/wretch";
 import { useStore } from "@/lib/store";
 import { PRF_FORM } from "@/interfaces/prf-form";
 import { toast } from "sonner";
-import { WretchError } from "wretch";
+import { ApiError } from "@/types/api";
+import {
+  fetchFormResponseById,
+  fetchFormTemplateWithResponses,
+} from "@/lib/api/dynamic-forms-api";
+import { translateResponseToPrf } from "@/lib/prf-adapter";
+import { PRF_FORM_TEMPLATE_ID } from "./useCreatePrf";
+import { DetailedFormResponse } from "@/types/form-template";
 
-export const fetchPrfForms = async (): Promise<PRF_FORM[]> => {
-  const req = api.catcher(404, (error) => {
-    toast.error("Forms not found");
-    return null;
-  });
-
-  return (await req.get("/prfform")) as Promise<PRF_FORM[]>;
-};
-export const fetchPrfForm = async (id: string): Promise<PRF_FORM> => {
-  const req = api.catcher(404, (error) => {
-    toast.error("Form not found");
-    return null;
-  });
-
-  return (await req.get(`/prfform/${id}`)) as Promise<PRF_FORM>;
-};
-
-const needsDoubleParsing = (prf: any): boolean => {
-  // Add your logic here to determine if a prf needs double parsing.
-  // For example, check for a specific property or pattern in prf.prfData.
-  // This is a placeholder - replace with your actual condition.
-  return typeof prf.prfData === "string" && prf.prfData.startsWith('"{\\"');
-};
-
-export const usePrfForms = () => {
+export const useGetPrfForms = () => {
   const setPrfForms = useStore((state) => state.setPrfForms);
 
-  return useQuery({
+  return useQuery<PRF_FORM[], ApiError>({
     queryKey: ["prfForms"],
     queryFn: async () => {
-      try {
-        const data = await fetchPrfForms();
-        const processedData = data.map((prf) => {
-          try {
-            if (needsDoubleParsing(prf)) {
-              // Double parse
-              const outerParsed = {
-                ...prf,
-                prfData: JSON.parse(prf.prfData as string),
-              };
-              return {
-                ...outerParsed,
-                prfData: JSON.parse(outerParsed.prfData as string),
-              };
-            } else {
-              // Single parse
-              return {
-                ...prf,
-                prfData: JSON.parse(prf.prfData as string),
-              };
-            }
-          } catch (parseError) {
-            console.error(
-              `Error parsing prfData for prfFormId ${prf.prfFormId}:`,
-              parseError,
-            );
-            return prf; // Return the original object on error
-          }
-        });
+      const templateResult = await fetchFormTemplateWithResponses(
+        PRF_FORM_TEMPLATE_ID,
+      );
 
-        setPrfForms(processedData); // Store in Zustand on success
-        // console.log("*****************Processed data:", processedData);
-        return processedData;
-      } catch (error) {
-        const err = error as WretchError;
-        toast.error(`Error fetching PRF forms -> ${err.json.title}`);
-        throw error; // Re-throw the error to let useQuery handle it
-      }
+      return templateResult.match(
+        async (templateData) => {
+          if (!templateData.formResponses) {
+            return [];
+          }
+
+          const detailedResponsesPromises = templateData.formResponses.map(
+            (summary) => fetchFormResponseById(summary.id),
+          );
+
+          const detailedResponsesResults = await Promise.all(
+            detailedResponsesPromises,
+          );
+
+          const successfulDetailedResponses = detailedResponsesResults
+            .map((result) => {
+              if (result.isErr()) {
+                console.error(
+                  "Failed to fetch detailed response:",
+                  result.error.detail,
+                );
+                return null;
+              }
+              return result.value;
+            })
+            .filter(
+              (response): response is DetailedFormResponse => response !== null,
+            );
+
+          const prfs = successfulDetailedResponses.map(translateResponseToPrf);
+
+          setPrfForms(prfs);
+          return prfs;
+        },
+        (error) => {
+          toast.error(`Failed to load PRF list: ${error.detail}`);
+          throw error;
+        },
+      );
     },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: false,
   });
 };
 
-export const usePrfForm = (id: string) => {
-  return useQuery({
+export const useGetPrfFormById = (id: string) => {
+  return useQuery<PRF_FORM, ApiError>({
     queryKey: ["prfForm", id],
     queryFn: async () => {
-      try {
-        const data = await fetchPrfForm(id);
-        data.prfData = JSON.parse(data.prfData as string);
-        return data;
-      } catch (error) {
-        const err = error as WretchError;
-        toast.error(`Error fetching PRF form -> ${err.json.title}`);
-      }
+      // This now fetches from the new system and translates
+      const result = await fetchFormResponseById(id);
+
+      return result.match(
+        (data) => {
+          return translateResponseToPrf(data);
+        },
+        (error) => {
+          toast.error(`Error fetching PRF form -> ${error.title}`);
+          throw error;
+        },
+      );
     },
   });
 };
