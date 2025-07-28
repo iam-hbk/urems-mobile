@@ -53,7 +53,7 @@ function Layout({
         {prf && showQuickLinks && <QuickLinks prf={prf} />}
 
         <div className="flex w-full items-center justify-between">
-          <div className="flex flex-row items-center gap-1">
+          {/* <div className="flex flex-row items-center gap-1">
             {path_blocks.map((block, index) => {
               if (index == 0) {
                 return (
@@ -70,7 +70,7 @@ function Layout({
                 </Link>
               );
             })}
-          </div>
+          </div> */}
 
           <div className="mt-[1rem] flex items-center gap-2 sm:mt-[0rem]">
             {/* Desktop view */}

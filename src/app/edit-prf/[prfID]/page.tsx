@@ -1,11 +1,11 @@
 "use client";
-import React, { useState, use } from "react";
+import React, { use } from "react";
 import FormFillProgress from "@/components/progress-ring";
 import PRFEditSummary from "@/components/the-prf-form/case-details-section";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader2, UploadCloudIcon } from "lucide-react";
-import { usePrfForms } from "@/hooks/prf/usePrfForms";
+import { useGetPrfFormById } from "@/hooks/prf/usePrfForms";
 import PRF_DATA_TASKS from "@/components/form-task-details-table";
 import { PRFFormDataSchema } from "@/interfaces/prf-schema";
 
@@ -16,18 +16,18 @@ export default function Page(props: { params: Params }) {
   console.log(params);
   const prfID = params.prfID;
 
-  const { data, isLoading, error } = usePrfForms();
+  const { data, isLoading, error } = useGetPrfFormById(prfID);
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
   if (!!error) {
-    return <div>{JSON.stringify(error)}</div>;
+    return <pre className="max-w-sm">{JSON.stringify(error, null, 2)}</pre>;
   }
   if (!data) {
     return <div>No PRFs found</div>;
   }
-  const prf = data.find((prf) => prf.prfFormId == prfID);
+  const prf = data;
   if (!prf) {
     return <div>No PRF found</div>;
   }
@@ -37,7 +37,7 @@ export default function Page(props: { params: Params }) {
       {/* Header */}
       <section className="flex flex-row justify-between">
         <h2 className="scroll-m-20 pb-2 text-2xl font-semibold tracking-tight first:mt-0 lg:text-3xl">
-          {`Patient Report Form #${prfID}`}
+          {`Patient Report Form #${prfID.split("-")[0]}`}
         </h2>
         <div className="flex flex-row items-center gap-2">
           <Button disabled={true} onClick={() => {}}>
@@ -88,20 +88,20 @@ export default function Page(props: { params: Params }) {
                   {prf.prfData.case_details?.data.province}
                 </div>
               </div>
-              <div className="flex items-center justify-between">
+              {/* <div className="flex items-center justify-between">
                 <div className="font-medium">Rescue Unit </div>
                 <div className="text-muted-foreground">
                   {prf.prfData.case_details?.data.rescueUnit}
                 </div>
-              </div>
+              </div> */}
             </div>
             <div className="w-full space-y-4">
-              <div className="flex items-center justify-between">
+              {/* <div className="flex items-center justify-between">
                 <div className="font-medium">RV </div>
                 <div className="text-muted-foreground">
                   {prf.prfData.case_details?.data.rv}
                 </div>
-              </div>
+              </div> */}
               <div className="flex items-center justify-between">
                 <div className="font-medium">Date of Case</div>
                 <div className="text-muted-foreground">
@@ -114,18 +114,18 @@ export default function Page(props: { params: Params }) {
                       : "Unknown"}
                 </div>
               </div>
-              <div className="flex items-center justify-between">
+              {/* <div className="flex items-center justify-between">
                 <div className="font-medium">DOD Number</div>
                 <div className="text-muted-foreground">
                   {prf.prfData.case_details?.data.dodNumber}
                 </div>
-              </div>
-              <div className="flex items-center justify-between">
+              </div> */}
+              {/* <div className="flex items-center justify-between">
                 <div className="font-medium">Ambulance </div>
                 <div className="text-muted-foreground">
                   {prf.prfData.case_details?.data.ambulance}
                 </div>
-              </div>
+              </div> */}
             </div>
             <FormFillProgress
               max={Object.keys(PRFFormDataSchema.shape).length}

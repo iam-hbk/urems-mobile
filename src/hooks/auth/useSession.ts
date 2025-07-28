@@ -3,8 +3,14 @@ import { getSession } from "@/lib/auth/api";
 import { toast } from "sonner";
 import type { Session } from "@/lib/auth/dal";
 import type { ApiError } from "@/types/api";
+import { usePathname, useRouter } from "next/navigation";
 
 export const useSessionQuery = () => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const publicPaths = ["/login", "/forgot-password"];
+  const isPublicPath = publicPaths.some((path) => pathname.startsWith(path));
+
   return useQuery<Pick<Session, "user"> | null, ApiError>({
     queryKey: ["session"],
     queryFn: async () => {
@@ -12,15 +18,23 @@ export const useSessionQuery = () => {
       return result.match(
         (session) => session,
         (e) => {
-          // Don't show toast for auth errors as they're expected when not logged in
           if (e.type !== "AuthenticationError") {
             toast.error(`Error loading session: ${e.detail}`);
+          } else if (!isPublicPath) {
+            router.push("/login");
           }
           throw e;
         },
       );
     },
+    retry: (failureCount, error) => {
+      console.log("ERROR IN SESSION", error);
+      if (error.type === "AuthenticationError") {
+        return false;
+      }
+      return failureCount < 2;
+    },
     // staleTime: 5 * 60 * 1000, // 5 minutes
-    // refetchOnWindowFocus: true,
+    refetchOnWindowFocus: true,
   });
 };

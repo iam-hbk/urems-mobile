@@ -1,50 +1,49 @@
-
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import api, { API_BASE_URL } from "@/lib/wretch";
 import { useStore } from "@/lib/store";
 import { PRF_FORM } from "@/interfaces/prf-form";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { ApiError } from "@/types/api";
+import { createFormResponse } from "@/lib/api/dynamic-forms-api";
+import { CreateFormResponsePayload } from "@/types/form-template";
 
-const createPrfForm = async (newPrf: PRF_FORM): Promise<PRF_FORM> => {
-  const payload: any = newPrf;
-  payload.prfData = JSON.stringify(newPrf.prfData);
-
-  const requestOptions: RequestInit = {
-    method: "POST",
-    body: payload,
-    redirect: "follow"
-  };
-
-  const res = await fetch(`${API_BASE_URL}/api/PrfForm`, requestOptions);
-
-  return await res.json();
-};
+// This is the static ID for the legacy PRF form template.
+export const PRF_FORM_TEMPLATE_ID = "ad4c3228-9624-471a-9151-5dcee3bb4e2f";
 
 export const useCreatePrf = () => {
   const queryClient = useQueryClient();
-  const addPrf = useStore((state) => state.addPrfForm);
+  const router = useRouter();
 
   return useMutation({
-    mutationFn: async (data: PRF_FORM) => {
-      try {
-        const newPrf = await createPrfForm(data);
-        const processedData: PRF_FORM = {
-          ...newPrf,
-          prfData: JSON.parse(newPrf.prfData as string),
-        };
-        return processedData;
-      } catch (error) {
-        console.error("Error creating PRF Form", error);
-        throw error;
-      }
+    mutationFn: (prf: PRF_FORM) => {
+      // Map the legacy PRF_FORM to the new CreateFormResponsePayload
+      const payload: CreateFormResponsePayload = {
+        formTemplateId: PRF_FORM_TEMPLATE_ID,
+        employeeId: prf.EmployeeID, // This is a string
+        patientId: 0, // New PRFs start without a patient
+        vehicleId: prf.prfData?.case_details?.data.vehicle?.id || 0,
+        crewId: prf.CrewID ? parseInt(prf.CrewID, 10) : 0,
+      };
+      return createFormResponse(payload);
     },
-    onSuccess: (data) => {
-      addPrf(data);
-      queryClient.invalidateQueries({
-        queryKey: ["prfForms"],
-      });
+    onSuccess: (result) => {
+      result.match(
+        (newResponse) => {
+          toast.success("New PRF created successfully!");
+          // Invalidate queries to refresh the list of forms
+          queryClient.invalidateQueries({ queryKey: ["prfForms"] });
+          queryClient.invalidateQueries({ queryKey: ["formTemplateWithResponses", PRF_FORM_TEMPLATE_ID] });
+          // Redirect to the new form response page
+          router.push(`/edit-prf/${newResponse.id}`);
+        },
+        (error) => {
+          toast.error(`Failed to create PRF: ${error.detail}`);
+        },
+      );
     },
-    onError: (error) => {
-      console.error("Error creating PRF Form", error);
+    onError: (error: ApiError) => {
+      toast.error(`An unexpected error occurred: ${error.detail}`);
     },
   });
 };

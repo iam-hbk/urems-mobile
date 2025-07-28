@@ -69,7 +69,6 @@ export const fetchFormResponseById = async (
   const result = await api.get<DetailedFormResponse>(
     `/FormResponses/${responseId}`,
   );
-  // console.log("[][][][]formResponseByID", result);
   return result;
 };
 
@@ -83,7 +82,7 @@ export const apiUpdateFormResponse = async (
   payload: FormResponseUpdateDto,
 ): Promise<Result<{ status: number }, ApiError>> => {
   return api.put<{ status: number }>(
-    `/api/FormResponses/${responseId}`,
+    `/FormResponses/${responseId}`,
     payload,
   );
 };

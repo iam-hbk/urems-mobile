@@ -10,12 +10,12 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   ClipboardList, // Example Icon
   Settings,
   ChevronUp,
   ChevronDown,
-  MoreHorizontal,
   // Lucide icons that might be relevant for generic form sections
   LayoutList, // For sections
   FileText, // For general content/text
@@ -23,9 +23,9 @@ import {
   ListChecks,
   EyeOffIcon, // For multiple items/fields
 } from "lucide-react";
-import { FormTemplate, Section } from "@/types/form-template";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { useFormTemplate } from "@/hooks/dynamic-forms/use-dynamic-forms";
 
 // TODO: Define a more comprehensive icon map for dynamic form sections
 const sectionIconMap: { [key: string]: React.ElementType } = {
@@ -34,29 +34,33 @@ const sectionIconMap: { [key: string]: React.ElementType } = {
   "Another Section": FileText,
 };
 
-interface DynamicFormQuickLinksProps {
-  formTemplate: FormTemplate;
-  formId: string;
-  responseId?: string;
-}
+export default function DynamicFormQuickLinks() {
+  const pathname = usePathname();
+  
+  // Extract formId and responseId from URL pathname
+  // Expected patterns: /forms/[formId] or /forms/[formId]/[responseId] or /forms/[formId]/[responseId]/[sectionId]
+  const pathSegments = pathname.split('/').filter(Boolean);
+  const formId = pathSegments[1]; // forms/[formId]
+  const responseId = pathSegments[2] && pathSegments[2] !== formId ? pathSegments[2] : undefined;
 
-export default function DynamicFormQuickLinks({
-  formTemplate,
-  formId,
-  responseId,
-}: DynamicFormQuickLinksProps) {
+  const {
+    data: formTemplate,
+    isLoading: isLoadingTemplate,
+    error: templateError,
+  } = useFormTemplate(formId);
+
   const [showQuickLinks, setShowQuickLinks] = useState<boolean>(true);
 
   // Memoize allSectionNames to prevent it from causing unnecessary effect runs
   // if formTemplate reference changes but its sections are the same.
   const allSectionNames = useMemo(
-    () => formTemplate.sections.map((s) => s.name),
-    [formTemplate.sections],
+    () => (formTemplate?.sections ? formTemplate.sections.map((s) => s.name) : []),
+    [formTemplate?.sections],
   );
 
   const [visibleItems, setVisibleItems] = useState<string[]>(() => {
     // Initialize state from localStorage directly if available
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && formId) {
       const storageKey = `dynamicFormVisibleNavItems_${formId}`;
       const savedItems = localStorage.getItem(storageKey);
       if (savedItems) {
@@ -76,19 +80,23 @@ export default function DynamicFormQuickLinks({
 
   // Effect to update localStorage when visibleItems change
   useEffect(() => {
-    const storageKey = `dynamicFormVisibleNavItems_${formId}`;
-    localStorage.setItem(storageKey, JSON.stringify(visibleItems));
+    if (formId) {
+      const storageKey = `dynamicFormVisibleNavItems_${formId}`;
+      localStorage.setItem(storageKey, JSON.stringify(visibleItems));
+    }
   }, [visibleItems, formId]);
 
   // Effect to re-initialize from allSectionNames if formId changes and no localStorage for new formId
   // This handles the case where the user navigates from one form to another
   useEffect(() => {
-    const storageKey = `dynamicFormVisibleNavItems_${formId}`;
-    const savedItems = localStorage.getItem(storageKey);
-    if (!savedItems) {
-      // If for the current formId, there are no saved items, initialize with allSectionNames.
-      // This is important if allSectionNames changes due to formId change.
-      setVisibleItems(allSectionNames);
+    if (formId) {
+      const storageKey = `dynamicFormVisibleNavItems_${formId}`;
+      const savedItems = localStorage.getItem(storageKey);
+      if (!savedItems) {
+        // If for the current formId, there are no saved items, initialize with allSectionNames.
+        // This is important if allSectionNames changes due to formId change.
+        setVisibleItems(allSectionNames);
+      }
     }
     // This effect should run if formId changes, or if allSectionNames derived from a new formTemplate changes.
   }, [formId, allSectionNames]);
@@ -98,10 +106,12 @@ export default function DynamicFormQuickLinks({
       const newItems = prev.includes(itemName)
         ? prev.filter((i) => i !== itemName)
         : [...prev, itemName];
-      localStorage.setItem(
-        `dynamicFormVisibleNavItems_${formId}`,
-        JSON.stringify(newItems),
-      );
+      if (formId) {
+        localStorage.setItem(
+          `dynamicFormVisibleNavItems_${formId}`,
+          JSON.stringify(newItems),
+        );
+      }
       return newItems;
     });
   };
@@ -123,13 +133,42 @@ export default function DynamicFormQuickLinks({
           newItems[index],
         ];
       }
-      localStorage.setItem(
-        `dynamicFormVisibleNavItems_${formId}`,
-        JSON.stringify(newItems),
-      );
+      if (formId) {
+        localStorage.setItem(
+          `dynamicFormVisibleNavItems_${formId}`,
+          JSON.stringify(newItems),
+        );
+      }
       return newItems;
     });
   };
+
+  // Early returns for loading, error, or missing data
+  if (!formId) {
+    return null; // Don't render if we can't extract formId from URL
+  }
+
+  if (isLoadingTemplate) {
+    return (
+      <nav className="w-full rounded-lg border bg-card p-4 shadow">
+        <div className="flex items-center justify-center">
+          <div className="text-sm text-muted-foreground">Loading quick links...</div>
+        </div>
+      </nav>
+    );
+  }
+
+  if (templateError || !formTemplate || !formTemplate.sections) {
+    return (
+      <nav className="w-full rounded-lg border bg-card p-4 shadow">
+        <div className="flex items-center justify-center">
+          <div className="text-sm text-red-500">
+            Failed to load form template for quick links
+          </div>
+        </div>
+      </nav>
+    );
+  }
 
   const displayedSections = formTemplate.sections
     .filter((section) => visibleItems.includes(section.name))
