@@ -1,3 +1,4 @@
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -8,16 +9,23 @@ import {
   sendConfirmationCode,
   confirmEmailWithCode,
 } from "@/lib/auth/api";
-
+import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
+import { cookieNameUserId } from "@/utils/constant";
+import { setCookie } from "@/utils/cookies";
 
 export const useLoginMutation = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { zsSetEmployeeId } = useZuStandEmployeeStore();
 
   return useMutation({
     mutationFn: login,
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
       if (result.isOk()) {
+        const { userId } = result.value
+        zsSetEmployeeId(userId);
+        // set cookie
+        await setCookie(cookieNameUserId, userId);
         // Invalidate the session query to trigger a refetch
         queryClient.invalidateQueries({ queryKey: ["session"] });
         toast.success("Logged in successfully!");
