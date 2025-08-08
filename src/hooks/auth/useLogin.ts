@@ -3,15 +3,16 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
-  login,
   sendPasswordResetCode,
   resetPasswordWithCode,
   sendConfirmationCode,
   confirmEmailWithCode,
+  // login,
 } from "@/lib/auth/api";
 import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 import { cookieNameUserId } from "@/utils/constant";
 import { setCookie } from "@/utils/cookies";
+import { login } from "@/lib/auth/apis";
 
 export const useLoginMutation = () => {
   const router = useRouter();
@@ -21,8 +22,9 @@ export const useLoginMutation = () => {
   return useMutation({
     mutationFn: login,
     onSuccess: async (result) => {
+      console.log(' ... login results ... ', result);
       if (result.isOk()) {
-        const { userId } = result.value
+        const { userId } = result.value;
         zsSetEmployeeId(userId);
         // set cookie
         await setCookie(cookieNameUserId, userId);
@@ -31,7 +33,8 @@ export const useLoginMutation = () => {
         toast.success("Logged in successfully!");
         router.push("/dashboard");
       } else {
-        toast.error(result.error.detail);
+        toast.error("Failed to login, Please try again");
+        // toast.error(result.error.detail);
       }
     },
     onError: (error: Error) => {

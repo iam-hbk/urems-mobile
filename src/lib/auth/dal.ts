@@ -35,6 +35,8 @@ export const verifySession = cache(
     const token = cookieStore.get(UserTokenCookieName)?.value;
     const userId = cookieStore.get(cookieNameUserId)?.value
 
+    // console.log(' ... api url ... ', API_BASE_URL, token, userId);
+
     if (!token) {
       return err({
         type: "AuthError",

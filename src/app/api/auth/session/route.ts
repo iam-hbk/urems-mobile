@@ -1,12 +1,14 @@
+'use server'
+
 import { NextResponse } from 'next/server'
 import { verifySession } from '@/lib/auth/dal'
 
 export async function GET() {
-  const result = await verifySession()
+  const result = await verifySession();
 
   if (result.isErr()) {
     return NextResponse.json(
-      { error: result.error }, 
+      { error: result.error },
       { status: result.error.status || 500 }
     )
   }

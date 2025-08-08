@@ -7,7 +7,7 @@ import type {
   TypeResetPasswordForm,
   TypeConfirmEmailForm,
 } from "@/types/auth";
-import type { Session } from "./dal";
+import { type Session } from "./dal";
 import { ok, err, type Result } from "neverthrow";
 import type { ApiError } from "@/types/api";
 
@@ -38,6 +38,9 @@ export const getSession = async (): Promise<
 > => {
   try {
     const res = await fetch("/api/auth/session");
+    // const res = await verifySession();
+    console.log(" ... res in get session ... ", res);
+
     if (!res.ok) {
       return err({
         type: "AuthenticationError",
@@ -59,6 +62,8 @@ export const getSession = async (): Promise<
     });
   }
 };
+
+
 /**
  * Change password for authenticated user
  */

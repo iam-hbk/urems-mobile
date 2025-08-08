@@ -23,7 +23,7 @@ export const useLogoutMutation = () => {
       router.push("/login");
     },
     onError: (error) => {
-      // when api fails, send user to login, token might have expired
+      // when api fails, send user to login , token might have expired
       deleteCookie(cookieNameUserId)
       deleteCookie(UserTokenCookieName)
 
