@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/form";
 import { toast } from "sonner";
 import { InjurySchema, InjuryType } from "@/interfaces/prf-schema";
-import { Loader2, PlusCircleIcon, Trash2, X } from "lucide-react";
+import { Loader2, PlusCircleIcon, Trash2, X, Download } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
@@ -51,6 +51,9 @@ export default function BodyDiagram() {
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
 
+  const anteriorSvgRef = useRef<SVGSVGElement>(null);
+  const posteriorSvgRef = useRef<SVGSVGElement>(null);
+
   const [selectedInjuryPreview, setSelectedInjuryPreview] = useState<Mark>();
   const [currentInjurySymbol, setCurrentInjurySymbol] = useState<string>(
     SYMBOLS.DISLOCATION,
@@ -59,6 +62,10 @@ export default function BodyDiagram() {
     resolver: zodResolver(InjurySchema),
     defaultValues: {
       injuries: prf_from_store?.prfData?.injuries?.data.injuries || [],
+      anteriorImage:
+        prf_from_store?.prfData?.injuries?.data.anteriorImage || undefined,
+      posteriorImage:
+        prf_from_store?.prfData?.injuries?.data.posteriorImage || undefined,
     },
   });
   const {
@@ -91,7 +98,7 @@ export default function BodyDiagram() {
           duration: 3000,
           position: "top-right",
         });
-        router.push(`/edit-prf/${data?.prfFormId}`);
+        router.push(`/edit-prf/${prfId}`);
       },
       onError: (error) => {
         toast.error("An error occurred", {
@@ -154,6 +161,130 @@ export default function BodyDiagram() {
     toast.success("Injury removed");
   };
 
+  const captureSvgAsBase64 = async (
+    svgElement: SVGSVGElement,
+  ): Promise<string> => {
+    return new Promise((resolve) => {
+      // Get the SVG's bounding box
+      const bbox = svgElement.getBBox();
+      const width = bbox.width || svgElement.clientWidth;
+      const height = bbox.height || svgElement.clientHeight;
+
+      // Create a canvas element
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      // Set canvas dimensions
+      canvas.width = width;
+      canvas.height = height;
+
+      // Create an image from the SVG
+      const svgData = new XMLSerializer().serializeToString(svgElement);
+      const img = new Image();
+
+      img.onload = () => {
+        if (ctx) {
+          // Fill with white background
+          ctx.fillStyle = "white";
+          ctx.fillRect(0, 0, width, height);
+
+          // Draw the SVG image
+          ctx.drawImage(img, 0, 0);
+
+          // Convert to base64
+          const base64 = canvas.toDataURL("image/png");
+          resolve(base64);
+        }
+      };
+
+      // Create blob URL for the SVG
+      const svgBlob = new Blob([svgData], {
+        type: "image/svg+xml;charset=utf-8",
+      });
+      const url = URL.createObjectURL(svgBlob);
+      img.src = url;
+    });
+  };
+
+
+
+  const downloadImage = (base64Image: string, filename: string) => {
+    try {
+      // Create a temporary link element
+      const link = document.createElement("a");
+      link.href = base64Image;
+      link.download = filename;
+      
+      // Append to body, click, and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success(`${filename} downloaded successfully!`);
+    } catch (error) {
+      console.error("Error downloading image:", error);
+      toast.error("Failed to download image");
+    }
+  };
+
+  const handleDownloadImage = (side: "anterior" | "posterior") => {
+    const imageData = side === "anterior" 
+      ? form.getValues("anteriorImage") 
+      : form.getValues("posteriorImage");
+    
+    if (!imageData) {
+      toast.error(`No ${side} image available for download.`);
+      return;
+    }
+    
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, "-");
+    const filename = `injury-diagram-${side}-${timestamp}.png`;
+    
+    downloadImage(imageData, filename);
+  };
+
+  const autoCaptureDiagrams = async () => {
+    try {
+      // Capture both diagrams automatically
+      if (anteriorSvgRef.current) {
+        const anteriorBase64 = await captureSvgAsBase64(anteriorSvgRef.current);
+        form.setValue("anteriorImage", anteriorBase64, { shouldDirty: true });
+      }
+      
+      if (posteriorSvgRef.current) {
+        const posteriorBase64 = await captureSvgAsBase64(posteriorSvgRef.current);
+        form.setValue("posteriorImage", posteriorBase64, { shouldDirty: true });
+      }
+    } catch (error) {
+      console.error("Error auto-capturing diagrams:", error);
+      // Don't show error toast for auto-capture to avoid spam
+    }
+  };
+
+  // Auto-capture when injuries change
+  useEffect(() => {
+    if (injuries.length > 0) {
+      // Small delay to ensure SVG is updated with new marks
+      const timer = setTimeout(() => {
+        autoCaptureDiagrams();
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [injuries]);
+
+  // Auto-capture on initial load if there are existing injuries
+  useEffect(() => {
+    if (injuries.length > 0 && anteriorSvgRef.current && posteriorSvgRef.current) {
+      // Delay to ensure SVGs are fully rendered
+      const timer = setTimeout(() => {
+        autoCaptureDiagrams();
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   return (
     <div className="flex flex-col items-center space-y-4 overflow-auto">
       <h3 className="scroll-m-20 self-start text-2xl font-semibold tracking-tight">
@@ -208,9 +339,25 @@ export default function BodyDiagram() {
       </div>
 
       <div className="flex w-full flex-row items-start justify-between">
-        <div>
-          <h4>Anterior</h4>
+        <div className="flex flex-col items-center space-y-2">
+          <div className="flex flex-col items-center space-y-2">
+            <div className="flex items-center space-x-2">
+              <h4>Anterior</h4>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handleDownloadImage("anterior")}
+                className="h-8 px-2"
+                disabled={!form.watch("anteriorImage")}
+              >
+                <Download className="mr-1 h-4 w-4" />
+                Download
+              </Button>
+            </div>
+          </div>
           <svg
+            ref={anteriorSvgRef}
             width="177"
             height="537"
             viewBox="0 0 177 537"
@@ -305,9 +452,23 @@ export default function BodyDiagram() {
               })}
           </svg>
         </div>
-        <div>
-          <h3>Posterior</h3>
+        <div className="flex flex-col items-center space-y-2">
+          <div className="flex items-center space-x-2">
+            <h4>Posterior</h4>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => handleDownloadImage("posterior")}
+              className="h-8 px-2"
+              disabled={!form.watch("posteriorImage")}
+            >
+              <Download className="mr-1 h-4 w-4" />
+              Download
+            </Button>
+          </div>
           <svg
+            ref={posteriorSvgRef}
             width="176"
             height="538"
             viewBox="0 0 176 538"

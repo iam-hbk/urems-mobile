@@ -215,7 +215,7 @@ export default function InventorySection() {
           duration: 3000,
           position: "top-right",
         });
-        router.push(`/edit-prf/${data?.prfFormId}`);
+        router.push(`/edit-prf/${prfId}`);
       },
       onError: (error) => {
         toast.error("An error occurred", {

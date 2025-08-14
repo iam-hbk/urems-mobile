@@ -97,7 +97,7 @@ export default function PatientHandoverForm() {
             onClick: () => router.push(path),
           },
         });
-        router.push(`/edit-prf/${data?.prfFormId}`);
+        router.push(`/edit-prf/${prfId}`);
       },
       onError: (error) => {
         toast.error("An error occurred", {
