@@ -103,6 +103,8 @@ export function useCrewGetCurrentv1() {
         const err = error as WretchError;
         toast.error(`Error Fetching Employee Current Crew ID -> ${err.json.title}`);
       }
-    }
+    },
+    refetchInterval: 1000 * 60 * 60, // 1 hour
+    refetchOnWindowFocus: false,
   })
 }
