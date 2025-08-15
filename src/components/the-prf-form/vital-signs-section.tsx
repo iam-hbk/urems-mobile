@@ -43,13 +43,6 @@ import {
 import { z } from "zod";
 import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
-// Big measures
-const VitalSignsSchemaWithData = z.object({
-  vital_signs: VitalSignsSchema,
-});
-type VitalSignsTypeWithData = z.infer<typeof VitalSignsSchemaWithData>;
-//
-
 const VitalSignsForm: React.FC = () => {
   const prfId = usePathname().split("/")[2];
   const prf_from_store = useStore((state) => state.prfForms).find(
@@ -61,10 +54,11 @@ const VitalSignsForm: React.FC = () => {
 
   const { zsEmployee } = useZuStandEmployeeStore();
 
-  const form = useForm<VitalSignsTypeWithData>({
-    resolver: zodResolver(VitalSignsSchemaWithData),
+  const form = useForm<VitalSignsType>({
+    resolver: zodResolver(VitalSignsSchema),
     defaultValues: {
-      vital_signs: prf_from_store?.prfData?.vital_signs?.data || undefined,
+      vital_signs:
+        prf_from_store?.prfData?.vital_signs?.data?.vital_signs || undefined,
     },
   });
 
@@ -73,8 +67,9 @@ const VitalSignsForm: React.FC = () => {
     name: "vital_signs",
   });
 
-  function onSubmit(values: VitalSignsTypeWithData) {
-    if (!zsEmployee) { // no needed .. just for building
+  function onSubmit(values: VitalSignsType) {
+    if (!zsEmployee) {
+      // no needed .. just for building
       return;
     }
     const prfUpdateValue: PRF_FORM = {
@@ -82,7 +77,9 @@ const VitalSignsForm: React.FC = () => {
       prfData: {
         ...prf_from_store?.prfData,
         vital_signs: {
-          data: values.vital_signs,
+          data: {
+            vital_signs: values.vital_signs,
+          },
           isCompleted: true,
           isOptional: false,
         },
@@ -177,7 +174,7 @@ const VitalSignsForm: React.FC = () => {
                     <FormField
                       control={form.control}
                       name={
-                        `vital_signs.${index}.time` as FieldPath<VitalSignsTypeWithData>
+                        `vital_signs.${index}.time` as FieldPath<VitalSignsType>
                       }
                       render={({ field }) => (
                         <FormItem className="col-span-full">
@@ -189,13 +186,13 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null &&
-                                  field.value !== undefined
+                                field.value !== undefined
                                   ? field.value?.toString()
                                   : new Date().toLocaleTimeString("en-US", {
-                                    hour12: false,
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })
+                                      hour12: false,
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })
                               }
                             />
                           </FormControl>
@@ -206,7 +203,7 @@ const VitalSignsForm: React.FC = () => {
                     <FormField
                       control={form.control}
                       name={
-                        `vital_signs.${index}.airEntry.left` as FieldPath<VitalSignsTypeWithData>
+                        `vital_signs.${index}.airEntry.left` as FieldPath<VitalSignsType>
                       }
                       render={({ field }) => (
                         <FormItem>
@@ -250,7 +247,7 @@ const VitalSignsForm: React.FC = () => {
                     <FormField
                       control={form.control}
                       name={
-                        `vital_signs.${index}.airEntry.right` as FieldPath<VitalSignsTypeWithData>
+                        `vital_signs.${index}.airEntry.right` as FieldPath<VitalSignsType>
                       }
                       render={({ field }) => (
                         <FormItem>
@@ -294,7 +291,7 @@ const VitalSignsForm: React.FC = () => {
                     <FormField
                       control={form.control}
                       name={
-                        `vital_signs.${index}.etCO2` as FieldPath<VitalSignsTypeWithData>
+                        `vital_signs.${index}.etCO2` as FieldPath<VitalSignsType>
                       }
                       render={({ field }) => (
                         <FormItem>
@@ -316,7 +313,7 @@ const VitalSignsForm: React.FC = () => {
                     <FormField
                       control={form.control}
                       name={
-                        `vital_signs.${index}.fiO2` as FieldPath<VitalSignsTypeWithData>
+                        `vital_signs.${index}.fiO2` as FieldPath<VitalSignsType>
                       }
                       render={({ field }) => (
                         <FormItem>
@@ -338,7 +335,7 @@ const VitalSignsForm: React.FC = () => {
                     <FormField
                       control={form.control}
                       name={
-                        `vital_signs.${index}.rate` as FieldPath<VitalSignsTypeWithData>
+                        `vital_signs.${index}.rate` as FieldPath<VitalSignsType>
                       }
                       render={({ field }) => (
                         <FormItem>
@@ -360,7 +357,7 @@ const VitalSignsForm: React.FC = () => {
                     <FormField
                       control={form.control}
                       name={
-                        `vital_signs.${index}.rhythm` as FieldPath<VitalSignsTypeWithData>
+                        `vital_signs.${index}.rhythm` as FieldPath<VitalSignsType>
                       }
                       render={({ field }) => (
                         <FormItem>
@@ -370,7 +367,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                  field.value !== undefined
+                                field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }
@@ -383,7 +380,7 @@ const VitalSignsForm: React.FC = () => {
                     <FormField
                       control={form.control}
                       name={
-                        `vital_signs.${index}.spO2` as FieldPath<VitalSignsTypeWithData>
+                        `vital_signs.${index}.spO2` as FieldPath<VitalSignsType>
                       }
                       render={({ field }) => (
                         <FormItem>
@@ -405,7 +402,7 @@ const VitalSignsForm: React.FC = () => {
                     <FormField
                       control={form.control}
                       name={
-                        `vital_signs.${index}.bloodPressure` as FieldPath<VitalSignsTypeWithData>
+                        `vital_signs.${index}.bloodPressure` as FieldPath<VitalSignsType>
                       }
                       render={({ field }) => (
                         <FormItem>
@@ -415,7 +412,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                  field.value !== undefined
+                                field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }
@@ -428,7 +425,7 @@ const VitalSignsForm: React.FC = () => {
                     <FormField
                       control={form.control}
                       name={
-                        `vital_signs.${index}.ecgAnalysis` as FieldPath<VitalSignsTypeWithData>
+                        `vital_signs.${index}.ecgAnalysis` as FieldPath<VitalSignsType>
                       }
                       render={({ field }) => (
                         <FormItem>
@@ -438,7 +435,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                  field.value !== undefined
+                                field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }
@@ -451,7 +448,7 @@ const VitalSignsForm: React.FC = () => {
                     <FormField
                       control={form.control}
                       name={
-                        `vital_signs.${index}.heartRate` as FieldPath<VitalSignsTypeWithData>
+                        `vital_signs.${index}.heartRate` as FieldPath<VitalSignsType>
                       }
                       render={({ field }) => (
                         <FormItem>
@@ -473,7 +470,7 @@ const VitalSignsForm: React.FC = () => {
                     <FormField
                       control={form.control}
                       name={
-                        `vital_signs.${index}.perfusion` as FieldPath<VitalSignsTypeWithData>
+                        `vital_signs.${index}.perfusion` as FieldPath<VitalSignsType>
                       }
                       render={({ field }) => (
                         <FormItem>
@@ -497,7 +494,7 @@ const VitalSignsForm: React.FC = () => {
                     <FormField
                       control={form.control}
                       name={
-                        `vital_signs.${index}.gcsAvpu` as FieldPath<VitalSignsTypeWithData>
+                        `vital_signs.${index}.gcsAvpu` as FieldPath<VitalSignsType>
                       }
                       render={({ field }) => (
                         <FormItem>
@@ -525,7 +522,7 @@ const VitalSignsForm: React.FC = () => {
                     <FormField
                       control={form.control}
                       name={
-                        `vital_signs.${index}.glucose` as FieldPath<VitalSignsTypeWithData>
+                        `vital_signs.${index}.glucose` as FieldPath<VitalSignsType>
                       }
                       render={({ field }) => (
                         <FormItem>
@@ -551,7 +548,7 @@ const VitalSignsForm: React.FC = () => {
                     <FormField
                       control={form.control}
                       name={
-                        `vital_signs.${index}.painScore` as FieldPath<VitalSignsTypeWithData>
+                        `vital_signs.${index}.painScore` as FieldPath<VitalSignsType>
                       }
                       render={({ field }) => (
                         <FormItem>
@@ -579,7 +576,7 @@ const VitalSignsForm: React.FC = () => {
                     <FormField
                       control={form.control}
                       name={
-                        `vital_signs.${index}.pupilReaction.left` as FieldPath<VitalSignsTypeWithData>
+                        `vital_signs.${index}.pupilReaction.left` as FieldPath<VitalSignsType>
                       }
                       render={({ field }) => (
                         <FormItem>
@@ -608,7 +605,7 @@ const VitalSignsForm: React.FC = () => {
                     <FormField
                       control={form.control}
                       name={
-                        `vital_signs.${index}.pupilReaction.right` as FieldPath<VitalSignsTypeWithData>
+                        `vital_signs.${index}.pupilReaction.right` as FieldPath<VitalSignsType>
                       }
                       render={({ field }) => (
                         <FormItem>
@@ -637,7 +634,7 @@ const VitalSignsForm: React.FC = () => {
                     <FormField
                       control={form.control}
                       name={
-                        `vital_signs.${index}.pupilSize.left` as FieldPath<VitalSignsTypeWithData>
+                        `vital_signs.${index}.pupilSize.left` as FieldPath<VitalSignsType>
                       }
                       render={({ field }) => (
                         <FormItem>
@@ -647,7 +644,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                  field.value !== undefined
+                                field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }
@@ -660,7 +657,7 @@ const VitalSignsForm: React.FC = () => {
                     <FormField
                       control={form.control}
                       name={
-                        `vital_signs.${index}.pupilSize.right` as FieldPath<VitalSignsTypeWithData>
+                        `vital_signs.${index}.pupilSize.right` as FieldPath<VitalSignsType>
                       }
                       render={({ field }) => (
                         <FormItem>
@@ -670,7 +667,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                  field.value !== undefined
+                                field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }
@@ -683,7 +680,7 @@ const VitalSignsForm: React.FC = () => {
                     <FormField
                       control={form.control}
                       name={
-                        `vital_signs.${index}.temperature` as FieldPath<VitalSignsTypeWithData>
+                        `vital_signs.${index}.temperature` as FieldPath<VitalSignsType>
                       }
                       render={({ field }) => (
                         <FormItem>
