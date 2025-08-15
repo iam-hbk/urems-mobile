@@ -14,7 +14,6 @@ import { Separator } from "@/components/ui/separator";
 
 import AppBreadcrumbs from "@/components/app-breadcrumbs";
 import QueryClientWrapper from "@/lib/react-query-client";
-import ProtectedPage from "@/components/protected-page";
 
 const fontSans = FontSans({
   subsets: ["latin"],

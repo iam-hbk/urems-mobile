@@ -59,8 +59,8 @@ export const verifySession = cache(
       const cookieStore = await cookies();
       const allCookies = cookieStore.getAll();
       const cookieHeader = allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; ');
-      
-      const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+
+      const response = await fetch(`${API_BASE_URL}/api/auth/get-employee`, {
         headers: {
           "Content-Type": "application/json",
           "Cookie": cookieHeader,
@@ -69,7 +69,6 @@ export const verifySession = cache(
       });
 
       if (!response.ok) {
-        console.error("Session verification failed: The /me endpoint returned an error.");
         const errorJson = (await response
           .json()
           .catch(() => ({}))) as Partial<ApiError>;

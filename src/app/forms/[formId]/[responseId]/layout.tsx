@@ -22,6 +22,8 @@ export default function DynamicFormLayout({
   // Prefix with underscore to indicate intentionally unused
   const { formId: _formId, responseId: _responseId } = use(params);
 
+  if (_formId || _responseId) { }
+
   // TODO: Adapt QuickLinks, StepperView, CommandPalette for FormTemplate
   // const [showQuickLinks, setShowQuickLinks] = useState<boolean>(true);
   // const [showCommandPalette, setShowCommandPalette] = useState(false);

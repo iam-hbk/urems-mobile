@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { Control, useController } from "react-hook-form";
 import { LoadScript, Autocomplete } from "@react-google-maps/api";
 import { MapPin, X, Loader } from "lucide-react";
@@ -104,9 +104,9 @@ export function AddressInput({
       fullAddress: place.formatted_address || "",
       coordinates: place.geometry?.location
         ? {
-            lat: place.geometry.location.lat(),
-            lng: place.geometry.location.lng(),
-          }
+          lat: place.geometry.location.lat(),
+          lng: place.geometry.location.lng(),
+        }
         : undefined,
     };
 

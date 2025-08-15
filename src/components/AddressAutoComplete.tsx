@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import {
@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import { X, MapPin, Loader2 } from "lucide-react";
 import {
   Command,
-  CommandEmpty,
   CommandGroup,
   CommandItem,
   CommandList,
@@ -37,7 +36,7 @@ const AddressAutoComplete: React.FC<AddressAutoCompleteProps> = ({
   useCurrentLocation = true,
   showGetCurrentLocationButton = true,
 }) => {
-  const { control, setValue, formState, watch } = useFormContext();
+  const { control, setValue, watch } = useFormContext();
   const [suggestions, setSuggestions] = useState<
     google.maps.places.AutocompletePrediction[]
   >([]);
@@ -213,6 +212,7 @@ const AddressAutoComplete: React.FC<AddressAutoCompleteProps> = ({
                   }
                 }}
                 onBlur={(e) => {
+                  if (e) { }
                   field.onBlur();
                   // Small delay to allow click events on suggestions to fire
                   setTimeout(() => {

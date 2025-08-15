@@ -1,5 +1,4 @@
 
-
 export const cookieNameUserId = 'sidbf-sodfb-tfugyihu-cvug-tyvubin-yfvgubhivgb';
 
 export const EMPLOYEE_TYPE = {
@@ -7,7 +6,6 @@ export const EMPLOYEE_TYPE = {
   2: 'Part Time',
   3: 'Contract'
 } as const;
-
 
 export const crewMembers = [
   {

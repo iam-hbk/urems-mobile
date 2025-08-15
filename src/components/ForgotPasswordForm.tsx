@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "./ui/button";
@@ -43,7 +43,7 @@ export default function ForgotPasswordForm() {
       <div className="space-y-2 text-center">
         <h1 className="text-2xl font-bold tracking-tight">Forgot Password</h1>
         <p className="text-sm text-muted-foreground">
-          Enter your email address and we'll send you a reset code.
+          Enter your email address and we&apos;ll send you a reset code.
         </p>
       </div>
 
