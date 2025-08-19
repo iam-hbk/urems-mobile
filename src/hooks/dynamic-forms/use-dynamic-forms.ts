@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useQueries,
+} from "@tanstack/react-query";
 import {
   fetchFormTemplateById,
   fetchFormTemplateWithResponses,
@@ -161,3 +166,6 @@ export const useUpdateFormResponse = () => {
     },
   });
 };
+
+// Note: useFormTemplateAndResponse has been removed since we now fetch the template server-side
+// and only fetch responses on the client to reduce layout shift

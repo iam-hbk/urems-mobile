@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle, Calendar, Clock, User, Truck, Users, Building } from "lucide-react";
 
 interface ResponseMetaCardProps {
-  response: DetailedFormResponse;
+  response?: DetailedFormResponse;
   template: FormTemplateSummary;
 }
 
@@ -27,6 +27,66 @@ export function ResponseMetaCard({ response, template }: ResponseMetaCardProps) 
       <span className="text-sm font-medium">{value}</span>
     </div>
   );
+
+  if (!response) {
+    return (
+      <Card className="bg-card">
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-lg">
+                  {template.title}
+                </h3>
+                <Badge variant="secondary" className="bg-gray-500 hover:bg-gray-600">
+                  Loading...
+                </Badge>
+              </div>
+              <div className="space-y-2">
+                <MetaItem
+                  icon={Calendar}
+                  label="Created"
+                  value="Loading..."
+                />
+                <MetaItem
+                  icon={Clock}
+                  label="Last Updated"
+                  value="Loading..."
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-sm font-medium text-muted-foreground">Identifiers</span>
+                <div className="flex-1 h-px bg-border"></div>
+              </div>
+              <MetaItem
+                icon={User}
+                label="Patient ID"
+                value="Loading..."
+              />
+              <MetaItem
+                icon={Truck}
+                label="Vehicle ID"
+                value="Loading..."
+              />
+              <MetaItem
+                icon={Users}
+                label="Crew ID"
+                value="Loading..."
+              />
+              <MetaItem
+                icon={Building}
+                label="Employee ID"
+                value="Loading..."
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-card">

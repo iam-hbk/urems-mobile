@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import AppBreadcrumbs from "@/components/app-breadcrumbs";
 import QueryClientWrapper from "@/lib/react-query-client";
 import ProtectedPage from "@/components/protected-page";
+import { GoogleMapsProvider } from "@/components/GoogleMapsProvider";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -40,19 +41,24 @@ export default function RootLayout({
         )}
       >
         <QueryClientWrapper>
-          <SidebarProvider defaultOpen={false}>
-            <AppSidebar />
-            <SidebarInset>
-              <header className="sticky top-0 z-50 flex h-16 shrink-0 items-center gap-2 border-b bg-background/80 px-4 backdrop-blur-sm">
-                <SidebarTrigger className="-ml-1 h-4 w-4 text-gray-500" />
-                <Separator orientation="vertical" className="mr-2 h-4" />
-                <AppBreadcrumbs />
-              </header>
-              <div className="flex flex-1 flex-col">{children}</div>
-            </SidebarInset>
-          </SidebarProvider>
+          <GoogleMapsProvider 
+            apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}
+            libraries={["places"]}
+          >
+            <SidebarProvider defaultOpen={false}>
+              <AppSidebar />
+              <SidebarInset>
+                <header className="sticky top-0 z-50 flex h-16 shrink-0 items-center gap-2 border-b bg-background/80 px-4 backdrop-blur-sm">
+                  <SidebarTrigger className="-ml-1 h-4 w-4 text-gray-500" />
+                  <Separator orientation="vertical" className="mr-2 h-4" />
+                  <AppBreadcrumbs />
+                </header>
+                <div className="flex flex-1 flex-col">{children}</div>
+              </SidebarInset>
+            </SidebarProvider>
 
-          <Toaster richColors position="top-right" />
+            <Toaster richColors position="top-right" />
+          </GoogleMapsProvider>
         </QueryClientWrapper>
       </body>
     </html>

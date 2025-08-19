@@ -1,74 +1,41 @@
-"use client";
-import React, { use } from "react";
+import React from "react";
 import { SectionsTable } from "@/components/response-meta-table/sections-table";
 import { ProgressRing } from "@/components/response-meta-table/section-progress-ring";
 import { ResponseMetaCard } from "@/components/response-meta-table/response-meta-card";
-import {
-  useFormTemplate,
-  useFormResponse,
-} from "@/hooks/dynamic-forms/use-dynamic-forms";
+import { fetchFormTemplateById } from "@/lib/api/dynamic-forms-api";
+import { notFound } from "next/navigation";
+import { ClientFormResponsePage } from "./client-form-response-page";
 
 type Props = Promise<{
   formId: string;
   responseId: string;
 }>;
 
-const RootFormResponseSectionPage = (props: { params: Props }) => {
-  const { responseId, formId } = use(props.params);
+export default async function RootFormResponseSectionPage({ params }: { params: Props }) {
+  const { responseId, formId } = await params;
 
-  const {
-    data: formTemplate,
-    isLoading: isLoadingFormTemplate,
-    error: formTemplateError,
-  } = useFormTemplate(formId);
-
-  const {
-    data: formResponse,
-    isLoading: isLoadingFormResponse,
-    error: formResponseError,
-  } = useFormResponse(responseId);
-
-  if (isLoadingFormTemplate || isLoadingFormResponse) {
-    return (
-      <div className="w-full p-8 text-center">Loading form details...</div>
-    );
+  // Fetch form template server-side (no loading state needed)
+  const formTemplateResult = await fetchFormTemplateById(formId);
+  
+  if (formTemplateResult.isErr()) {
+    console.error("❌ Failed to fetch form template:", formTemplateResult.error);
+    notFound();
   }
-
-  if (formTemplateError || formResponseError) {
-    return (
-      <div className="w-full p-8 text-center text-red-500">
-        Error loading form data:{" "}
-        {(formTemplateError || formResponseError)?.detail}
-      </div>
-    );
-  }
-
-  if (!formTemplate || !formResponse) {
-    return <div className="w-full p-8 text-center">Form data not found.</div>;
-  }
-
-  const completionProgress =
-    formResponse.sectionStatuses.length > 0
-      ? (formResponse.sectionStatuses.reduce(
-          (acc, curr) => acc + (curr.isCompleted ? 1 : 0),
-          0,
-        ) /
-          formResponse.sectionStatuses.length) *
-        100
-      : 0;
+  
+  const formTemplate = formTemplateResult.value;
 
   return (
     <div className="container mx-auto space-y-8 px-2 py-4 md:px-0">
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <div className="md:col-span-2">
-          <ResponseMetaCard response={formResponse} template={formTemplate} />
+          <ResponseMetaCard response={undefined} template={formTemplate} />
         </div>
 
         <div className="flex flex-col items-center justify-center">
           <div className="flex h-full w-full flex-col items-center justify-center space-y-6 rounded-lg p-4">
             <h2 className="text-xl font-semibold">Form Completion Progress</h2>
             <ProgressRing
-              progress={completionProgress}
+              progress={0}
               className="scale-110 transform"
             />
           </div>
@@ -77,14 +44,13 @@ const RootFormResponseSectionPage = (props: { params: Props }) => {
 
       <div>
         <h2 className="mb-4 text-xl font-semibold">Form Sections</h2>
-        <SectionsTable
+        {/* Client component that fetches the response */}
+        <ClientFormResponsePage
           formTemplate={formTemplate}
-          formResponse={formResponse}
           formId={formId}
+          responseId={responseId}
         />
       </div>
     </div>
   );
-};
-
-export default RootFormResponseSectionPage;
+}
