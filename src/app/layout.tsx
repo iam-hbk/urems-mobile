@@ -40,7 +40,7 @@ export default function RootLayout({
         )}
       >
         <QueryClientWrapper>
-          <GoogleMapsProvider 
+          <GoogleMapsProvider
             apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}
             libraries={["places"]}
           >

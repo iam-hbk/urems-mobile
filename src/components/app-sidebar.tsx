@@ -33,13 +33,13 @@ import { useLogoutMutation } from "@/hooks/auth/useLogout";
 
 // This is our navigation data structure
 const navigationData = {
-mainMenu: [
+  mainMenu: [
     {
       title: "Main",
       items: [
         {
           title: "Dashboard",
-          url: "/",
+          url: "/dashboard",
           icon: Home,
         },
         {

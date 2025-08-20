@@ -62,12 +62,7 @@ const nextConfig: NextConfig = {
           {
             key: "Cache-Control",
             value: "no-cache, no-store, must-revalidate",
-          },
-          {
-            key: "Content-Security-Policy",
-            value:
-              "default-src 'self'; script-src 'self'; connect-src 'self' https://urems-backend-dev.up.railway.app",
-          },
+          }
         ],
       },
       // for notification - though i have it in the service-worker.js file - fallback
@@ -85,12 +80,7 @@ const nextConfig: NextConfig = {
           {
             key: "Referrer-Policy",
             value: "strict-origin-when-cross-origin",
-          },
-          {
-            key: "Content-Security-Policy",
-            value:
-              "default-src 'self'; script-src 'self'; connect-src 'self' https://urems-backend-dev.up.railway.app",
-          },
+          }
         ],
       },
     ];

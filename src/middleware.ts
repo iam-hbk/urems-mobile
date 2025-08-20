@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { UserTokenCookieName } from './src/lib/auth/config'
+import { UserTokenCookieName } from './lib/auth/config'
 
 
 export function middleware(request: NextRequest) {
@@ -12,7 +12,7 @@ export function middleware(request: NextRequest) {
   // If the user is authenticated and tries to access the login page,
   // redirect them to the dashboard.
   if (token && isLoginPage) {
-    return NextResponse.redirect(new URL('/', request.url))
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   // If the user is not authenticated and is trying to access any page

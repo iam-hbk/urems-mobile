@@ -11,7 +11,7 @@ export default function LoadingComponent({
   message = "Loading...Datas",
 }: LoadingComponentProps) {
   return (
-    <div>
+    <div className=" h-screen flex flex-col justify-center items-center ">
       <Image
         src="/urems-erp.png"
         alt="UREMS ERP"

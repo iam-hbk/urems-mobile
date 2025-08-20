@@ -1,6 +1,6 @@
 
 # builder
-FROM node:20-slim AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -17,7 +17,7 @@ COPY . .
 RUN pnpm run build
 
 # run state
-FROM node:20-slim
+FROM node:20-alpine
 
 WORKDIR /app
 

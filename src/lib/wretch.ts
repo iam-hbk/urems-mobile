@@ -8,7 +8,7 @@ const isProd = process.env.NODE_ENV === "production";
 export const API_BASE_URL =
   (isProd
     ? process.env.NEXT_PUBLIC_API_URL
-    : process.env.NEXT_PUBLIC_API_DEV_URL) ?? "http://localhost:7089";
+    : process.env.NEXT_PUBLIC_API_URL_) ?? "http://localhost:7089";
 
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                    */
