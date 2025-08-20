@@ -33,7 +33,7 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/next.config.ts ./next.config.ts
 
-EXPOSE 3001
+EXPOSE 3000
 
 ENV NODE_ENV=production
 
