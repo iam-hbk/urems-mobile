@@ -34,8 +34,6 @@ import { useZuStandCrewStore } from "@/lib/zuStand/crew";
 import { DatePicker, Group } from "react-aria-components";
 import { DateInput } from "../ui/datefield-rac";
 import { CalendarDate } from "@internationalized/date";
-import { getCookie } from "@/utils/cookies";
-import { cookieNameUserId } from "@/utils/constant";
 import { useSessionQuery } from "@/hooks/auth/useSession";
 
 export type CaseDetailsType = z.infer<typeof CaseDetailsSchema>;
