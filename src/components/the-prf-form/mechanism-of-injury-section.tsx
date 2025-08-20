@@ -74,14 +74,14 @@ export default function MechanismOfInjuryForm() {
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         toast.success("Mechanism of Injury Information Updated", {
           duration: 3000,
           position: "top-right",
         });
         router.push(`/edit-prf/${prfId}`);
       },
-      onError: (error) => {
+      onError: () => {
         toast.error("An error occurred", {
           duration: 3000,
           position: "top-right",

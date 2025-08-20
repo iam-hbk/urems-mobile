@@ -28,11 +28,12 @@ import {
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+
 import { useLogoutMutation } from "@/hooks/auth/useLogout";
 
 // This is our navigation data structure
 const navigationData = {
-  mainMenu: [
+mainMenu: [
     {
       title: "Main",
       items: [

@@ -33,7 +33,7 @@ export const useStore = create<StoreState>()(
       updatePrfForm: (updatedPrf) =>
         set((state) => ({
           prfForms: state.prfForms.map((prf) =>
-            prf.prfFormId === updatedPrf.prfFormId ? updatedPrf : prf
+            prf.prfFormId === updatedPrf.prfFormId ? updatedPrf : prf,
           ),
         })),
       updateNotes: (prfId, notes) =>
@@ -45,7 +45,8 @@ export const useStore = create<StoreState>()(
         })),
       clearNotes: (prfId) =>
         set((state) => {
-          const { [prfId]: _, ...rest } = state.notesByPrfId;
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { [prfId]: removed, ...rest } = state.notesByPrfId;
           return { notesByPrfId: rest };
         }),
     }),
@@ -56,6 +57,6 @@ export const useStore = create<StoreState>()(
         prfForms: state.prfForms,
         notesByPrfId: state.notesByPrfId,
       }),
-    }
-  )
+    },
+  ),
 );

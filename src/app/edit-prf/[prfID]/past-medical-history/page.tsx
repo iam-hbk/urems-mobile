@@ -4,7 +4,7 @@ import React from "react";
 
 function PastMedicalHistory() {
   return (
-    <div className="border w-11/12 rounded-md p-8 m-10">
+    <div className="m-10 w-11/12 rounded-md border p-8">
       <PastMedicalHistoryForm />
     </div>
   );

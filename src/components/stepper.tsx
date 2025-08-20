@@ -6,17 +6,21 @@ import {
 } from "@/interfaces/prf-form";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import React, { ForwardRefExoticComponent, RefAttributes } from "react";
+import React from "react";
 import { PRFFormDataSchema } from "@/interfaces/prf-schema";
 import { z } from "zod";
 import { usePathname } from "next/navigation";
-import { MapPinIcon } from "lucide-react";
-import { DialogCloseProps } from "@radix-ui/react-dialog";
+import { sectionDescriptions } from "@/interfaces/prf-form";
+
+type StepStatus = "complete" | "completing";
+
+type SectionDisplayName = (typeof sectionDescriptions)[number];
+type SectionInnerShape = z.ZodRawShape & { isOptional: z.ZodTypeAny };
 type Props = {
   number: number;
   title: string;
   optional: boolean;
-  status: string;
+  status: StepStatus;
   sectionUrl: string;
   isLastStep?: boolean;
 };
@@ -96,7 +100,14 @@ function Step({
   );
 }
 
-function Steps({ steps }: { steps: any[] }) {
+type StepItem = {
+  title: SectionDisplayName;
+  isOptional: boolean;
+  status: StepStatus;
+  route: string;
+};
+
+function Steps({ steps }: { steps: StepItem[] }) {
   return (
     <div className="flex items-start flex-col">
       {steps.map((step, index) => (
@@ -118,43 +129,45 @@ type StepperProps = {
   prf: PRF_FORM;
 };
 export function Stepper({ prf }: StepperProps) {
-  const prf_data: any = Object.entries(PRFFormDataSchema.shape).map(
-    ([sectionKey]) => {
-      const sectionSchema =
-        PRFFormDataSchema.shape[sectionKey as keyof PRF_FORM_DATA];
+  const prfDataSections = Object.keys(
+    PRFFormDataSchema.shape
+  ) as Array<keyof PRF_FORM_DATA>;
 
-      // Unwrap the ZodOptional to get the inner ZodObject
-      const innerSchema =
-        sectionSchema instanceof z.ZodOptional
-          ? sectionSchema._def.innerType
-          : sectionSchema;
+  const prf_data: StepItem[] = prfDataSections.map((sectionKey) => {
+    const sectionSchema = PRFFormDataSchema.shape[sectionKey];
 
-      // Check if `isOptional` has a default value set
-      const isOptional = innerSchema.shape.isOptional instanceof z.ZodDefault;
+    // Unwrap the ZodOptional to get the inner ZodObject
+    const innerSchema =
+      sectionSchema instanceof z.ZodOptional
+        ? sectionSchema._def.innerType
+        : sectionSchema;
 
-      const sectionData = prf.prfData[sectionKey as keyof PRF_FORM_DATA];
+    // Check if `isOptional` has a default value set
+    const innerObject = innerSchema as z.ZodObject<SectionInnerShape>;
+    const isOptional = innerObject.shape.isOptional instanceof z.ZodDefault;
 
-      // Determine if the section is optional
-      const priority = sectionData
-        ? sectionData.isOptional
-          ? "optional"
-          : "required"
-        : isOptional
-        ? "required"
-        : "optional";
-      const route =
-        sectionKey === "case_details"
-          ? `/edit-prf/${prf.prfFormId}`
-          : `/edit-prf/${prf.prfFormId}/${sectionKey.replace(/_/g, "-")}`;
+    const sectionData = prf.prfData[sectionKey];
 
-      return {
-        title: PRF_FORM_DATA_DISPLAY_NAMES[sectionKey as keyof PRF_FORM_DATA],
-        isOptional: priority === "optional",
-        status: sectionData?.isCompleted ? "complete" : "completing",
-        route,
-      };
-    }
-  );
+    // Determine if the section is optional
+    const priority = sectionData
+      ? sectionData.isOptional
+        ? "optional"
+        : "required"
+      : isOptional
+      ? "required"
+      : "optional";
+    const route =
+      sectionKey === "case_details"
+        ? `/edit-prf/${prf.prfFormId}`
+        : `/edit-prf/${prf.prfFormId}/${sectionKey.replace(/_/g, "-")}`;
+
+    return {
+      title: PRF_FORM_DATA_DISPLAY_NAMES[sectionKey],
+      isOptional: priority === "optional",
+      status: sectionData?.isCompleted ? "complete" : "completing",
+      route,
+    };
+  });
 
   return (
     <div className="p-4">

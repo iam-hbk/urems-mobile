@@ -15,18 +15,17 @@ import {
 import { PRF_FORM, PRF_FORM_DATA_DISPLAY_NAMES } from "@/interfaces/prf-form";
 import { useRouter } from "next/navigation";
 import { iconMap } from "./quick-links";
-import { cn } from "@/lib/utils";
 
 interface CommandPaletteProps {
   prf?: PRF_FORM;
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onOpenChangeAction: (open: boolean) => void;
 }
 
 export function CommandPalette({
   prf,
   open,
-  onOpenChange,
+  onOpenChangeAction,
 }: CommandPaletteProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
@@ -36,13 +35,13 @@ export function CommandPalette({
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        onOpenChange(!open);
+        onOpenChangeAction(!open);
       }
     };
 
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
-  }, [open, onOpenChange]);
+  }, [open, onOpenChangeAction]);
 
   // Reset search when opening/closing
   useEffect(() => {
@@ -78,7 +77,7 @@ export function CommandPalette({
   });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChangeAction}>
       <DialogContent
         className="p-0 sm:max-w-[550px]"
         aria-describedby={undefined}
@@ -105,7 +104,7 @@ export function CommandPalette({
                     key={section.href}
                     onSelect={() => {
                       router.push(section.href);
-                      onOpenChange(false);
+                      onOpenChangeAction(false);
                     }}
                     className="flex items-center gap-2 px-4 py-2"
                   >

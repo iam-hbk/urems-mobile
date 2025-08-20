@@ -1,21 +1,13 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useForm, Controller, useFieldArray } from "react-hook-form";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { toast } from "sonner";
 import { InjurySchema, InjuryType } from "@/interfaces/prf-schema";
-import { Loader2, PlusCircleIcon, Trash2, X, Download } from "lucide-react";
+import { Loader2, PlusCircleIcon, Trash2, Download } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
@@ -93,14 +85,14 @@ export default function BodyDiagram() {
     console.log("Submitting ->", prfUpdateValue);
 
     updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         toast.success("Injury Information Updated", {
           duration: 3000,
           position: "top-right",
         });
         router.push(`/edit-prf/${prfId}`);
       },
-      onError: (error) => {
+      onError: () => {
         toast.error("An error occurred", {
           duration: 3000,
           position: "top-right",
@@ -135,27 +127,27 @@ export default function BodyDiagram() {
     });
     setSelectedInjuryPreview(undefined);
   };
-  const handleSymbolClick = (
-    id: number,
-    event?: React.MouseEvent<SVGGElement>,
-  ) => {
-    if (event) event.stopPropagation(); // Prevent triggering handleClick on the SVG
-    //Get index of the injury to be removed
-    const index = injuries.findIndex((injury) => injury.id === id);
-    handlePreviewInjury(injuries[index]);
-  };
+  // const handleSymbolClick = (
+  //   id: number,
+  //   event?: React.MouseEvent<SVGGElement>,
+  // ) => {
+  //   if (event) event.stopPropagation(); // Prevent triggering handleClick on the SVG
+  //   //Get index of the injury to be removed
+  //   const index = injuries.findIndex((injury) => injury.id === id);
+  //   handlePreviewInjury(injuries[index]);
+  // };
   const handleRemoveInjury = (
     id: number,
     event?: React.MouseEvent<SVGGElement>,
   ) => {
     if (event) event.stopPropagation(); // Prevent triggering handleClick on the SVG
     const index = injuries.findIndex((injury) => injury.id === id);
-    const injuryName = Object.keys(SYMBOLS)
-      .find(
-        (key) =>
-          SYMBOLS[key as keyof typeof SYMBOLS] === injuries[index].symbol,
-      )
-      ?.toLocaleLowerCase();
+    // const injuryName = Object.keys(SYMBOLS)
+    //   .find(
+    //     (key) =>
+    //       SYMBOLS[key as keyof typeof SYMBOLS] === injuries[index].symbol,
+    //   )
+    //   ?.toLocaleLowerCase();
     removeInjury(index);
     // toast.success(`${injuryName?.charAt(0).toUpperCase()}${injuryName.slice(1)} Injury removed`);
     toast.success("Injury removed");
@@ -206,20 +198,18 @@ export default function BodyDiagram() {
     });
   };
 
-
-
   const downloadImage = (base64Image: string, filename: string) => {
     try {
       // Create a temporary link element
       const link = document.createElement("a");
       link.href = base64Image;
       link.download = filename;
-      
+
       // Append to body, click, and remove
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       toast.success(`${filename} downloaded successfully!`);
     } catch (error) {
       console.error("Error downloading image:", error);
@@ -228,38 +218,41 @@ export default function BodyDiagram() {
   };
 
   const handleDownloadImage = (side: "anterior" | "posterior") => {
-    const imageData = side === "anterior" 
-      ? form.getValues("anteriorImage") 
-      : form.getValues("posteriorImage");
-    
+    const imageData =
+      side === "anterior"
+        ? form.getValues("anteriorImage")
+        : form.getValues("posteriorImage");
+
     if (!imageData) {
       toast.error(`No ${side} image available for download.`);
       return;
     }
-    
+
     const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, "-");
     const filename = `injury-diagram-${side}-${timestamp}.png`;
-    
+
     downloadImage(imageData, filename);
   };
 
-  const autoCaptureDiagrams = async () => {
+  const autoCaptureDiagrams = useCallback(async () => {
     try {
       // Capture both diagrams automatically
       if (anteriorSvgRef.current) {
         const anteriorBase64 = await captureSvgAsBase64(anteriorSvgRef.current);
         form.setValue("anteriorImage", anteriorBase64, { shouldDirty: true });
       }
-      
+
       if (posteriorSvgRef.current) {
-        const posteriorBase64 = await captureSvgAsBase64(posteriorSvgRef.current);
+        const posteriorBase64 = await captureSvgAsBase64(
+          posteriorSvgRef.current,
+        );
         form.setValue("posteriorImage", posteriorBase64, { shouldDirty: true });
       }
     } catch (error) {
       console.error("Error auto-capturing diagrams:", error);
       // Don't show error toast for auto-capture to avoid spam
     }
-  };
+  }, [anteriorSvgRef, posteriorSvgRef, form]);
 
   // Auto-capture when injuries change
   useEffect(() => {
@@ -268,22 +261,26 @@ export default function BodyDiagram() {
       const timer = setTimeout(() => {
         autoCaptureDiagrams();
       }, 100);
-      
+
       return () => clearTimeout(timer);
     }
-  }, [injuries]);
+  }, [injuries, anteriorSvgRef, posteriorSvgRef, autoCaptureDiagrams]);
 
   // Auto-capture on initial load if there are existing injuries
   useEffect(() => {
-    if (injuries.length > 0 && anteriorSvgRef.current && posteriorSvgRef.current) {
+    if (
+      injuries.length > 0 &&
+      anteriorSvgRef.current &&
+      posteriorSvgRef.current
+    ) {
       // Delay to ensure SVGs are fully rendered
       const timer = setTimeout(() => {
         autoCaptureDiagrams();
       }, 500);
-      
+
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [injuries, anteriorSvgRef, posteriorSvgRef, autoCaptureDiagrams]);
 
   return (
     <div className="flex flex-col items-center space-y-4 overflow-auto">
@@ -631,7 +628,7 @@ export default function BodyDiagram() {
               return (
                 <div
                   key={injury.id}
-                  onMouseEnter={(e) => handlePreviewInjury(injury)}
+                  onMouseEnter={() => handlePreviewInjury(injury)}
                   onMouseLeave={() => setSelectedInjuryPreview(undefined)}
                   className="relative flex cursor-pointer flex-row items-center justify-between space-x-2 rounded border p-2 text-start capitalize transition-colors duration-200"
                 >
@@ -644,7 +641,7 @@ export default function BodyDiagram() {
                     .replace(/_/g, " ")}
                   {selectedInjuryPreview?.id === injury.id && (
                     <Button
-                      onClick={(e) => handleRemoveInjury(injury.id)}
+                      onClick={() => handleRemoveInjury(injury.id)}
                       variant={"outline"}
                       className="absolute right-[-12px] top-[-18px] h-8 w-8 rounded-full p-2 text-destructive"
                     >

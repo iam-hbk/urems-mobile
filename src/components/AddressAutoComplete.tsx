@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/command";
 import { toast } from "sonner";
 import { useDebounce } from "use-debounce";
+import { useGoogleMaps } from "./GoogleMapsProvider";
 
 export type AddressAutoCompleteProps = {
   name: string;
@@ -37,10 +38,10 @@ const AddressAutoComplete: React.FC<AddressAutoCompleteProps> = ({
   showGetCurrentLocationButton = true,
 }) => {
   const { control, setValue, watch } = useFormContext();
+  const { isLoaded: isGoogleMapsLoaded, loadError } = useGoogleMaps();
   const [suggestions, setSuggestions] = useState<
     google.maps.places.AutocompletePrediction[]
   >([]);
-  const [isGoogleMapsLoaded, setIsGoogleMapsLoaded] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -51,35 +52,7 @@ const AddressAutoComplete: React.FC<AddressAutoCompleteProps> = ({
 
   const currentValue = watch(name);
   const [debouncedValue] = useDebounce(currentValue, 300);
-
-  useEffect(() => {
-    const checkGoogleMapsLoaded = () => {
-      if (
-        typeof window !== "undefined" &&
-        window.google &&
-        window.google.maps &&
-        window.google.maps.places
-      ) {
-        autocompleteRef.current =
-          new window.google.maps.places.AutocompleteService();
-        setIsGoogleMapsLoaded(true);
-        // handle Current Location call only if the default value is empty
-        if (!currentValue && useCurrentLocation) {
-          handleUseCurrentLocation();
-        }
-      } else {
-        setIsGoogleMapsLoaded(false);
-      }
-    };
-
-    checkGoogleMapsLoaded();
-
-    const timeoutId = setTimeout(checkGoogleMapsLoaded, 1000);
-
-    return () => clearTimeout(timeoutId);
-  }, []);
-
-  const handleInputChange = (value: string) => {
+  const handleInputChange = useCallback((value: string) => {
     if (value.length >= 2 && autocompleteRef.current && isGoogleMapsLoaded) {
       autocompleteRef.current.getPlacePredictions(
         {
@@ -95,32 +68,8 @@ const AddressAutoComplete: React.FC<AddressAutoCompleteProps> = ({
       setSuggestions([]);
       setIsOpen(false);
     }
-  };
-
-  useEffect(() => {
-    // Only trigger API call if the user is actively editing
-    if (isEditing && debouncedValue && isGoogleMapsLoaded) {
-      handleInputChange(debouncedValue);
-    }
-  }, [debouncedValue, isGoogleMapsLoaded, isEditing]);
-
-  const handleSuggestionClick = (
-    suggestion: google.maps.places.AutocompletePrediction,
-  ) => {
-    setValue(name, suggestion.description, {
-      shouldValidate: true,
-      shouldDirty: true,
-      shouldTouch: true,
-    });
-    setSuggestions([]);
-    setIsOpen(false);
-    setIsEditing(false);
-    if (inputRef.current) {
-      inputRef.current.blur(); // Blur the input after selection
-    }
-  };
-
-  const handleUseCurrentLocation = () => {
+  }, [isGoogleMapsLoaded]);
+  const handleUseCurrentLocation = useCallback(() => {
     if ("geolocation" in navigator) {
       setIsLoadingLocation(true);
       navigator.geolocation.getCurrentPosition(
@@ -132,7 +81,7 @@ const AddressAutoComplete: React.FC<AddressAutoCompleteProps> = ({
               { location: { lat: latitude, lng: longitude } },
               (
                 results: google.maps.GeocoderResult[] | null,
-                status: google.maps.GeocoderStatus
+                status: google.maps.GeocoderStatus,
               ) => {
                 if (status === "OK" && !!results && results[0]) {
                   setValue(name, results[0].formatted_address, {
@@ -184,6 +133,45 @@ const AddressAutoComplete: React.FC<AddressAutoCompleteProps> = ({
           "Your browser doesn't support geolocation. Please enter your address manually.",
       });
     }
+  }, [isGoogleMapsLoaded, name, setValue]);
+
+  useEffect(() => {
+    if (isGoogleMapsLoaded && !loadError) {
+      autocompleteRef.current = new google.maps.places.AutocompleteService();
+      // handle Current Location call only if the default value is empty
+      if (!currentValue && useCurrentLocation) {
+        handleUseCurrentLocation();
+      }
+    }
+  }, [
+    isGoogleMapsLoaded,
+    loadError,
+    currentValue,
+    useCurrentLocation,
+    handleUseCurrentLocation,
+  ]);
+
+  useEffect(() => {
+    // Only trigger API call if the user is actively editing
+    if (isEditing && debouncedValue && isGoogleMapsLoaded) {
+      handleInputChange(debouncedValue);
+    }
+  }, [debouncedValue, isGoogleMapsLoaded, isEditing, handleInputChange]);
+
+  const handleSuggestionClick = (
+    suggestion: google.maps.places.AutocompletePrediction,
+  ) => {
+    setValue(name, suggestion.description, {
+      shouldValidate: true,
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+    setSuggestions([]);
+    setIsOpen(false);
+    setIsEditing(false);
+    if (inputRef.current) {
+      inputRef.current.blur(); // Blur the input after selection
+    }
   };
 
   return (
@@ -201,7 +189,13 @@ const AddressAutoComplete: React.FC<AddressAutoCompleteProps> = ({
                   field.ref(e);
                   inputRef.current = e;
                 }}
-                placeholder={placeholder}
+                placeholder={
+                  loadError
+                    ? "Google Maps failed to load"
+                    : isGoogleMapsLoaded
+                      ? placeholder
+                      : "Loading Google Maps..."
+                }
                 onChange={(e) => {
                   field.onChange(e);
                   setIsEditing(true);
@@ -211,8 +205,7 @@ const AddressAutoComplete: React.FC<AddressAutoCompleteProps> = ({
                     setIsOpen(false);
                   }
                 }}
-                onBlur={(e) => {
-                  if (e) { }
+                onBlur={() => {
                   field.onBlur();
                   // Small delay to allow click events on suggestions to fire
                   setTimeout(() => {
@@ -229,16 +222,19 @@ const AddressAutoComplete: React.FC<AddressAutoCompleteProps> = ({
                 aria-autocomplete="list"
                 aria-controls="suggestions-list"
                 aria-expanded={isOpen}
+                disabled={!isGoogleMapsLoaded || !!loadError}
               />
               <div className="absolute right-0 top-0 flex h-full items-center">
                 {showGetCurrentLocationButton && (
                   <Button
-                    onClick={() => handleUseCurrentLocation()}
+                    onClick={handleUseCurrentLocation}
                     variant="ghost"
                     size="sm"
                     className="h-full px-2 hover:bg-transparent"
                     title="Use current location"
-                    disabled={isLoadingLocation}
+                    disabled={
+                      isLoadingLocation || !isGoogleMapsLoaded || !!loadError
+                    }
                   >
                     {isLoadingLocation ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -294,6 +290,11 @@ const AddressAutoComplete: React.FC<AddressAutoCompleteProps> = ({
               </Command>
             )}
           <FormMessage />
+          {loadError && (
+            <p className="text-sm text-destructive">
+              Google Maps failed to load. Address autocomplete is unavailable.
+            </p>
+          )}
         </FormItem>
       )}
     />

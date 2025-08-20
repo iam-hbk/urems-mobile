@@ -18,9 +18,6 @@ import {
   HeartPulse as Heartbeat,
   Stethoscope,
   Activity,
-  FileText,
-  Clipboard,
-  BriefcaseMedical as FirstAid,
   Pill,
   UserCheck,
   Edit3,
@@ -67,10 +64,10 @@ export const iconMap = {
   Notes: Edit3,
   Diagnosis: ClipboardPlus,
   "Mechanism of Injury": Bandage,
-  "Procedures": ArrowDownUp,
+  Procedures: ArrowDownUp,
   "Respiratory Distress Assessment": Wind,
-  "Injuries": PersonStanding,
-  "Assessments": ClipboardPlus,
+  Injuries: PersonStanding,
+  Assessments: ClipboardPlus,
 };
 
 // QuickLinks Component
@@ -90,7 +87,7 @@ export default function QuickLinks({ prf }: { prf: PRF_FORM }) {
         .map((item) => item.sectionDescription);
       setVisibleItems(initialItems);
     }
-  }, []);
+  }, [prf]);
 
   const toggleItem = (item: string) => {
     setVisibleItems((prev) => {
@@ -126,7 +123,7 @@ export default function QuickLinks({ prf }: { prf: PRF_FORM }) {
   };
 
   return (
-    <nav className="w-full rounded-lg border p-4 ">
+    <nav className="w-full rounded-lg border p-4">
       <div className="flex flex-wrap items-start gap-2">
         <div className="grid max-w-[calc(100%-3rem)] flex-grow grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-5">
           {visibleItems.map((item) => {

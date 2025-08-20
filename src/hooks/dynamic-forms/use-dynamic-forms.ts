@@ -144,7 +144,7 @@ export const useUpdateFormResponse = () => {
       apiUpdateFormResponse(responseId, payload),
     onSuccess: (result, variables) => {
       result.match(
-        (data) => {
+        () => {
           toast.success("Form response updated successfully!");
           // Invalidate the form response query to refresh data
           queryClient.invalidateQueries({
@@ -161,3 +161,6 @@ export const useUpdateFormResponse = () => {
     },
   });
 };
+
+// Note: useFormTemplateAndResponse has been removed since we now fetch the template server-side
+// and only fetch responses on the client to reduce layout shift

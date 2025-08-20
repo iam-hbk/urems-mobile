@@ -51,12 +51,16 @@ const AppBreadcrumbs: React.FC = () => {
       if (!formId) return null;
       // console.log(`Fetching form template for ID: ${formId}`);
       try {
-        const template = await fetchFormTemplateById(formId);
-        // console.log("Fetched template:", template);
-        return template;
-      } catch (err) {
-        // console.error("Error fetching form template:", err);
-        return null; // Or throw err if you want react-query to handle it as an error state
+        const result = await fetchFormTemplateById(formId);
+        // console.log("Fetched template result:", result);
+        if (result.isOk()) {
+          return result.value;
+        } else {
+          // console.error("Error fetching form template:", result.error);
+          return null;
+        }
+      } catch (_error) {
+        throw _error; // Or throw err if you want react-query to handle it as an error state
       }
     },
     enabled: !!formId && formsSegmentIndex !== -1,
@@ -96,9 +100,9 @@ const AppBreadcrumbs: React.FC = () => {
       } else if (formTemplateError) {
         formName = "Error";
       } else if (formTemplate) {
-        formName = formTemplate.title || `Form ${formId.substring(0,6)}`;
+        formName = formTemplate.title || `Form ${formId.substring(0, 6)}`;
       } else {
-        formName = `Form ${formId.substring(0,6)}`;
+        formName = `Form ${formId.substring(0, 6)}`;
       }
       if (typeof formName === "string" && formName.length > 25) {
         formName = `${formName.substring(0, 22)}...`;
@@ -130,12 +134,18 @@ const AppBreadcrumbs: React.FC = () => {
           if (isLoadingTemplate) {
             sectionNameNode = "Loading Section...";
           } else if (formTemplate && formTemplate.sections) {
-            const section = formTemplate.sections.find((s) => s.id === sectionId);
-            sectionNameNode = section?.name || `Section ${sectionId.substring(0,6)}`;
+            const section = formTemplate.sections.find(
+              (s) => s.id === sectionId,
+            );
+            sectionNameNode =
+              section?.name || `Section ${sectionId.substring(0, 6)}`;
           } else {
-            sectionNameNode = `Section ${sectionId.substring(0,6)}`;
+            sectionNameNode = `Section ${sectionId.substring(0, 6)}`;
           }
-          if (typeof sectionNameNode === "string" && sectionNameNode.length > 25) {
+          if (
+            typeof sectionNameNode === "string" &&
+            sectionNameNode.length > 25
+          ) {
             sectionNameNode = `${sectionNameNode.substring(0, 22)}...`;
           }
           breadcrumbItems.push({
@@ -145,7 +155,8 @@ const AppBreadcrumbs: React.FC = () => {
               </Badge>
             ),
             path: `/forms/${formId}/${responseId}/${sectionId}`,
-            isCurrentPage: pathname === `/forms/${formId}/${responseId}/${sectionId}`,
+            isCurrentPage:
+              pathname === `/forms/${formId}/${responseId}/${sectionId}`,
           });
         }
       }
@@ -158,11 +169,12 @@ const AppBreadcrumbs: React.FC = () => {
       // Avoid duplicating "Home" if segments is empty or first segment is home (though filter(Boolean) handles empty)
       if (currentBuiltPath === "/") return;
 
-      if (!breadcrumbItems.find(b => b.path === currentBuiltPath)) {
+      if (!breadcrumbItems.find((b) => b.path === currentBuiltPath)) {
         breadcrumbItems.push({
           name: (
             <Badge className="whitespace-nowrap rounded-md bg-gray-400 capitalize hover:bg-gray-500">
-              {segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ")}
+              {segment.charAt(0).toUpperCase() +
+                segment.slice(1).replace(/-/g, " ")}
             </Badge>
           ),
           path: currentBuiltPath,
@@ -171,28 +183,34 @@ const AppBreadcrumbs: React.FC = () => {
       }
     });
   }
-  
+
   // Filter out items that are not part of the current path hierarchy
   // and set isCurrentPage correctly for the *last* relevant item.
-  const finalBreadcrumbItems = breadcrumbItems.reduce((acc, item, index, arr) => {
-    if (pathname.startsWith(item.path)) {
+  const finalBreadcrumbItems = breadcrumbItems.reduce(
+    (acc, item, index, arr) => {
+      if (pathname.startsWith(item.path)) {
         // Mark all previous items in accumulator as not current
-        acc.forEach(prevItem => prevItem.isCurrentPage = false);
+        acc.forEach((prevItem) => (prevItem.isCurrentPage = false));
         // Current item is potentially the current page or a parent
-        item.isCurrentPage = (pathname === item.path);
+        item.isCurrentPage = pathname === item.path;
         acc.push(item);
-    }
-    // If this is the last item overall and no item has been marked as current yet,
-    // this implies a mismatch or a base path like "/", check if it's the one.
-     if (index === arr.length -1 && !acc.find(it => it.isCurrentPage) && acc.length > 0) {
-        const lastAccItem = acc[acc.length -1];
+      }
+      // If this is the last item overall and no item has been marked as current yet,
+      // this implies a mismatch or a base path like "/", check if it's the one.
+      if (
+        index === arr.length - 1 &&
+        !acc.find((it) => it.isCurrentPage) &&
+        acc.length > 0
+      ) {
+        const lastAccItem = acc[acc.length - 1];
         if (pathname === lastAccItem.path) {
-            lastAccItem.isCurrentPage = true;
+          lastAccItem.isCurrentPage = true;
         }
-    }
-    return acc;
-  }, [] as BreadcrumbPart[]);
-
+      }
+      return acc;
+    },
+    [] as BreadcrumbPart[],
+  );
 
   // Ensure only the last item that is truly the current page is marked as such.
   let foundCurrentPage = false;
@@ -204,7 +222,7 @@ const AppBreadcrumbs: React.FC = () => {
       foundCurrentPage = true;
     }
   }
-  
+
   // If after all, no item is current (e.g. path is /forms but only Home and Forms List are built and /forms is current)
   // and the pathname matches the last item's path in the filtered list, mark it current.
   if (!foundCurrentPage && finalBreadcrumbItems.length > 0) {
@@ -214,32 +232,39 @@ const AppBreadcrumbs: React.FC = () => {
     }
   }
 
-
-  if (finalBreadcrumbItems.length === 0 || (finalBreadcrumbItems.length === 1 && finalBreadcrumbItems[0].path === "/" && pathname !== "/")) {
-     // If only "Home" is left but we are not on the Home page, or if list is empty, render nothing.
-     // Exception: if path is "/" then "Home" should be shown.
-     if (pathname === "/") {
-        // Keep "Home"
-     } else {
-        return null;
-     }
+  if (
+    finalBreadcrumbItems.length === 0 ||
+    (finalBreadcrumbItems.length === 1 &&
+      finalBreadcrumbItems[0].path === "/" &&
+      pathname !== "/")
+  ) {
+    // If only "Home" is left but we are not on the Home page, or if list is empty, render nothing.
+    // Exception: if path is "/" then "Home" should be shown.
+    if (pathname === "/") {
+      // Keep "Home"
+    } else {
+      return null;
+    }
   }
-  
+
   // If still only home is there, but it's not the current page (e.g. viewing /settings, and only Home breadcrumb was pushed)
   // And we don't want to show "Home" for /settings, this is where we would return null.
   // The above check handles this.
-  
+
   // If after filtering, the only item is "Home" but it's not the current page, don't render.
-  if (finalBreadcrumbItems.length === 1 && finalBreadcrumbItems[0].path === "/" && !finalBreadcrumbItems[0].isCurrentPage) {
+  if (
+    finalBreadcrumbItems.length === 1 &&
+    finalBreadcrumbItems[0].path === "/" &&
+    !finalBreadcrumbItems[0].isCurrentPage
+  ) {
     return null;
   }
-
 
   return (
     <Breadcrumb className="hidden md:flex">
       <BreadcrumbList>
         {finalBreadcrumbItems.map((item, index) => (
-          <React.Fragment key={item.path + '-' + index}>
+          <React.Fragment key={item.path + "-" + index}>
             <BreadcrumbItem>
               {item.isCurrentPage ? (
                 <BreadcrumbPage>{item.name}</BreadcrumbPage>

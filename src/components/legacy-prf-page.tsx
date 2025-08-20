@@ -11,7 +11,7 @@ import { useState } from "react";
 
 export default function LegacyPrfPage() {
   const [view, setView] = useState<"table" | "summary">("table");
-  const { data: prfs_, error, isLoading } = useGetPrfForms();
+  const { data: prfs_, isLoading } = useGetPrfForms();
 
   // Show loading state for PRF data
   if (isLoading) {

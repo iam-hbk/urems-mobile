@@ -3,7 +3,7 @@
 import React from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { SubmitErrorHandler, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import {
   Accordion,
   AccordionContent,
@@ -36,7 +36,7 @@ type IncidentInformationFormProps = {
   initialData?: PRF_FORM;
 };
 
-const IncidentInformationForm = ({ }: IncidentInformationFormProps) => {
+const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
   const prfId = usePathname().split("/")[2];
   const prf_from_store = useStore((state) => state.prfForms).find(
     (prf) => prf.prfFormId == prfId,
@@ -73,14 +73,14 @@ const IncidentInformationForm = ({ }: IncidentInformationFormProps) => {
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         toast.success("Incident Information Updated", {
           duration: 3000,
           position: "top-right",
         });
         router.push(`/edit-prf/${prfId}`);
       },
-      onError: (error) => {
+      onError: () => {
         toast.error("An error occurred", {
           duration: 3000,
           position: "top-right",
@@ -90,14 +90,26 @@ const IncidentInformationForm = ({ }: IncidentInformationFormProps) => {
   }
 
   // Add this function to handle form errors
-  const onError = (errors: any) => {
-    const errorMessages = Object.entries(errors)
-      .map(([_, error]: [string, any]) => error?.message)
-      .filter(Boolean);
-    
-    const errorMessage = errorMessages[0] || "Please fill in all required fields";
-    
-    toast.error(errorMessage, {
+  const onError: SubmitErrorHandler<IncidentInformationType> = (errors) => {
+    const extractFirstMessage = (err: unknown): string | null => {
+      if (!err) return null;
+      if (typeof err === "object") {
+        if ("message" in (err as Record<string, unknown>)) {
+          const maybe = (err as { message?: unknown }).message;
+          if (typeof maybe === "string") return maybe;
+        }
+        for (const value of Object.values(err as Record<string, unknown>)) {
+          const found = extractFirstMessage(value);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+
+    const firstMessage =
+      extractFirstMessage(errors) || "Please fill in all required fields";
+
+    toast.error(firstMessage, {
       duration: 3000,
       position: "top-right",
     });

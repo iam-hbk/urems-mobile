@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from "react"
-import { cn } from "@/lib/utils"
+import { useCallback, useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface ProgressRingProps {
-  progress: number
-  size?: number
-  strokeWidth?: number
-  className?: string
-  bgColor?: string
-  progressColor?: string
-  textClassName?: string
-  direction?: "clockwise" | "counterclockwise"
-  animateOnLoad?: boolean
+  progress: number;
+  size?: number;
+  strokeWidth?: number;
+  className?: string;
+  bgColor?: string;
+  progressColor?: string;
+  textClassName?: string;
+  direction?: "clockwise" | "counterclockwise";
+  animateOnLoad?: boolean;
 }
 
 export function ProgressRing({
@@ -27,56 +27,78 @@ export function ProgressRing({
   animateOnLoad = true,
 }: ProgressRingProps) {
   // Calculate radius and center point
-  const radius = (size - strokeWidth) / 2
-  const center = size / 2
-  const circumference = radius * 2 * Math.PI
+  const radius = (size - strokeWidth) / 2;
+  const center = size / 2;
+  const circumference = radius * 2 * Math.PI;
 
   // Ensure progress is between 0 and 100
-  const normalizedProgress = Math.min(100, Math.max(0, progress))
+  const normalizedProgress = Math.min(100, Math.max(0, progress));
 
   // Calculate the offset based on progress
-  const calculateOffset = (progress: number) => {
-    if (direction === "clockwise") {
-      return ((100 - progress) / 100) * circumference
-    } else {
-      return (progress / 100) * circumference
-    }
-  }
+  const calculateOffset = useCallback(
+    (progress: number) => {
+      if (direction === "clockwise") {
+        return ((100 - progress) / 100) * circumference;
+      } else {
+        return (progress / 100) * circumference;
+      }
+    },
+    [direction, circumference],
+  );
 
   // Initialize with the starting offset for animation
-  const initialOffset = direction === "clockwise" ? circumference : 0
-  const [offset, setOffset] = useState(animateOnLoad ? initialOffset : calculateOffset(normalizedProgress))
-  const [isInitialRender, setIsInitialRender] = useState(true)
-  const circleRef = useRef<SVGCircleElement>(null)
+  const initialOffset = direction === "clockwise" ? circumference : 0;
+  const [offset, setOffset] = useState(
+    animateOnLoad ? initialOffset : calculateOffset(normalizedProgress),
+  );
+  const [isInitialRender, setIsInitialRender] = useState(true);
+  const circleRef = useRef<SVGCircleElement>(null);
 
   // Handle initial animation
   useEffect(() => {
     if (isInitialRender && animateOnLoad) {
       // Use requestAnimationFrame to ensure the initial state is rendered first
       const animationFrame = requestAnimationFrame(() => {
-        setOffset(calculateOffset(normalizedProgress))
-        setIsInitialRender(false)
-      })
-      return () => cancelAnimationFrame(animationFrame)
+        setOffset(calculateOffset(normalizedProgress));
+        setIsInitialRender(false);
+      });
+      return () => cancelAnimationFrame(animationFrame);
     } else {
-      setIsInitialRender(false)
+      setIsInitialRender(false);
     }
-  }, [isInitialRender, animateOnLoad, normalizedProgress, circumference, direction])
+  }, [isInitialRender, animateOnLoad, normalizedProgress, calculateOffset]);
 
   // Handle progress changes after initial render
   useEffect(() => {
     if (!isInitialRender) {
-      setOffset(calculateOffset(normalizedProgress))
+      setOffset(calculateOffset(normalizedProgress));
     }
-  }, [normalizedProgress, circumference, direction, isInitialRender])
+  }, [normalizedProgress, isInitialRender, calculateOffset]);
 
   // Determine SVG rotation based on direction
-  const svgRotation = direction === "clockwise" ? "-rotate-90" : "rotate-90"
+  const svgRotation = direction === "clockwise" ? "-rotate-90" : "rotate-90";
 
   return (
-    <div className={cn("relative inline-flex items-center justify-center", className)}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className={`transform ${svgRotation}`}>
-        <circle cx={center} cy={center} r={radius} fill="none" strokeWidth={strokeWidth} className={bgColor} />
+    <div
+      className={cn(
+        "relative inline-flex items-center justify-center",
+        className,
+      )}
+    >
+      <svg
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        className={`transform ${svgRotation}`}
+      >
+        <circle
+          cx={center}
+          cy={center}
+          r={radius}
+          fill="none"
+          strokeWidth={strokeWidth}
+          className={bgColor}
+        />
         <circle
           ref={circleRef}
           cx={center}
@@ -87,16 +109,22 @@ export function ProgressRing({
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
-          className={cn("transition-all duration-700 ease-in-out", progressColor)}
+          className={cn(
+            "transition-all duration-700 ease-in-out",
+            progressColor,
+          )}
           style={{
             transformOrigin: "center",
-            transform: direction === "counterclockwise" ? "scale(-1, 1)" : "none",
+            transform:
+              direction === "counterclockwise" ? "scale(-1, 1)" : "none",
           }}
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className={cn("text-xl font-semibold", textClassName)}>{Math.round(normalizedProgress)}%</span>
+        <span className={cn("text-xl font-semibold", textClassName)}>
+          {Math.round(normalizedProgress)}%
+        </span>
       </div>
     </div>
-  )
+  );
 }

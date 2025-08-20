@@ -8,7 +8,7 @@ import { TypeCrew } from "@/interfaces/crew";
 // get crew by employeeID
 export async function apiGetCrewEmployeeID(
   employeeID: string,
-): Promise<Result<TypeCrew, ApiError>> {
+): Promise<Result<TypeCrew[], ApiError>> {
   if (!employeeID) {
     return err({
       type: "ValidationError",
@@ -18,7 +18,7 @@ export async function apiGetCrewEmployeeID(
     });
   }
 
-  const result = await api.get<TypeCrew>(`/api/Crew/${employeeID}`);
+  const result = await api.get<TypeCrew[]>(`/Crew/${employeeID}`);
   return result;
 }
 
