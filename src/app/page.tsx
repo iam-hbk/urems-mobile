@@ -1,5 +1,6 @@
 "use client";
 import { useSessionQuery } from "@/hooks/auth/useSession";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -19,10 +20,7 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <div className="text-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-        <p className="mt-2 text-sm text-muted-foreground">Loading...</p>
-      </div>
+      <Image src="/urems-erp.png" alt="UREMS ERP" width={100} height={100} />
     </div>
   );
 }

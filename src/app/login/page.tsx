@@ -24,7 +24,7 @@ import { Loader } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { data: session, isLoading: isSessionLoading } = useSessionQuery();
+  const { data: session } = useSessionQuery();
   const loginMutation = useLoginMutation();
 
   const form = useForm<LoginPayload>({
@@ -46,11 +46,6 @@ export default function LoginPage() {
       router.replace("/dashboard");
     }
   }, [session, router]);
-
-  // Display a loading state while checking for an active session
-  if (isSessionLoading) {
-    return <Loader className="h-12 w-12 animate-spin" />;
-  }
 
   // Don't render the form if a session is found
   if (session) {
