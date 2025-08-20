@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "@/lib/auth/client";
+import { useSessionQuery } from "@/hooks/auth/useSession";
 import { useRouter } from "next/navigation";
 import { useEffect, ReactNode } from "react";
 import Loading from "./loading";
@@ -10,16 +10,16 @@ interface ClientProtectedPageProps {
 }
 
 export function ClientProtectedPage({ children }: ClientProtectedPageProps) {
-  const { data: session, loading } = useSession();
+  const { data: session, isLoading } = useSessionQuery();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !session) {
+    if (!isLoading && !session) {
       router.push("/login");
     }
-  }, [loading, session, router]);
+  }, [isLoading, session, router]);
 
-  if (loading || !session) {
+  if (isLoading || !session) {
     return <Loading />;
   }
 

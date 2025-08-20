@@ -63,19 +63,17 @@ export function SectionsTable({
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
 
-  const getSectionStatus = (sectionId: string): boolean => {
-    const status = formResponse.sectionStatuses?.find(
-      (status) => status.sectionId === sectionId,
-    );
-    return status?.isCompleted ?? false;
-  };
-
   const enrichedSectionsData = useMemo<EnrichedSection[]>(() => {
     if (!formTemplate.sections || !Array.isArray(formTemplate.sections)) {
       return [];
     }
+    const completedSectionIds = new Set(
+      (formResponse.sectionStatuses ?? [])
+        .filter((status) => status.isCompleted)
+        .map((status) => status.sectionId),
+    );
     return formTemplate.sections.map((section) => {
-      const isCompleted = getSectionStatus(section.id);
+      const isCompleted = completedSectionIds.has(section.id);
       let statusText = "Incomplete";
       if (isCompleted) {
         statusText = "Completed";
@@ -84,7 +82,7 @@ export function SectionsTable({
       }
       return { ...section, isCompleted, statusText };
     });
-  }, [formTemplate.sections, formResponse.sectionStatuses, getSectionStatus]);
+  }, [formTemplate.sections, formResponse.sectionStatuses]);
 
   const columns = useMemo<ColumnDef<EnrichedSection>[]>(
     () => [

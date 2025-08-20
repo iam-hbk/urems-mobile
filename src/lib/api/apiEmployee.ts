@@ -1,13 +1,9 @@
 "use server";
 
 import api from "../wretch";
+import type { ApiResult } from "../wretch";
+import type { UserData } from "@/lib/auth/dal";
 
-export async function apiGetUserInformation(userId: string) {
-  try {
-    const results = await api.get(`/api/auth/users/${userId}`);
-
-    return results;
-  } catch (error: unknown) {
-    throw error as Error;
-  }
+export async function apiGetUserInformation(userId: string): ApiResult<UserData> {
+  return api.get<UserData>(`/auth/users/${userId}`);
 }

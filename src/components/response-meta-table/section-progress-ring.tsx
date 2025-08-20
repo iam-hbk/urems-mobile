@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface ProgressRingProps {
@@ -35,13 +35,16 @@ export function ProgressRing({
   const normalizedProgress = Math.min(100, Math.max(0, progress));
 
   // Calculate the offset based on progress
-  const calculateOffset = (progress: number) => {
-    if (direction === "clockwise") {
-      return ((100 - progress) / 100) * circumference;
-    } else {
-      return (progress / 100) * circumference;
-    }
-  };
+  const calculateOffset = useCallback(
+    (progress: number) => {
+      if (direction === "clockwise") {
+        return ((100 - progress) / 100) * circumference;
+      } else {
+        return (progress / 100) * circumference;
+      }
+    },
+    [direction, circumference],
+  );
 
   // Initialize with the starting offset for animation
   const initialOffset = direction === "clockwise" ? circumference : 0;
@@ -63,27 +66,14 @@ export function ProgressRing({
     } else {
       setIsInitialRender(false);
     }
-  }, [
-    isInitialRender,
-    animateOnLoad,
-    normalizedProgress,
-    circumference,
-    direction,
-    calculateOffset,
-  ]);
+  }, [isInitialRender, animateOnLoad, normalizedProgress, calculateOffset]);
 
   // Handle progress changes after initial render
   useEffect(() => {
     if (!isInitialRender) {
       setOffset(calculateOffset(normalizedProgress));
     }
-  }, [
-    normalizedProgress,
-    circumference,
-    direction,
-    isInitialRender,
-    calculateOffset,
-  ]);
+  }, [normalizedProgress, isInitialRender, calculateOffset]);
 
   // Determine SVG rotation based on direction
   const svgRotation = direction === "clockwise" ? "-rotate-90" : "rotate-90";

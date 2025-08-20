@@ -4,8 +4,8 @@ import { ColumnDef, FilterFn } from "@tanstack/react-table";
 import { PRF_FORM } from "@/interfaces/prf-form";
 import { DataTableColumnHeader } from "../form-task-details-table/data-table-column-header";
 import { Button } from "../ui/button";
+import { dateRangeFilter } from "./data-table";
 import Link from "next/link";
-import { format } from "date-fns";
 
 const fuzzyFilter: FilterFn<PRF_FORM> = (row, columnId, value: string) => {
   const val = row.getValue(columnId);
@@ -38,7 +38,7 @@ export const columns: ColumnDef<PRF_FORM>[] = [
       return row.getValue("createdAt");
       // return format(new Date(row.getValue("createdAt")), "PPP");
     },
-    filterFn: "dateRange" as any, // Using type assertion as the custom filter is defined in data-table.tsx
+    filterFn: dateRangeFilter,
   },
   {
     accessorKey: "EmployeeID",

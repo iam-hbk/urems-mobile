@@ -42,7 +42,7 @@ function Layout({
       <CommandPalette
         prf={prf}
         open={showCommandPalette}
-        onOpenChange={setShowCommandPalette}
+        onOpenChangeAction={setShowCommandPalette}
       />
 
       {/* Header */}

@@ -4,6 +4,7 @@ import { DetailedFormResponse, FormTemplateSummary } from "@/types/form-template
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle, Calendar, Clock, User, Truck, Users, Building } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 interface ResponseMetaCardProps {
   response?: DetailedFormResponse;
@@ -15,12 +16,13 @@ const formatDate = (dateString: string | undefined) => {
   try {
     return new Date(dateString).toLocaleString();
   } catch (error) {
+    console.error(error);
     return "Invalid Date";
   }
 };
 
 export function ResponseMetaCard({ response, template }: ResponseMetaCardProps) {
-  const MetaItem = ({ icon: Icon, label, value }: { icon: any; label: string; value: React.ReactNode }) => (
+  const MetaItem = ({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: React.ReactNode }) => (
     <div className="flex items-center gap-2">
       <Icon className="h-4 w-4 text-muted-foreground" />
       <span className="text-sm text-muted-foreground">{label}:</span>

@@ -41,41 +41,30 @@ interface DataTableProps {
 }
 
 // Custom filter function for date ranges
-const dateRangeFilter: FilterFn<any> = (row, columnId, filterValue: RangeValue<DateValue>) => {
+export const dateRangeFilter: FilterFn<PRF_FORM> = (
+  row,
+  columnId,
+  filterValue: RangeValue<DateValue>,
+) => {
   if (!filterValue?.start || !filterValue?.end) return true;
-  
+
   const rowDate = new Date(row.getValue(columnId));
   const startDate = new Date(filterValue.start.toString());
   const endDate = new Date(filterValue.end.toString());
-  
+
   return rowDate >= startDate && rowDate <= endDate;
 };
 
-export function DataTable({
-  columns,
-  data,
-}: DataTableProps) {
+export function DataTable({ columns, data }: DataTableProps) {
   const router = useRouter();
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    [],
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [dateRange, setDateRange] = React.useState<RangeValue<DateValue>>();
-
-  const handleDateRangeChange = React.useCallback((value: RangeValue<DateValue> | null) => {
-    if (value) {
-      setDateRange(value);
-      // Apply date filter
-      const dateColumn = table.getColumn("createdAt");
-      if (dateColumn) {
-        dateColumn.setFilterValue(value);
-      }
-    }
-  }, []);
-
   const table = useReactTable({
     data,
     columns,
@@ -101,20 +90,36 @@ export function DataTable({
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
 
+  const handleDateRangeChange = React.useCallback(
+    (value: RangeValue<DateValue> | null) => {
+      if (value) {
+        setDateRange(value);
+        // Apply date filter
+        const dateColumn = table.getColumn("createdAt");
+        if (dateColumn) {
+          dateColumn.setFilterValue(value);
+        }
+      }
+    },
+    [table],
+  );
+
   // Apply initial date filter
   React.useEffect(() => {
     const dateColumn = table.getColumn("createdAt");
     if (dateColumn) {
       dateColumn.setFilterValue(dateRange);
     }
-  }, []);
+  }, [dateRange, table]);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
         <Input
           placeholder="Filter by PRF Number..."
-          value={(table.getColumn("prfFormId")?.getFilterValue() as string) ?? ""}
+          value={
+            (table.getColumn("prfFormId")?.getFilterValue() as string) ?? ""
+          }
           onChange={(event) =>
             table.getColumn("prfFormId")?.setFilterValue(event.target.value)
           }
@@ -138,8 +143,16 @@ export function DataTable({
             onClick={() => {
               table.resetColumnFilters();
               setDateRange({
-                start: new CalendarDate(today("UTC").year, today("UTC").month, today("UTC").day).subtract({ weeks: 1 }),
-                end: new CalendarDate(today("UTC").year, today("UTC").month, today("UTC").day)
+                start: new CalendarDate(
+                  today("UTC").year,
+                  today("UTC").month,
+                  today("UTC").day,
+                ).subtract({ weeks: 1 }),
+                end: new CalendarDate(
+                  today("UTC").year,
+                  today("UTC").month,
+                  today("UTC").day,
+                ),
               });
             }}
             className="h-8 px-2 lg:px-3"
@@ -161,7 +174,7 @@ export function DataTable({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -184,7 +197,7 @@ export function DataTable({
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
@@ -206,4 +219,4 @@ export function DataTable({
       <DataTablePagination table={table} />
     </div>
   );
-} 
+}
