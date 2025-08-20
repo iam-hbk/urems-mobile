@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getSession } from "@/lib/auth/api";
 import { toast } from "sonner";
-import type { Session } from "@/lib/auth/dal";
+import { getUser, type Session } from "@/lib/auth/dal";
 import type { ApiError } from "@/types/api";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -31,7 +31,7 @@ export const useSessionQuery = () => {
       );
     },
     retry: (failureCount, error) => {
-      console.log("ERROR IN SESSION", error);
+      // console.log("ERROR IN SESSION", error);
       if (error.type === "AuthenticationError") {
         return false;
       }
@@ -41,3 +41,17 @@ export const useSessionQuery = () => {
     refetchOnWindowFocus: true,
   });
 };
+
+
+// 
+// get current user
+export function useGetUser() {
+
+  return useQuery({
+    queryKey: ['getUser'],
+    queryFn: async () => {
+      const data = await getUser();
+      return data;
+    }
+  });
+}

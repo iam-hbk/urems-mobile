@@ -5,7 +5,7 @@ import { UserTokenCookieName } from './src/lib/auth/config'
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const token = request.cookies.get(UserTokenCookieName)?.value
+  const token = request.cookies.get(UserTokenCookieName)?.value;
 
   const isLoginPage = pathname.startsWith('/login')
 

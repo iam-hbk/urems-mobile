@@ -32,8 +32,12 @@ import {
 
 interface CustomMedicationDialogProps {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSubmit: (data: { medicine: string; dose: string; route: string }) => void;
+  onOpenChangeAction: (open: boolean) => void;
+  onSubmitAction: (data: {
+    medicine: string;
+    dose: string;
+    route: string;
+  }) => void;
   initialValues?: {
     medicine: string;
     dose: string;
@@ -64,8 +68,8 @@ const doseUnitOptions = [
 
 export function CustomMedicationDialog({
   open,
-  onOpenChange,
-  onSubmit,
+  onOpenChangeAction,
+  onSubmitAction,
   initialValues,
 }: CustomMedicationDialogProps) {
   const [doseValue, doseUnit] = React.useMemo(() => {
@@ -101,10 +105,10 @@ export function CustomMedicationDialog({
         route: initialValues.route,
       });
     }
-  }, [initialValues, doseValue, doseUnit]);
+  }, [initialValues, doseValue, doseUnit, customMedForm]);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChangeAction}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Custom Medication</DialogTitle>
@@ -115,13 +119,13 @@ export function CustomMedicationDialog({
         <Form {...customMedForm}>
           <form
             onSubmit={customMedForm.handleSubmit((data) => {
-              onSubmit({
+              onSubmitAction({
                 medicine: data.medicine,
                 dose: `${data.doseValue}${data.doseUnit}`,
                 route: data.route,
               });
               customMedForm.reset();
-              onOpenChange(false);
+              onOpenChangeAction(false);
             })}
             className="space-y-4"
           >
@@ -216,7 +220,7 @@ export function CustomMedicationDialog({
               <Button
                 type="button"
                 variant="secondary"
-                onClick={() => onOpenChange(false)}
+                onClick={() => onOpenChangeAction(false)}
               >
                 Cancel
               </Button>
@@ -227,4 +231,4 @@ export function CustomMedicationDialog({
       </DialogContent>
     </Dialog>
   );
-} 
+}

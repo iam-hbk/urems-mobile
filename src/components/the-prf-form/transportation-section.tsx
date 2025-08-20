@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
@@ -33,13 +33,7 @@ import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 export type TransportationType = z.infer<typeof TransportationSchema>;
 
-type TransportationFormProps = {
-  initialData?: TransportationType;
-};
-
-const TransportationForm: React.FC<TransportationFormProps> = ({
-  initialData,
-}) => {
+const TransportationForm: React.FC = () => {
   const prfId = usePathname().split("/")[2];
   const prf_from_store = useStore((state) => state.prfForms).find(
     (prf) => prf.prfFormId == prfId,
@@ -65,7 +59,6 @@ const TransportationForm: React.FC<TransportationFormProps> = ({
   });
 
   function onSubmit(values: TransportationType) {
-
     if (!zsEmployee) {
       toast.error("No Employee Information Found", {
         duration: 3000,
@@ -88,14 +81,14 @@ const TransportationForm: React.FC<TransportationFormProps> = ({
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         toast.success("Incident Information Updated", {
           duration: 3000,
           position: "top-right",
         });
-        router.push(`/edit-prf/${data?.prfFormId}`);
+        router.push(`/edit-prf/${prfId}`);
       },
-      onError: (error) => {
+      onError: () => {
         toast.error("An error occurred", {
           duration: 3000,
           position: "top-right",
@@ -105,12 +98,15 @@ const TransportationForm: React.FC<TransportationFormProps> = ({
   }
 
   // Add this function to handle form errors
-  const onError = (errors: any) => {
-    const errorMessages = Object.entries(errors)
-      .map(([_, error]: [string, any]) => error?.message)
+  const onError = (errors: unknown) => {
+    const errorMessages = Object.entries(
+      errors as Record<string, { message: string }>,
+    )
+      .map(([, error]: [string, { message: string }]) => error?.message)
       .filter(Boolean);
 
-    const errorMessage = errorMessages[0] || "Please fill in all required fields";
+    const errorMessage =
+      errorMessages[0] || "Please fill in all required fields";
 
     toast.error(errorMessage, {
       duration: 3000,
@@ -119,23 +115,22 @@ const TransportationForm: React.FC<TransportationFormProps> = ({
   };
 
   // useEffect(() => {
-  // add current user to the list of crew by default. 
+  // add current user to the list of crew by default.
   // run this only once, because there is only one logged in user
   // console.log("employee here...", zsEmployee)
   if (zsEmployee && zsEmployee.id && fields.length === 0) {
     // since i don't know what is the HPCSANo, by default, i'll just add 1 of the fields
-    const initialSurname: string = `${zsEmployee.initials} ${zsEmployee.lastName}`
-    const hpcsano: string = `${zsEmployee.initials}-blah`
-    // don't add twice 
+    const initialSurname: string = `${zsEmployee.initials} ${zsEmployee.lastName}`;
+    const hpcsano: string = `${zsEmployee.initials}-blah`;
+    // don't add twice
     if (!fields.some((fields) => fields.HPCSANo === hpcsano)) {
-      append({ initialAndSurname: initialSurname, HPCSANo: hpcsano })
+      append({ initialAndSurname: initialSurname, HPCSANo: hpcsano });
     }
 
     // const { data, error } = useGetCrewEmployeeID(zsEmployee.id);
     // console.log("crew information...", data)
   }
   // }, [])
-
 
   return (
     <Accordion

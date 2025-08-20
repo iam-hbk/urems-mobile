@@ -195,14 +195,14 @@ export default function MedicationAdministeredForm() {
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         toast.success("Medication Administered Information Updated", {
           duration: 3000,
           position: "top-right",
         });
-        router.push(`/edit-prf/${data?.prfFormId}`);
+        router.push(`/edit-prf/${prfId}`);
       },
-      onError: (error) => {
+      onError: () => {
         toast.error("An error occurred", {
           duration: 3000,
           position: "top-right",
@@ -220,14 +220,14 @@ export default function MedicationAdministeredForm() {
     >
       <CustomMedicationDialog
         open={customMedDialogOpen}
-        onOpenChange={(open) => {
+        onOpenChangeAction={(open) => {
           setCustomMedDialogOpen(open);
           if (!open) {
             setEditingMedication(undefined);
             setActiveIndex(null);
           }
         }}
-        onSubmit={handleCustomMedication}
+        onSubmitAction={handleCustomMedication}
         initialValues={editingMedication}
       />
       <Form {...form}>
@@ -346,7 +346,7 @@ export default function MedicationAdministeredForm() {
                     <FormField
                       control={form.control}
                       name={`medications.${index}.time`}
-                      render={({ field }) => (
+                      render={() => (
                         <FormItem>
                           <FormLabel>Time</FormLabel>
                           <FormControl>
@@ -457,8 +457,8 @@ export default function MedicationAdministeredForm() {
                       <FormItem>
                         <FormLabel>Practitioner Name *</FormLabel>
                         <FormControl>
-                          <Input 
-                            {...field} 
+                          <Input
+                            {...field}
                             placeholder="Enter practitioner's name"
                             required
                           />
@@ -474,8 +474,8 @@ export default function MedicationAdministeredForm() {
                       <FormItem>
                         <FormLabel>HPCSA Number *</FormLabel>
                         <FormControl>
-                          <Input 
-                            {...field} 
+                          <Input
+                            {...field}
                             placeholder="Enter HPCSA number"
                             required
                           />
@@ -491,7 +491,7 @@ export default function MedicationAdministeredForm() {
                       <FormItem>
                         <FormLabel>Summary of Consultation *</FormLabel>
                         <FormControl>
-                          <Textarea 
+                          <Textarea
                             {...field}
                             placeholder="Enter consultation summary"
                             className="min-h-[120px]"

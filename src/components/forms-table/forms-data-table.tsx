@@ -36,18 +36,15 @@ interface FormsDataTableProps {
   data: FormTemplateSummary[];
 }
 
-export function FormsDataTable({
-  columns,
-  data,
-}: FormsDataTableProps) {
-  const [rowSelection, setRowSelection] = React.useState({});
+export function FormsDataTable({ columns, data }: FormsDataTableProps) {
+  const [rowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    [],
   );
   const [sorting, setSorting] = React.useState<SortingState>([
-    { id: "updatedAt", desc: true } // Sort by most recently updated by default
+    { id: "updatedAt", desc: true }, // Sort by most recently updated by default
   ]);
 
   const table = useReactTable({
@@ -87,7 +84,9 @@ export function FormsDataTable({
           />
           <Input
             placeholder="Search by description..."
-            value={(table.getColumn("description")?.getFilterValue() as string) ?? ""}
+            value={
+              (table.getColumn("description")?.getFilterValue() as string) ?? ""
+            }
             onChange={(event) =>
               table.getColumn("description")?.setFilterValue(event.target.value)
             }
@@ -118,7 +117,7 @@ export function FormsDataTable({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -138,7 +137,7 @@ export function FormsDataTable({
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
@@ -160,4 +159,4 @@ export function FormsDataTable({
       <DataTablePagination table={table} />
     </div>
   );
-} 
+}

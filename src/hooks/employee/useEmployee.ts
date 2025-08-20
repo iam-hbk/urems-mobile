@@ -1,5 +1,6 @@
 import { apiGetUserInformation } from "@/lib/api/apiEmployee"
-import { getUser, UserData } from "@/lib/auth/dal";
+import { getUser } from "@/lib/auth/dal";
+import type { typeEmployee } from "@/types/person";
 import { useQuery } from "@tanstack/react-query"
 import { redirect } from "next/navigation";
 
@@ -9,13 +10,8 @@ export const useGetEmployeeInformation = (userId: string) => {
   return useQuery({
     queryKey: ['getEmployee'],
     queryFn: async () => {
-      try {
-        const res = await apiGetUserInformation(userId);
-        return res
-      }
-      catch (error: unknown) {
-        throw error as Error;
-      }
+      const res = await apiGetUserInformation(userId);
+      return res
     }
   });
 }
@@ -23,7 +19,7 @@ export const useGetEmployeeInformation = (userId: string) => {
 // found this useful
 export function useGetEmployeeId() {
 
-  return useQuery<UserData>({
+  return useQuery<typeEmployee>({
     queryKey: ['getEmployee'],
     queryFn: async () => {
       const employeeData = await getUser();

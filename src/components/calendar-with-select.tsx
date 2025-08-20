@@ -1,41 +1,40 @@
-"use client"
+"use client";
 
-import { DropdownNavProps, DropdownProps } from "react-day-picker"
-import { Calendar } from "@/components/ui/calendar"
+import { DropdownNavProps, DropdownProps } from "react-day-picker";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 
 interface CalendarWithSelectProps {
-  value?: Date
-  onChange?: (date: Date | undefined) => void
-  placeholder?: string
-  disabled?: boolean
-  className?: string
+  value?: Date;
+  onChange?: (date: Date | undefined) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
 }
 
-export default function CalendarWithSelect({ 
-  value, 
-  onChange, 
-  placeholder = "Pick a date",
+export default function CalendarWithSelect({
+  value,
+  onChange,
   disabled = false,
-  className = ""
+  className = "",
 }: CalendarWithSelectProps) {
   const handleCalendarChange = (
     _value: string | number,
-    _e: React.ChangeEventHandler<HTMLSelectElement>
+    _e: React.ChangeEventHandler<HTMLSelectElement>,
   ) => {
     const _event = {
       target: {
         value: String(_value),
       },
-    } as React.ChangeEvent<HTMLSelectElement>
-    _e(_event)
-  }
+    } as React.ChangeEvent<HTMLSelectElement>;
+    _e(_event);
+  };
 
   return (
     <div className={className}>
@@ -58,7 +57,7 @@ export default function CalendarWithSelect({
               <div className="flex w-full items-center gap-2">
                 {props.children}
               </div>
-            )
+            );
           },
           Dropdown: (props: DropdownProps) => {
             return (
@@ -66,7 +65,7 @@ export default function CalendarWithSelect({
                 value={String(props.value)}
                 onValueChange={(value) => {
                   if (props.onChange) {
-                    handleCalendarChange(value, props.onChange)
+                    handleCalendarChange(value, props.onChange);
                   }
                 }}
                 disabled={disabled}
@@ -86,10 +85,10 @@ export default function CalendarWithSelect({
                   ))}
                 </SelectContent>
               </Select>
-            )
+            );
           },
         }}
       />
     </div>
-  )
+  );
 }

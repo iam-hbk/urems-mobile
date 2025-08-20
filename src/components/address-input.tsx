@@ -1,15 +1,14 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import { Control, useController } from "react-hook-form";
-import { LoadScript, Autocomplete } from "@react-google-maps/api";
+import React, { useState, useRef } from "react";
+import { Control, useController, FieldPath, FieldValues } from "react-hook-form";
+import { Autocomplete } from "@react-google-maps/api";
 import { MapPin, X, Loader } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { FormLabel } from "./ui/form";
 import { toast } from "sonner";
-
-const libraries: "places"[] = ["places"];
+import { useGoogleMaps } from "./GoogleMapsProvider";
 
 export interface AddressData {
   street: string;
@@ -24,23 +23,30 @@ export interface AddressData {
   };
 }
 
-interface AddressInputProps {
-  name: string;
-  control: Control<any>;
+interface AddressInputProps<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+> {
+  name: TName;
+  control: Control<TFieldValues>;
   label?: string;
   isRequired?: boolean;
   placeholder?: string;
   disabled?: boolean;
 }
 
-export function AddressInput({
+export function AddressInput<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+>({
   name,
   control,
   label = "Address",
   isRequired = false,
   placeholder = "Enter address",
   disabled = false,
-}: AddressInputProps) {
+}: AddressInputProps<TFieldValues, TName>) {
+  const { isLoaded: isGoogleMapsLoaded, loadError } = useGoogleMaps();
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const [userExplicitlyWantsDetailed, setUserExplicitlyWantsDetailed] =
@@ -52,18 +58,9 @@ export function AddressInput({
   const {
     field: { value, onChange, onBlur },
     fieldState: { error },
-  } = useController({
+  } = useController<TFieldValues, TName>({
     name,
     control,
-    defaultValue: {
-      street: "",
-      city: "",
-      state: "",
-      zipCode: "",
-      country: "",
-      fullAddress: "",
-      coordinates: undefined,
-    } as AddressData,
   });
 
   const isValueStructuredAddress =
@@ -104,9 +101,9 @@ export function AddressInput({
       fullAddress: place.formatted_address || "",
       coordinates: place.geometry?.location
         ? {
-            lat: place.geometry.location.lat(),
-            lng: place.geometry.location.lng(),
-          }
+          lat: place.geometry.location.lat(),
+          lng: place.geometry.location.lng(),
+        }
         : undefined,
     };
 
@@ -145,6 +142,14 @@ export function AddressInput({
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
       toast.error("Geolocation is not supported by this browser", {
+        position: "top-center",
+        richColors: true,
+      });
+      return;
+    }
+
+    if (!isGoogleMapsLoaded || loadError) {
+      toast.error("Google Maps is not available", {
         position: "top-center",
         richColors: true,
       });
@@ -271,20 +276,6 @@ export function AddressInput({
     setUserExplicitlyWantsDetailed(true);
   };
 
-  const handleSummaryInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newFullAddress = e.target.value;
-    setCommittedValueForCancel(value);
-    onChange({
-      street: "",
-      city: "",
-      state: "",
-      zipCode: "",
-      country: "",
-      fullAddress: newFullAddress,
-      coordinates: undefined,
-    } as AddressData);
-    setUserExplicitlyWantsDetailed(true);
-  };
 
   const handleCancelDetailedEdit = () => {
     if (committedValueForCancel !== null) {
@@ -304,52 +295,53 @@ export function AddressInput({
         (value as AddressData).country));
 
   return (
-    <LoadScript
-      googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}
-      libraries={libraries}
-    >
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <FormLabel>
-            {label}
-            {isRequired && <span className="ml-1 text-destructive">*</span>}
-          </FormLabel>
-          <div className="flex space-x-2">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <FormLabel>
+          {label}
+          {isRequired && <span className="ml-1 text-destructive">*</span>}
+        </FormLabel>
+        <div className="flex space-x-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={getCurrentLocation}
+            disabled={disabled || isLoadingLocation || !isGoogleMapsLoaded}
+            className="h-8"
+          >
+            {isLoadingLocation ? (
+              <Loader className="h-4 w-4 animate-spin" />
+            ) : !isGoogleMapsLoaded ? (
+              <Loader className="h-4 w-4 animate-spin" />
+            ) : (
+              <MapPin className="h-4 w-4" />
+            )}
+            <span className="ml-2">
+              {isLoadingLocation ? "Getting Location..." : !isGoogleMapsLoaded ? "Loading Maps..." : "Use Current Location"}
+            </span>
+          </Button>
+          {hasValue && (
             <Button
               type="button"
               variant="outline"
               size="sm"
-              onClick={getCurrentLocation}
-              disabled={disabled || isLoadingLocation}
+              onClick={clearAddress}
+              disabled={disabled}
               className="h-8"
+              title="Clear address"
             >
-              {isLoadingLocation ? (
-                <Loader className="h-4 w-4 animate-spin" />
-              ) : (
-                <MapPin className="h-4 w-4" />
-              )}
-              <span className="ml-2">Use Current Location</span>
+              <X className="h-4 w-4" />
+              <span className="ml-2">Clear</span>
             </Button>
-            {hasValue && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={clearAddress}
-                disabled={disabled}
-                className="h-8"
-                title="Clear address"
-              >
-                <X className="h-4 w-4" />
-                <span className="ml-2">Clear</span>
-              </Button>
-            )}
-          </div>
+          )}
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 gap-4">
-          {showDetailedView ? (
-            <>
+      <div className="grid grid-cols-1 gap-4">
+        {showDetailedView ? (
+          <>
+            {isGoogleMapsLoaded && !loadError ? (
               <Autocomplete
                 onLoad={(autocomplete) => {
                   autocompleteRef.current = autocomplete;
@@ -371,97 +363,120 @@ export function AddressInput({
                   className={error ? "border-destructive" : ""}
                 />
               </Autocomplete>
+            ) : (
+              <div className="relative">
+                <Input
+                  placeholder={loadError ? "Google Maps failed to load" : "Loading Google Maps..."}
+                  value={currentFullAddress}
+                  onChange={(e) =>
+                    handleInputChange("fullAddress", e.target.value)
+                  }
+                  onBlur={onBlur}
+                  disabled={true}
+                  className={error ? "border-destructive" : ""}
+                />
+                {!loadError && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <Loader className="h-4 w-4 animate-spin text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+            )}
 
+            <Input
+              placeholder="Street Address"
+              value={
+                isValueStructuredAddress ? (value as AddressData).street : ""
+              }
+              onChange={(e) => handleInputChange("street", e.target.value)}
+              disabled={disabled}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
               <Input
-                placeholder="Street Address"
+                placeholder="City"
                 value={
-                  isValueStructuredAddress ? (value as AddressData).street : ""
+                  isValueStructuredAddress ? (value as AddressData).city : ""
                 }
-                onChange={(e) => handleInputChange("street", e.target.value)}
+                onChange={(e) => handleInputChange("city", e.target.value)}
                 disabled={disabled}
               />
-
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  placeholder="City"
-                  value={
-                    isValueStructuredAddress ? (value as AddressData).city : ""
-                  }
-                  onChange={(e) => handleInputChange("city", e.target.value)}
-                  disabled={disabled}
-                />
-                <Input
-                  placeholder="State/Province"
-                  value={
-                    isValueStructuredAddress ? (value as AddressData).state : ""
-                  }
-                  onChange={(e) => handleInputChange("state", e.target.value)}
-                  disabled={disabled}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  placeholder="ZIP/Postal Code"
-                  value={
-                    isValueStructuredAddress
-                      ? (value as AddressData).zipCode
-                      : ""
-                  }
-                  onChange={(e) => handleInputChange("zipCode", e.target.value)}
-                  disabled={disabled}
-                />
-                <Input
-                  placeholder="Country"
-                  value={
-                    isValueStructuredAddress
-                      ? (value as AddressData).country
-                      : ""
-                  }
-                  onChange={(e) => handleInputChange("country", e.target.value)}
-                  disabled={disabled}
-                />
-              </div>
-
-              {committedValueForCancel !== null && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCancelDetailedEdit}
-                  disabled={disabled}
-                  className="mt-2 w-full border-destructive hover:bg-destructive/10 hover:text-destructive sm:w-auto"
-                >
-                  Cancel
-                </Button>
-              )}
-            </>
-          ) : (
-            <div className="flex flex-row items-center justify-center space-x-2">
               <Input
-                placeholder={placeholder}
-                value={currentFullAddress}
-                readOnly={true}
-                onBlur={onBlur}
-                disabled={true}
-                className={error ? "border-destructive" : ""}
+                placeholder="State/Province"
+                value={
+                  isValueStructuredAddress ? (value as AddressData).state : ""
+                }
+                onChange={(e) => handleInputChange("state", e.target.value)}
+                disabled={disabled}
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                placeholder="ZIP/Postal Code"
+                value={
+                  isValueStructuredAddress
+                    ? (value as AddressData).zipCode
+                    : ""
+                }
+                onChange={(e) => handleInputChange("zipCode", e.target.value)}
+                disabled={disabled}
+              />
+              <Input
+                placeholder="Country"
+                value={
+                  isValueStructuredAddress
+                    ? (value as AddressData).country
+                    : ""
+                }
+                onChange={(e) => handleInputChange("country", e.target.value)}
+                disabled={disabled}
+              />
+            </div>
+
+            {committedValueForCancel !== null && (
               <Button
                 type="button"
                 variant="outline"
-                // size="sm"
-                onClick={handleEditDetailsClick}
+                size="sm"
+                onClick={handleCancelDetailedEdit}
                 disabled={disabled}
-                className="m-0 w-full sm:w-auto"
+                className="mt-2 w-full border-destructive hover:bg-destructive/10 hover:text-destructive sm:w-auto"
               >
-                Edit Address Details
+                Cancel
               </Button>
-            </div>
-          )}
-        </div>
-
-        {error && <p className="text-sm text-destructive">{error.message}</p>}
+            )}
+          </>
+        ) : (
+          <div className="flex flex-row items-center justify-center space-x-2">
+            <Input
+              placeholder={placeholder}
+              value={currentFullAddress}
+              readOnly={true}
+              onBlur={onBlur}
+              disabled={true}
+              className={error ? "border-destructive" : ""}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              // size="sm"
+              onClick={handleEditDetailsClick}
+              disabled={disabled}
+              className="m-0 w-full sm:w-auto"
+            >
+              Edit Address Details
+            </Button>
+          </div>
+        )}
       </div>
-    </LoadScript>
+
+      {error && <p className="text-sm text-destructive">{error.message}</p>}
+      {loadError && (
+        <p className="text-sm text-destructive">
+          Google Maps failed to load. Address autocomplete is unavailable.
+        </p>
+      )}
+    </div>
   );
 }

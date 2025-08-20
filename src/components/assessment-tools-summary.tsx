@@ -10,12 +10,11 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useStore } from "@/lib/store";
-import { usePathname } from "next/navigation";
+
 import { Stethoscope } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+
 import {
   RespiratoryDistressType,
   AssessmentsType,
@@ -31,7 +30,11 @@ type SectionProps<T> = {
 export default function AssessmentToolsSummary({ prf }: { prf: PRF_FORM }) {
   // console.log("PRF For Assessment Tools Summary", prf);
 
-  const sections: SectionProps<any>[] = [
+  const sections: Array<
+    | SectionProps<RespiratoryDistressType>
+    | SectionProps<ProceduresType>
+    | SectionProps<AssessmentsType>
+  > = [
     {
       title: "Respiratory Distress",
       data: prf?.prfData?.respiratory_distress?.data as RespiratoryDistressType,
@@ -102,18 +105,21 @@ export default function AssessmentToolsSummary({ prf }: { prf: PRF_FORM }) {
       render: (data: ProceduresType) => (
         <div className="space-y-3">
           {Object.entries(data).map(([category, procedures]) => {
-            if (!procedures || typeof procedures !== 'object') return null;
-            
+            if (!procedures || typeof procedures !== "object") return null;
+
             const activeProcs = Object.entries(procedures)
-              .filter(([key, value]) => {
-                if (typeof value === 'boolean') return value;
-                if (typeof value === 'string') return value.length > 0;
-                if (typeof value === 'number') return true;
+              .filter(([, value]) => {
+                if (typeof value === "boolean") return value;
+                if (typeof value === "string") return value.length > 0;
+                if (typeof value === "number") return true;
                 return false;
               })
               .map(([key, value]) => ({
                 name: key.replace(/_/g, " "),
-                value: typeof value === 'string' || typeof value === 'number' ? value.toString() : undefined,
+                value:
+                  typeof value === "string" || typeof value === "number"
+                    ? value.toString()
+                    : undefined,
               }));
 
             if (activeProcs.length === 0) return null;
@@ -143,7 +149,7 @@ export default function AssessmentToolsSummary({ prf }: { prf: PRF_FORM }) {
       render: (data: AssessmentsType) => (
         <div className="space-y-2">
           {Object.entries(data.neuroAssessment.cincinnatiScale).filter(
-            ([_, value]) => value,
+            ([, value]) => value,
           ).length > 0 && (
             <div>
               <h4 className="mb-1 text-sm font-semibold text-muted-foreground">
@@ -151,7 +157,7 @@ export default function AssessmentToolsSummary({ prf }: { prf: PRF_FORM }) {
               </h4>
               <div className="flex flex-wrap gap-1">
                 {Object.entries(data.neuroAssessment.cincinnatiScale)
-                  .filter(([_, value]) => value)
+                  .filter(([, value]) => value)
                   .map(([key]) => (
                     <Badge key={key} variant="outline">
                       {key.replace(/([A-Z])/g, " $1").trim()}
@@ -161,7 +167,7 @@ export default function AssessmentToolsSummary({ prf }: { prf: PRF_FORM }) {
             </div>
           )}
           {Object.entries(data.neuroAssessment.seizure).filter(
-            ([_, value]) => value,
+            ([, value]) => value,
           ).length > 0 && (
             <div>
               <h4 className="mb-1 text-sm font-semibold text-muted-foreground">
@@ -169,7 +175,7 @@ export default function AssessmentToolsSummary({ prf }: { prf: PRF_FORM }) {
               </h4>
               <div className="flex flex-wrap gap-1">
                 {Object.entries(data.neuroAssessment.seizure)
-                  .filter(([_, value]) => value)
+                  .filter(([, value]) => value)
                   .map(([key]) => (
                     <Badge key={key} variant="outline">
                       {key.replace(/([A-Z])/g, " $1").trim()}
@@ -188,7 +194,8 @@ export default function AssessmentToolsSummary({ prf }: { prf: PRF_FORM }) {
               <Badge variant="outline">Aphasia</Badge>
             </div>
           )}
-          {(data.neuroAssessment.incontinence.urine || data.neuroAssessment.incontinence.stool) && (
+          {(data.neuroAssessment.incontinence.urine ||
+            data.neuroAssessment.incontinence.stool) && (
             <div>
               <h4 className="mb-1 text-sm font-semibold text-muted-foreground">
                 Incontinence
@@ -234,14 +241,16 @@ export default function AssessmentToolsSummary({ prf }: { prf: PRF_FORM }) {
       data: prf?.prfData?.assessments?.data as AssessmentsType,
       render: (data: AssessmentsType) => (
         <div className="space-y-2">
-          {Object.entries(data.painAssessment.provocation).filter(([_, v]) => v).length > 0 && (
+          {Object.entries(data.painAssessment.provocation).filter(
+            ([, v]) => v,
+          ).length > 0 && (
             <div>
               <h4 className="mb-1 text-sm font-semibold text-muted-foreground">
                 Provocation
               </h4>
               <div className="flex flex-wrap gap-1">
                 {Object.entries(data.painAssessment.provocation)
-                  .filter(([_, value]) => value)
+                  .filter(([, value]) => value)
                   .map(([key]) => (
                     <Badge key={key} variant="outline">
                       {key.replace(/([A-Z])/g, " $1").trim()}
@@ -306,7 +315,7 @@ export default function AssessmentToolsSummary({ prf }: { prf: PRF_FORM }) {
           )}
           {data.painAssessment.negativeMurphysSign && (
             <div>
-              <Badge variant="outline">Negative Murphy's Sign</Badge>
+              <Badge variant="outline">Negative Murphy&apos;s Sign</Badge>
             </div>
           )}
         </div>
@@ -330,16 +339,16 @@ export default function AssessmentToolsSummary({ prf }: { prf: PRF_FORM }) {
       data: prf?.prfData?.assessments?.data as AssessmentsType,
       render: (data: AssessmentsType) => (
         <div className="space-y-2">
-          {Object.entries(data.abdominalAssessment.urineOutput)
-            .filter(([key, value]) => value && key !== 'uo')
-            .length > 0 && (
+          {Object.entries(data.abdominalAssessment.urineOutput).filter(
+            ([key, value]) => value && key !== "uo",
+          ).length > 0 && (
             <div>
               <h4 className="mb-1 text-sm font-semibold text-muted-foreground">
                 Urine Output
               </h4>
               <div className="flex flex-wrap gap-1">
                 {Object.entries(data.abdominalAssessment.urineOutput)
-                  .filter(([key, value]) => value && key !== 'uo')
+                  .filter(([key, value]) => value && key !== "uo")
                   .map(([key]) => (
                     <Badge key={key} variant="outline">
                       {key.replace(/([A-Z])/g, " $1").trim()}
@@ -395,16 +404,16 @@ export default function AssessmentToolsSummary({ prf }: { prf: PRF_FORM }) {
               </div>
             </div>
           )}
-          {Object.entries(data.abdominalAssessment.contractions)
-            .filter(([key, value]) => value && key !== 'amount')
-            .length > 0 && (
+          {Object.entries(data.abdominalAssessment.contractions).filter(
+            ([key, value]) => value && key !== "amount",
+          ).length > 0 && (
             <div>
               <h4 className="mb-1 text-sm font-semibold text-muted-foreground">
                 Contractions
               </h4>
               <div className="flex flex-wrap gap-1">
                 {Object.entries(data.abdominalAssessment.contractions)
-                  .filter(([key, value]) => value && key !== 'amount')
+                  .filter(([key, value]) => value && key !== "amount")
                   .map(([key]) => (
                     <Badge key={key} variant="outline">
                       {key.replace(/([A-Z])/g, " $1").trim()}
@@ -437,9 +446,9 @@ export default function AssessmentToolsSummary({ prf }: { prf: PRF_FORM }) {
             {data.abdominalAssessment.emesis && (
               <Badge variant="outline">
                 Emesis
-                {data.abdominalAssessment.emesisAmount && 
+                {data.abdominalAssessment.emesisAmount &&
                   `: ${data.abdominalAssessment.emesisAmount}`}
-                {data.abdominalAssessment.emesisDays && 
+                {data.abdominalAssessment.emesisDays &&
                   ` for ${data.abdominalAssessment.emesisDays} days`}
               </Badge>
             )}
@@ -513,24 +522,36 @@ export default function AssessmentToolsSummary({ prf }: { prf: PRF_FORM }) {
         <ScrollArea className="h-[80vh] pr-4">
           <div className="grid gap-4">
             {sections.map((section) => {
+              const dataUnknown = section.data as unknown;
               const hasData =
-                section.data &&
-                (Array.isArray(section.data)
-                  ? section.data.length > 0
-                  : Object.values(section.data).some(
+                dataUnknown &&
+                (Array.isArray(dataUnknown)
+                  ? dataUnknown.length > 0
+                  : typeof dataUnknown === "object" &&
+                    dataUnknown !== null &&
+                    Object.values(dataUnknown as Record<string, unknown>).some(
                       (v) =>
                         v === true ||
                         (Array.isArray(v) && v.length > 0) ||
                         (typeof v === "object" &&
                           v !== null &&
-                          Object.values(v).some((x) => x === true)),
+                          Object.values(v as Record<string, unknown>).some(
+                            (x) => x === true,
+                          )),
                     ));
 
               return (
-                <Card key={section.title} className={`transition-all duration-200 ${hasData ? 'border-primary/20' : 'border-muted'}`}>
+                <Card
+                  key={section.title}
+                  className={`transition-all duration-200 ${hasData ? "border-primary/20" : "border-muted"}`}
+                >
                   <CardHeader className="py-3">
                     <CardTitle className="flex items-center justify-between text-lg">
-                      <span className={hasData ? 'text-primary' : 'text-muted-foreground'}>
+                      <span
+                        className={
+                          hasData ? "text-primary" : "text-muted-foreground"
+                        }
+                      >
                         {section.title}
                       </span>
                       {hasData ? (
@@ -542,7 +563,22 @@ export default function AssessmentToolsSummary({ prf }: { prf: PRF_FORM }) {
                   </CardHeader>
                   <CardContent>
                     {hasData ? (
-                      section.render(section.data)
+                      (() => {
+                        switch (section.title) {
+                          case "Respiratory Distress": {
+                            const s = section as SectionProps<RespiratoryDistressType>;
+                            return s.render(s.data as RespiratoryDistressType);
+                          }
+                          case "Procedures": {
+                            const s = section as SectionProps<ProceduresType>;
+                            return s.render(s.data as ProceduresType);
+                          }
+                          default: {
+                            const s = section as SectionProps<AssessmentsType>;
+                            return s.render(s.data as AssessmentsType);
+                          }
+                        }
+                      })()
                     ) : (
                       <p className="text-muted-foreground">No data recorded</p>
                     )}

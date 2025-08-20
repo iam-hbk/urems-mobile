@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, SubmitErrorHandler } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -145,14 +144,14 @@ export default function ProceduresForm() {
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         toast.success("Procedures Information Updated", {
           duration: 3000,
           position: "top-right",
         });
-        router.push(`/edit-prf/${data?.prfFormId}`);
+        router.push(`/edit-prf/${prfId}`);
       },
-      onError: (error) => {
+      onError: () => {
         toast.error("An error occurred", {
           duration: 3000,
           position: "top-right",
@@ -162,14 +161,19 @@ export default function ProceduresForm() {
   }
 
   // Add this function to handle form errors
-  const onError = (errors: any) => {
-    const errorMessages = Object.entries(errors)
-      .map(([_, error]: [string, any]) => error?.message)
-      .filter(Boolean);
+  const onError: SubmitErrorHandler<ProceduresType> = (errors) => {
+    const firstMessage =
+      Object.values(errors)
+        .map((err) => {
+          if (err && typeof err === "object" && "message" in err) {
+            const maybeMessage = (err as { message?: unknown }).message;
+            return typeof maybeMessage === "string" ? maybeMessage : null;
+          }
+          return null;
+        })
+        .find(Boolean) || "Please fill in all required fields";
 
-    const errorMessage = errorMessages[0] || "Please fill in all required fields";
-
-    toast.error(errorMessage, {
+    toast.error(firstMessage, {
       duration: 3000,
       position: "top-right",
     });
@@ -474,7 +478,6 @@ export default function ProceduresForm() {
                           <div className="flex">
                             <Group className="w-full">
                               <DateInput
-                                label="Last Dr Visit"
                                 className="pe-9"
                               />
                             </Group>

@@ -1,12 +1,11 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react'
+import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Input } from './ui/input';
-import { PasswordInput } from './ui/password-input';
-import { Button } from './ui/button';
-import { toast } from 'sonner';
+import { PasswordInput } from "./ui/password-input";
+import { Button } from "./ui/button";
+import { toast } from "sonner";
 import {
   Form,
   FormControl,
@@ -15,11 +14,11 @@ import {
   FormLabel,
   FormMessage,
 } from "./ui/form";
-import { TypeChangePasswordForm } from '@/types/auth';
-import { useChangePasswordMutation } from '@/hooks/auth/useChangePassword';
-import { schemaChangePasswordForm } from '@/schema/auth';
+import { TypeChangePasswordForm } from "@/types/auth";
+import { useChangePasswordMutation } from "@/hooks/auth/useChangePassword";
+import { schemaChangePasswordForm } from "@/schema/auth";
 import { Loader } from "lucide-react";
-import { z } from 'zod';
+import { z } from "zod";
 
 // Extended form interface for client-side confirm password validation
 interface ChangePasswordFormData extends TypeChangePasswordForm {
@@ -30,9 +29,11 @@ export default function ChangePasswordForm() {
   const mutation = useChangePasswordMutation();
 
   const form = useForm<ChangePasswordFormData>({
-    resolver: zodResolver(schemaChangePasswordForm.extend({
-      confirmPassword: z.string().min(1, "Please confirm your new password"),
-    })),
+    resolver: zodResolver(
+      schemaChangePasswordForm.extend({
+        confirmPassword: z.string().min(1, "Please confirm your new password"),
+      }),
+    ),
     defaultValues: {
       currentPassword: "",
       newPassword: "",
@@ -43,8 +44,8 @@ export default function ChangePasswordForm() {
   const onSubmit = (values: ChangePasswordFormData) => {
     if (values.confirmPassword !== values.newPassword) {
       toast.error("Confirm password does not match new password");
-        return;
-      }
+      return;
+    }
 
     // Only send currentPassword and newPassword to the API
     const apiPayload: TypeChangePasswordForm = {
@@ -61,12 +62,12 @@ export default function ChangePasswordForm() {
 
   return (
     <div className="w-full space-y-8 rounded-lg border p-6 shadow-lg">
-    <div className="space-y-2 text-center">
-      <h1 className="text-3xl font-bold">Change Password</h1>
+      <div className="space-y-2 text-center">
+        <h1 className="text-3xl font-bold">Change Password</h1>
         <p className="text-sm text-muted-foreground">
           Update your current password to a new one.
         </p>
-    </div>
+      </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -102,9 +103,9 @@ export default function ChangePasswordForm() {
                   />
                 </FormControl>
                 <FormMessage />
-                <div className="text-xs text-muted-foreground space-y-1 mt-2">
+                <div className="mt-2 space-y-1 text-xs text-muted-foreground">
                   <p>Password must contain:</p>
-                  <ul className="list-disc list-inside space-y-0.5">
+                  <ul className="list-inside list-disc space-y-0.5">
                     <li>At least 6 characters</li>
                     <li>One uppercase letter (A-Z)</li>
                     <li>One lowercase letter (a-z)</li>
@@ -134,18 +135,18 @@ export default function ChangePasswordForm() {
             )}
           />
 
-          <Button 
-            type="submit" 
-            className="w-full mt-6"
+          <Button
+            type="submit"
+            className="mt-6 w-full"
             disabled={mutation.isPending}
           >
             Change Password
             {mutation.isPending && (
               <Loader className="ml-2 h-4 w-4 animate-spin" />
             )}
-      </Button>
-    </form>
+          </Button>
+        </form>
       </Form>
-  </div>
+    </div>
   );
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
@@ -9,62 +8,21 @@ import {
   Clipboard,
   FileText,
   AlertTriangle,
-  Clock,
-  Users
+  Clock
 } from "lucide-react";
-import { useCrewGetCurrentv1 } from "@/hooks/crew/useCrew";
-import LoadingComponent from "@/components/loading";
-import { crewShiftDate, crewShiftStatus } from "@/utils/convert";
-import { useEffect, useState } from "react";
-import { typeCrewEmployee, typeShiftStatus } from "@/types/crew";
-import { activeCases, AvatarProfileImage, inventoryItems, todoData } from "@/utils/constant";
+import CrewStatusSection from "@/components/crew/CrewStatusSection";
+import CrewMembersSection from "@/components/crew/CrewMembersSection";
+import { activeCases, inventoryItems, todoData } from "@/utils/constant";
 
 export default function DashboardPage() {
-  const [shiftStatus, setShiftStatus] = useState<typeShiftStatus>('future');
-  const { data, isLoading } = useCrewGetCurrentv1();
 
-  useEffect(() => {
-    if (data && data.crew) {
-      setShiftStatus(
-        crewShiftStatus(data.crew.startTime, data.crew.endTime)
-      );
-    }
-  }, [data])
 
-  if (isLoading) { return <LoadingComponent /> }
-
-  // return <div className="" >Blah</div>
 
   return (
     <div className="container mx-auto p-6">
       <div className="flex items-center justify-between mb-8 sm:flex-row sm:gap-y-0 gap-y-[1rem] flex-col">
         <h1 className="text-3xl font-bold">Welcome</h1>
-        {
-          data && data.crew ? <div className="flex items-center gap-4 flex-col sm:flex-row ">
-            {/* start time */}
-            <Badge variant="outline"
-              className={`px-4 py-2 ${shiftStatus === 'current' ? 'bg-green-600 text-white' : shiftStatus === 'future' ? 'bg-orange-600 text-white' : 'bg-white'} `}>
-              <Clock className={`w-4 h-4 mr-2`} />
-              Shift: {`${crewShiftDate(data.crew.startTime)}`}
-            </Badge>
-            {/* end time */}
-            <Badge variant="outline"
-              className={`px-4 py-2 bg-red-600 text-white`}>
-              <Clock className={`w-4 h-4 mr-2`} />
-              Shift: {`${crewShiftDate(data.crew.endTime)}`}
-            </Badge>
-            <Badge variant="outline" className="px-4 py-2">
-              <Users className="w-4 h-4 mr-2" />
-              Crew: {data.employees.length}
-            </Badge>
-          </div>
-            :
-            <div className="" >
-              <Badge variant="outline" className="px-4 py-2">
-                <Users className="w-4 h-4 mr-2" />
-                No Crew / Shift
-              </Badge>
-            </div>}
+        <CrewStatusSection />
       </div>
 
       <div className="grid grid-cols-3 gap-6">
@@ -197,40 +155,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Crew Members */}
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5" />
-              Crew Members
-            </CardTitle>
-          </CardHeader>
-
-          <CardContent>
-            <div className=" flex flex-col gap-y-[1rem] sm:flex-row sm:gap-x-[1rem]  ">
-              {data && data.employees && data.employees.map((member: typeCrewEmployee, index) => (
-                <div key={index} className=" w-full sm:w-[50%] md:w-[32%] flex items-center gap-4 border rounded-lg p-4">
-                  <Avatar className="w-12 h-12">
-                    <AvatarImage src={AvatarProfileImage} />
-                    <AvatarFallback className="uppercase ">{member.initials}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="font-medium capitalize ">
-                      {member.firstName} {member.lastName}
-                    </div>
-                    <div className="text-sm text-gray-500">{"Role"}</div>
-                    <div className="text-sm text-gray-500">HPCA: {'hpcaNumber'}</div>
-                    <Badge variant={"default"} className="mt-2">
-                      {'Default'}
-                    </Badge>
-                    {/* <Badge variant={member.status === "On Duty" ? "default" : "secondary"} className="mt-2">
-                      {member.status}
-                    </Badge> */}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <CrewMembersSection />
       </div>
     </div >
   );

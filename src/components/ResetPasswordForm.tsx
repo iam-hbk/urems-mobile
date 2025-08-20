@@ -20,7 +20,7 @@ import {
 } from "@/hooks/auth/useLogin";
 import { schemaResetPasswordForm } from "@/schema/auth";
 import { type TypeResetPasswordForm } from "@/types/auth";
-import { Loader, ArrowLeft } from "lucide-react";
+import { Loader } from "lucide-react";
 import { Separator } from "./ui/separator";
 
 interface ResetPasswordFormProps {
@@ -114,7 +114,7 @@ export default function ResetPasswordForm({ email }: ResetPasswordFormProps) {
             </Button>
             {/* Didn't receive the code? */}
             <div className="flex items-center justify-center text-muted-foreground">
-              <p className="text-xs">Didn't receive the code?</p>
+              <p className="text-xs">Didn&apos;t receive the code?</p>
               <Button
                 type="button"
                 variant="link"

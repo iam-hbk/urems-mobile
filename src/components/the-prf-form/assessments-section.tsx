@@ -2,7 +2,7 @@
 
 import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FieldPath, useForm } from "react-hook-form";
+import { FieldPath, SubmitErrorHandler, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -26,7 +26,6 @@ import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
 import { PRF_FORM } from "@/interfaces/prf-form";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { z } from "zod";
 import { AssessmentsSchema, AssessmentsType } from "@/interfaces/prf-schema";
 import { TimePicker } from "@/components/ui/time-picker";
 import { DatePicker, Group } from "react-aria-components";
@@ -134,14 +133,14 @@ export default function AssessmentForm() {
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         toast.success("Assessment Information Updated", {
           duration: 3000,
           position: "top-right",
         });
-        router.push(`/edit-prf/${data?.prfFormId}`);
+        router.push(`/edit-prf/${prfId}`);
       },
-      onError: (error) => {
+      onError: () => {
         toast.error("An error occurred", {
           duration: 3000,
           position: "top-right",
@@ -151,14 +150,26 @@ export default function AssessmentForm() {
   }
 
   // Add this function to handle form errors
-  const onError = (errors: any) => {
-    const errorMessages = Object.entries(errors)
-      .map(([_, error]: [string, any]) => error?.message)
-      .filter(Boolean);
-    
-    const errorMessage = errorMessages[0] || "Please fill in all required fields";
-    
-    toast.error(errorMessage, {
+  const onError: SubmitErrorHandler<AssessmentsType> = (errors) => {
+    const extractFirstMessage = (err: unknown): string | null => {
+      if (!err) return null;
+      if (typeof err === "object") {
+        if ("message" in (err as Record<string, unknown>)) {
+          const maybe = (err as { message?: unknown }).message;
+          if (typeof maybe === "string") return maybe;
+        }
+        for (const value of Object.values(err as Record<string, unknown>)) {
+          const found = extractFirstMessage(value);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+
+    const firstMessage =
+      extractFirstMessage(errors) || "Please fill in all required fields";
+
+    toast.error(firstMessage, {
       duration: 3000,
       position: "top-right",
     });
@@ -183,7 +194,7 @@ export default function AssessmentForm() {
               <FormField
                 control={form.control}
                 name="neuroAssessment.cincinnatiScale"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <FormLabel>Cincinnati Scale</FormLabel>
                     <div className="flex flex-wrap gap-4">
@@ -652,7 +663,7 @@ export default function AssessmentForm() {
                             <div className="flex">
                               <Group className="w-full">
                                 <DateInput
-                                  label="Last Dr Visit"
+                                  // label="Last Dr Visit"
                                   className="pe-9"
                                 />
                               </Group>
@@ -866,7 +877,7 @@ export default function AssessmentForm() {
                       />
                     </FormControl>
                     <FormLabel className="font-normal">
-                      Negative Murphy's Sign
+                      Negative Murphy&apos;s Sign
                     </FormLabel>
                   </FormItem>
                 )}

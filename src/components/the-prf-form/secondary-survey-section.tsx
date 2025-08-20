@@ -32,13 +32,11 @@ import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 type SecondarySurveyType = z.infer<typeof SecondarySurveySchema>;
 
-type SecondarySurveyFormProps = {
-  initialData?: SecondarySurveyType;
-};
+// type SecondarySurveyFormProps = {
+//   initialData?: SecondarySurveyType;
+// };
 
-export default function SecondarySurveyForm({
-  initialData,
-}: SecondarySurveyFormProps) {
+export default function SecondarySurveyForm() {
   const prfId = usePathname().split("/")[2];
   const prf_from_store = useStore((state) => state.prfForms).find(
     (prf) => prf.prfFormId == prfId,
@@ -232,7 +230,8 @@ export default function SecondarySurveyForm({
     console.log("VALUES -> ", values);
     if (!form.formState.isDirty) return;
 
-    if (!zsEmployee) { // no needed .. just for building
+    if (!zsEmployee) {
+      // no needed .. just for building
       return;
     }
 
@@ -250,14 +249,14 @@ export default function SecondarySurveyForm({
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         toast.success("Secondary Survey Updated", {
           duration: 3000,
           position: "top-right",
         });
-        router.push(`/edit-prf/${data?.prfFormId}`);
+        router.push(`/edit-prf/${prfId}`);
       },
-      onError: (error) => {
+      onError: () => {
         toast.error("An error occurred", {
           duration: 3000,
           position: "top-right",
@@ -267,12 +266,15 @@ export default function SecondarySurveyForm({
   }
 
   // Add this function to handle form errors
-  const onError = (errors: any) => {
-    const errorMessages = Object.entries(errors)
-      .map(([_, error]: [string, any]) => error?.message)
+  const onError = (errors: unknown) => {
+    const errorMessages = Object.entries(
+      errors as Record<string, { message: string }>,
+    )
+      .map(([, error]: [string, { message: string }]) => error?.message)
       .filter(Boolean);
 
-    const errorMessage = errorMessages[0] || "Please fill in all required fields";
+    const errorMessage =
+      errorMessages[0] || "Please fill in all required fields";
 
     toast.error(errorMessage, {
       duration: 3000,

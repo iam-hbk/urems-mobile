@@ -1,14 +1,15 @@
 "use client";
 
-import { useQuery, useQueries } from "@tanstack/react-query";
+import { useQuery, useQueries, type UseQueryResult, type UseQueryOptions } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { apiGetCrewEmployeeID } from "@/lib/api/crew-apis";
 import { apiGetUserInformation } from "@/lib/api/apiEmployee";
-import { authClient } from "@/lib/auth/client";
+import { useSessionQuery } from "@/hooks/auth/useSession";
 import { useZuStandCrewStore } from "@/lib/zuStand/crew";
 import { TypeCrew } from "@/interfaces/crew";
 import { UserData } from "@/lib/auth/dal";
+import type { ApiError } from "@/types/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -18,20 +19,24 @@ const getInitials = (name: string) => name.split(" ").map((n) => n[0]).join("").
 
 export function CrewStatus() {
   const { zsSetCrewID } = useZuStandCrewStore();
-  const { data: session } = authClient.useSession();
+  const { data: session } = useSessionQuery();
 
-  const { data: crewData, isLoading: isLoadingCrew } = useQuery<TypeCrew | null, Error>({
+  const { data: crewData, isLoading: isLoadingCrew } = useQuery<TypeCrew | null, ApiError>({
     queryKey: ["crew", session?.user.id],
     queryFn: async () => {
       if (!session?.user.id) return null;
       const res = await apiGetCrewEmployeeID(session.user.id);
-      if (res?.data) {
-        const todaysCrew = res.data.find(
-          (i: TypeCrew) => new Date(i.date).toLocaleDateString() === new Date().toLocaleDateString()
-        );
-        return todaysCrew || null;
-      }
-      return null;
+      return res.match(
+        (crews) => {
+          const todaysCrew = crews.find(
+            (i: TypeCrew) => new Date(i.date).toLocaleDateString() === new Date().toLocaleDateString()
+          );
+          return todaysCrew || null;
+        },
+        (e) => {
+          throw e;
+        }
+      );
     },
     enabled: !!session?.user.id,
   });
@@ -39,10 +44,19 @@ export function CrewStatus() {
   const employeeIds = crewData?.employeeIds || [];
   const crewMemberQueries = useQueries({
     queries: employeeIds.map((id) => ({
-        queryKey: ['employee', id],
-        queryFn: () => apiGetUserInformation(id.toString()),
-      })),
-  });
+      queryKey: ["employee", id],
+      queryFn: async (): Promise<UserData> => {
+        const result = await apiGetUserInformation(id.toString());
+        return result.match(
+          (user) => user,
+          (e) => {
+            throw e;
+          }
+        );
+      },
+      enabled: !!id,
+    })) as UseQueryOptions<UserData, ApiError>[],
+  }) as UseQueryResult<UserData, ApiError>[];
 
   const isLoadingMembers = crewMemberQueries.some(q => q.isLoading);
 
@@ -78,7 +92,7 @@ export function CrewStatus() {
           <ul className="space-y-4">
             {crewMemberQueries.map((query) => {
               if (!query.data) return null;
-              const employee = query.data as UserData;
+              const employee = query.data;
               return (
                 <li key={employee.id} className="flex items-center gap-3">
                   <Avatar className="h-10 w-10 border">

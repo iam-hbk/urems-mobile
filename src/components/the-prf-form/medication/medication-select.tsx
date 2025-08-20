@@ -11,7 +11,11 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Star, StarOff, Plus } from "lucide-react";
 import { useZuStandCrewStore } from "@/lib/zuStand/crew";
 import { useFavoriteMedications } from "@/hooks/medication/useFavoriteMedications";
@@ -28,31 +32,41 @@ interface MedicationSelectProps {
 export const MedicationSelect = React.forwardRef<
   HTMLDivElement,
   MedicationSelectProps
->(({ value, onChange, name, index, onCustomMedication }, ref) => {
+>(({ value, onChange, index, onCustomMedication }) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
   const form = useFormContext();
   const { zsVehicle } = useZuStandCrewStore();
   const { favorites, toggleFavorite } = useFavoriteMedications();
-  
+
   const medications = zsVehicle?.inventory.medications || [];
-  const favoriteMedications = medications.filter((med) => favorites.includes(med.id));
-  const otherMedications = medications.filter((med) => !favorites.includes(med.id));
+  const favoriteMedications = medications.filter((med) =>
+    favorites.includes(med.id),
+  );
+  const otherMedications = medications.filter(
+    (med) => !favorites.includes(med.id),
+  );
 
-  const handleMedicationSelect = React.useCallback((medication: typeof medications[0]) => {
-    onChange(medication.name);
-    form.setValue(`medications.${index}.medicationId`, medication.id);
-    form.setValue(`medications.${index}.dose`, medication.dose);
-    form.setValue(`medications.${index}.route`, medication.route);
-    setIsOpen(false);
-    setSearch("");
-  }, [onChange, index, form, setIsOpen, setSearch]);
+  const handleMedicationSelect = React.useCallback(
+    (medication: (typeof medications)[0]) => {
+      onChange(medication.name);
+      form.setValue(`medications.${index}.medicationId`, medication.id);
+      form.setValue(`medications.${index}.dose`, medication.dose);
+      form.setValue(`medications.${index}.route`, medication.route);
+      setIsOpen(false);
+      setSearch("");
+    },
+    [onChange, index, form, setIsOpen, setSearch],
+  );
 
-  const handleFavoriteClick = React.useCallback((e: React.MouseEvent, medicationId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleFavorite(medicationId);
-  }, [toggleFavorite]);
+  const handleFavoriteClick = React.useCallback(
+    (e: React.MouseEvent, medicationId: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleFavorite(medicationId);
+    },
+    [toggleFavorite],
+  );
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -80,8 +94,8 @@ export const MedicationSelect = React.forwardRef<
             {favoriteMedications.length > 0 && (
               <CommandGroup heading="Favorites">
                 {favoriteMedications
-                  .filter(med => 
-                    med.name.toLowerCase().includes(search.toLowerCase())
+                  .filter((med) =>
+                    med.name.toLowerCase().includes(search.toLowerCase()),
                   )
                   .map((med) => (
                     <div key={med.id} className="flex items-center px-2 py-1.5">
@@ -107,8 +121,8 @@ export const MedicationSelect = React.forwardRef<
             )}
             <CommandGroup heading="All Medications">
               {otherMedications
-                .filter(med => 
-                  med.name.toLowerCase().includes(search.toLowerCase())
+                .filter((med) =>
+                  med.name.toLowerCase().includes(search.toLowerCase()),
                 )
                 .map((med) => (
                   <div key={med.id} className="flex items-center px-2 py-1.5">
@@ -149,4 +163,6 @@ export const MedicationSelect = React.forwardRef<
       </PopoverContent>
     </Popover>
   );
-}); 
+});
+
+MedicationSelect.displayName = "MedicationSelect";

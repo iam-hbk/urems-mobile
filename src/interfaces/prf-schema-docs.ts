@@ -719,6 +719,8 @@ const InjurySchema = z
         symbol: z.string(),
       }),
     ),
+    anteriorImage: z.string().optional().describe("Base64 encoded image of anterior SVG diagram"),
+    posteriorImage: z.string().optional().describe("Base64 encoded image of posterior SVG diagram"),
   })
   .describe("Injury assessment record");
 

@@ -1,10 +1,8 @@
 "use client";
 import StepperView from "@/components/stepper-view";
 import { useStore } from "@/lib/store";
-import Link from "next/link";
 import React, { useState } from "react";
 import { usePathname } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
 import Script from "next/script";
 import QuickLinks from "@/components/quick-links";
 import { Eye, EyeOffIcon, Menu, Search } from "lucide-react";
@@ -44,7 +42,7 @@ function Layout({
       <CommandPalette
         prf={prf}
         open={showCommandPalette}
-        onOpenChange={setShowCommandPalette}
+        onOpenChangeAction={setShowCommandPalette}
       />
 
       {/* Header */}

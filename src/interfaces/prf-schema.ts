@@ -379,6 +379,7 @@ export const IntravenousTherapySchema = z.object({
   weight: z.string(),
   weightMeasurementType: z.enum(["estimated", "pawper", "broselow"]),
 });
+
 const MedicationSchema = z.object({
   medicine: z.string().min(1, "Medicine is required"),
   medicationId: z.string().optional(), // Optional because custom medications won't have an ID
@@ -392,12 +393,6 @@ const MedicationSchema = z.object({
   name: z.string().min(1, "Name is required"),
   signature: z.string().min(1, "Signature is required"),
 });
-
-type ConsultationContext = {
-  parent: {
-    consulted: boolean;
-  };
-};
 
 const ConsultationSchema = z
   .object({
@@ -891,6 +886,8 @@ export const InjurySchema = z.object({
       symbol: z.string(),
     }),
   ),
+  anteriorImage: z.string().optional(),
+  posteriorImage: z.string().optional(),
 });
 
 export type InjuryType = z.infer<typeof InjurySchema>;
@@ -907,7 +904,6 @@ export const PatientHandoverSchema = z.object({
 });
 export type PatientHandoverType = z.infer<typeof PatientHandoverSchema>;
 
-// --------------------------------------------
 export const PastMedicalHistorySchema = z.object({
   allergies: z.array(
     z.object({
@@ -979,7 +975,7 @@ export const PastMedicalHistorySchema = z.object({
       complications: z.string().optional(),
     }),
   ),
-  familyHistory: z.array(z.string()).optional(),
+  familyHistory: z.array(z.string()).default([]),
   additionalNotes: z.string().optional(),
 });
 
@@ -1066,13 +1062,13 @@ export const PRFFormDataSchema = z.object({
       data: IntravenousTherapySchema,
     })
     .optional(),
-  history_taking: z
-    .object({
-      isOptional: z.boolean(),
-      isCompleted: z.boolean(),
-      data: z.string(),
-    })
-    .optional(),
+  // history_taking: z
+  //   .object({
+  //     isOptional: z.boolean(),
+  //     isCompleted: z.boolean(),
+  //     data: z.string(),
+  //   })
+  //   .optional(),
   // physical_exam: z
   //   .object({
   //     isOptional: z.boolean(),
@@ -1080,13 +1076,13 @@ export const PRFFormDataSchema = z.object({
   //     data: z.string(),
   //   })
   //   .optional(),
-  interventions: z
-    .object({
-      isOptional: z.boolean().default(false),
-      isCompleted: z.boolean().default(false),
-      data: z.string(),
-    })
-    .optional(),
+  // interventions: z
+  //   .object({
+  //     isOptional: z.boolean().default(false),
+  //     isCompleted: z.boolean().default(false),
+  //     data: z.string(),
+  //   })
+  //   .optional(),
   diagnosis: z
     .object({
       isOptional: z.boolean().default(false),

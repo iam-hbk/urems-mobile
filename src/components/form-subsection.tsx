@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
+import type { AddressData } from "@/components/address-input";
 import type { SubSection, DetailedFormResponse } from "@/types/form-template";
 import { FormFieldBuilder } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,7 @@ import {
 
 interface FormSubSectionProps {
   subSection: SubSection;
-  form: UseFormReturn<any>;
+  form: UseFormReturn<Record<string, string | number | boolean | string[] | AddressData>>;
   responseId?: string;
   existingResponse?: DetailedFormResponse;
   className?: string;

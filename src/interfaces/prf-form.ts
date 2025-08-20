@@ -2,11 +2,9 @@ import { z } from "zod";
 import {
   PRFFormSchema,
   TransportationSchema,
-  IncidentInformationSchema,
   PRFFormDataSchema,
   SecondarySurveySchema,
   CaseDetailsSchema,
-  PatientDetailsSchema,
 } from "./prf-schema";
 import { PrimarySurveySchema } from "./prf-primary-survey-schema";
 
@@ -28,9 +26,9 @@ export const sectionDescriptions = [
   "Primary Survey",
   "Secondary Survey",
   "Vital Signs",
-  "History Taking",
+  // "History Taking",
   // "Physical Exam",
-  "Interventions",
+  // "Interventions",
   "Medication Administration",
   "Patient Handover",
   "Notes",
@@ -55,9 +53,9 @@ export const PRF_FORM_DATA_DISPLAY_NAMES: Record<
   primary_survey: "Primary Survey",
   secondary_survey: "Secondary Survey",
   vital_signs: "Vital Signs",
-  history_taking: "History Taking",
+  // history_taking: "History Taking",
   // physical_exam: "Physical Exam",
-  interventions: "Interventions",
+  // interventions: "Interventions",
   medication_administration: "Medication Administration",
   patient_handover: "Patient Handover",
   notes: "Notes",

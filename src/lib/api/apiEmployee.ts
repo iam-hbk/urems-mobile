@@ -1,18 +1,9 @@
-'use server';
+"use server";
 
-import { getCookie } from "@/utils/cookies";
-import { UserTokenCookieName } from "../auth/config";
 import api from "../wretch";
+import type { ApiResult } from "../wretch";
+import type { UserData } from "@/lib/auth/dal";
 
-export async function apiGetUserInformation(userId: string) {
-  try {
-    const sessionToken = await getCookie(UserTokenCookieName);
-
-    const results = await api.get(`/api/auth/users/${userId}`);
-
-    return results;
-  }
-  catch (error: unknown) {
-    throw error as Error;
-  }
+export async function apiGetUserInformation(userId: string): ApiResult<UserData> {
+  return api.get<UserData>(`/auth/users/${userId}`);
 }

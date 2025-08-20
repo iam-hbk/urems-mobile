@@ -2,7 +2,7 @@
 
 import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { SubmitErrorHandler, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -10,7 +10,6 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
 } from "@/components/ui/form";
 import { usePathname, useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
@@ -26,10 +25,10 @@ export default function NotesForm() {
   const prf_from_store = useStore((state) => state.prfForms).find(
     (prf) => prf.prfFormId == prfId,
   );
-  
+
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
-  
+
   // Get notes from store
   const { notesByPrfId, updateNotes, clearNotes } = useStore();
   const savedNotes = notesByPrfId[prfId]?.notes || "";
@@ -70,15 +69,15 @@ export default function NotesForm() {
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         clearNotes(prfId);
         toast.success("Notes Updated", {
           duration: 3000,
           position: "top-right",
         });
-        router.push(`/edit-prf/${data?.prfFormId}`);
+        router.push(`/edit-prf/${prfId}`);
       },
-      onError: (error) => {
+      onError: () => {
         toast.error("An error occurred", {
           duration: 3000,
           position: "top-right",
@@ -87,15 +86,26 @@ export default function NotesForm() {
     });
   }
 
-  const onError = (errors: any) => {
-    const errorMessages = Object.entries(errors)
-      .map(([_, error]: [string, any]) => error?.message)
-      .filter(Boolean);
+  const onError: SubmitErrorHandler<NotesType> = (errors) => {
+    const extractFirstMessage = (err: unknown): string | null => {
+      if (!err) return null;
+      if (typeof err === "object") {
+        if ("message" in (err as Record<string, unknown>)) {
+          const maybe = (err as { message?: unknown }).message;
+          if (typeof maybe === "string") return maybe;
+        }
+        for (const value of Object.values(err as Record<string, unknown>)) {
+          const found = extractFirstMessage(value);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
 
-    const errorMessage =
-      errorMessages[0] || "Please fill in all required fields";
+    const firstMessage =
+      extractFirstMessage(errors) || "Please fill in all required fields";
 
-    toast.error(errorMessage, {
+    toast.error(firstMessage, {
       duration: 3000,
       position: "top-right",
     });
@@ -128,7 +138,11 @@ export default function NotesForm() {
 
         <Button
           type="submit"
-          disabled={!hasChanges || form.formState.isSubmitting || updatePrfQuery.isPending}
+          disabled={
+            !hasChanges ||
+            form.formState.isSubmitting ||
+            updatePrfQuery.isPending
+          }
           className="w-full self-end sm:w-auto"
           onClick={() => {
             const formErrors = form.formState.errors;

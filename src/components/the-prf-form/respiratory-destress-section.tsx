@@ -1,8 +1,6 @@
 "use client";
-
-import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, SubmitErrorHandler } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -10,7 +8,6 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { usePathname, useRouter } from "next/navigation";
@@ -88,6 +85,8 @@ const RespiratoryDistressSchema = z.object({
 });
 
 type RespiratoryDistressType = z.infer<typeof RespiratoryDistressSchema>;
+type AdditionalFindingsOption =
+  RespiratoryDistressType["additionalFindings"][number];
 
 export default function RespiratoryDistressAssessmentForm() {
   const prfId = usePathname().split("/")[2];
@@ -111,7 +110,8 @@ export default function RespiratoryDistressAssessmentForm() {
   });
 
   function onSubmit(values: RespiratoryDistressType) {
-    if (!zsEmployee) { // no needed .. just for building
+    if (!zsEmployee) {
+      // no needed .. just for building
       return;
     }
     const prfUpdateValue: PRF_FORM = {
@@ -124,19 +124,18 @@ export default function RespiratoryDistressAssessmentForm() {
           isOptional: false,
         },
       },
-      EmployeeID: zsEmployee.id || "2" // fallback
-
+      EmployeeID: zsEmployee.id || "2", // fallback
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         toast.success("Respiratory Distress Assessment Updated", {
           duration: 3000,
           position: "top-right",
         });
-        router.push(`/edit-prf/${data?.prfFormId}`);
+        router.push(`/edit-prf/${prfId}`);
       },
-      onError: (error) => {
+      onError: () => {
         toast.error("An error occurred", {
           duration: 3000,
           position: "top-right",
@@ -145,16 +144,19 @@ export default function RespiratoryDistressAssessmentForm() {
     });
   }
 
-  // Add this function to handle form errors
-  const onError = (errors: any) => {
-    const errorMessages = Object.entries(errors)
-      .map(([_, error]: [string, any]) => error?.message)
-      .filter(Boolean);
+  const onError: SubmitErrorHandler<RespiratoryDistressType> = (errors) => {
+    const firstMessage =
+      Object.values(errors)
+        .map((err) => {
+          if (err && typeof err === "object" && "message" in err) {
+            const maybeMessage = (err as { message?: unknown }).message;
+            return typeof maybeMessage === "string" ? maybeMessage : null;
+          }
+          return null;
+        })
+        .find(Boolean) || "Please fill in all required fields";
 
-    const errorMessage =
-      errorMessages[0] || "Please fill in all required fields";
-
-    toast.error(errorMessage, {
+    toast.error(firstMessage, {
       duration: 3000,
       position: "top-right",
     });
@@ -211,23 +213,23 @@ export default function RespiratoryDistressAssessmentForm() {
                                 <Checkbox
                                   checked={field.value?.includes(
                                     item as
-                                    | "Asthma"
-                                    | "COPD"
-                                    | "Emphysema"
-                                    | "Hx of Pulmonary Emboli"
-                                    | "Lung Cancer"
-                                    | "Prone to Chest Infections / Pneumonia"
-                                    | "Pulmonary TB"
-                                    | "COVID +",
+                                      | "Asthma"
+                                      | "COPD"
+                                      | "Emphysema"
+                                      | "Hx of Pulmonary Emboli"
+                                      | "Lung Cancer"
+                                      | "Prone to Chest Infections / Pneumonia"
+                                      | "Pulmonary TB"
+                                      | "COVID +",
                                   )}
                                   onCheckedChange={(checked) => {
                                     return checked
                                       ? field.onChange([...field.value, item])
                                       : field.onChange(
-                                        field.value?.filter(
-                                          (value) => value !== item,
-                                        ),
-                                      );
+                                          field.value?.filter(
+                                            (value) => value !== item,
+                                          ),
+                                        );
                                   }}
                                 />
                               </FormControl>
@@ -282,20 +284,20 @@ export default function RespiratoryDistressAssessmentForm() {
                                   <Checkbox
                                     checked={field.value?.includes(
                                       item as
-                                      | "Taking Contraceptives"
-                                      | "Hx of DVTs"
-                                      | "Recent: Long Distance Travel"
-                                      | "Fracture"
-                                      | "Recently given birth",
+                                        | "Taking Contraceptives"
+                                        | "Hx of DVTs"
+                                        | "Recent: Long Distance Travel"
+                                        | "Fracture"
+                                        | "Recently given birth",
                                     )}
                                     onCheckedChange={(checked) => {
                                       return checked
                                         ? field.onChange([...field.value, item])
                                         : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== item,
-                                          ),
-                                        );
+                                            field.value?.filter(
+                                              (value) => value !== item,
+                                            ),
+                                          );
                                     }}
                                   />
                                 </FormControl>
@@ -366,15 +368,17 @@ export default function RespiratoryDistressAssessmentForm() {
                               >
                                 <FormControl>
                                   <Checkbox
-                                    checked={field.value?.includes(item as any)}
+                                    checked={field.value?.includes(
+                                      item as AdditionalFindingsOption,
+                                    )}
                                     onCheckedChange={(checked) => {
                                       return checked
                                         ? field.onChange([...field.value, item])
                                         : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== item,
-                                          ),
-                                        );
+                                            field.value?.filter(
+                                              (value) => value !== item,
+                                            ),
+                                          );
                                     }}
                                   />
                                 </FormControl>
@@ -432,21 +436,21 @@ export default function RespiratoryDistressAssessmentForm() {
                                   <Checkbox
                                     checked={field.value?.includes(
                                       item as
-                                      | "Chest Recession"
-                                      | "Grunting"
-                                      | "Irritable"
-                                      | "Prem Baby: Respiratory Distress Syndrome"
-                                      | "Congenital Abnormality"
-                                      | "Hyaline Membrane Disease",
+                                        | "Chest Recession"
+                                        | "Grunting"
+                                        | "Irritable"
+                                        | "Prem Baby: Respiratory Distress Syndrome"
+                                        | "Congenital Abnormality"
+                                        | "Hyaline Membrane Disease",
                                     )}
                                     onCheckedChange={(checked) => {
                                       return checked
                                         ? field.onChange([...field.value, item])
                                         : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== item,
-                                          ),
-                                        );
+                                            field.value?.filter(
+                                              (value) => value !== item,
+                                            ),
+                                          );
                                     }}
                                   />
                                 </FormControl>
