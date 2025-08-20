@@ -4,10 +4,11 @@ export interface typeEmployee {
   employeeNumber: string;
   employeeTypeId: number;
   personId: string;
-  employeeType: EmployeeType;
-  person: typeIdentityPerson;
-  certificates: [];
-  stockTransfers: [];
+  person: typePerson;
+  // employee: 
+  employeeType?: EmployeeType;
+  certificates?: [];
+  stockTransfers?: [];
 }
 
 // / meeds to change this to person

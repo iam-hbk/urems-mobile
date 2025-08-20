@@ -101,9 +101,9 @@ export function AddressInput<
       fullAddress: place.formatted_address || "",
       coordinates: place.geometry?.location
         ? {
-            lat: place.geometry.location.lat(),
-            lng: place.geometry.location.lng(),
-          }
+          lat: place.geometry.location.lat(),
+          lng: place.geometry.location.lng(),
+        }
         : undefined,
     };
 
