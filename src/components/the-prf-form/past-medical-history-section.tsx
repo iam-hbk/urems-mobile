@@ -1,8 +1,6 @@
 "use client";
-
-import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, SubmitErrorHandler } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -133,14 +131,14 @@ export default function PastMedicalHistoryForm() {
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         toast.success("Past Medical History Updated", {
           duration: 3000,
           position: "top-right",
         });
         router.push(`/edit-prf/${prfId}`);
       },
-      onError: (error) => {
+      onError: () => {
         toast.error("An error occurred", {
           duration: 3000,
           position: "top-right",
@@ -149,14 +147,26 @@ export default function PastMedicalHistoryForm() {
     });
   }
 
-  const onError = (errors: any) => {
-    const errorMessages = Object.entries(errors)
-      .map(([_, error]: [string, any]) => error?.message)
-      .filter(Boolean);
-    
-    const errorMessage = errorMessages[0] || "Please fill in all required fields";
-    
-    toast.error(errorMessage, {
+  const onError: SubmitErrorHandler<PastMedicalHistoryType> = (errors) => {
+    const extractFirstMessage = (err: unknown): string | null => {
+      if (!err) return null;
+      if (typeof err === "object") {
+        if ("message" in (err as Record<string, unknown>)) {
+          const maybe = (err as { message?: unknown }).message;
+          if (typeof maybe === "string") return maybe;
+        }
+        for (const value of Object.values(err as Record<string, unknown>)) {
+          const found = extractFirstMessage(value);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+
+    const firstMessage =
+      extractFirstMessage(errors) || "Please fill in all required fields";
+
+    toast.error(firstMessage, {
       duration: 3000,
       position: "top-right",
     });

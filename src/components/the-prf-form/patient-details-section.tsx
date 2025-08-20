@@ -1,10 +1,10 @@
 "use client";
 
-import React from "react";
+import { useState } from "react";
 import { z } from "zod";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, SubmitErrorHandler } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-import { Loader2, X } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { PRF_FORM } from "@/interfaces/prf-form";
 import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
@@ -57,7 +57,7 @@ type PatientDetailsFormProps = {
 
 type AgeUnit = "years" | "months" | "days";
 
-const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
+const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
   const { zsEmployee } = useZuStandEmployeeStore();
   const prfId = usePathname().split("/")[2];
 
@@ -80,7 +80,7 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
   // Watch the unableToObtainInformation.status field
   const unableToObtainInfo = form.watch("unableToObtainInformation.status");
   // Add this state for the toggle
-  const [useDateOfBirth, setUseDateOfBirth] = React.useState(false);
+  const [useDateOfBirth, setUseDateOfBirth] = useState(false);
 
   // Function to calculate age from DOB
   const calculateAge = (birthDate: Date) => {
@@ -128,12 +128,12 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
       // Add estimated age and notes fields if they don't exist
       if (!form.getValues("unableToObtainInformation.estimatedAge")) {
         form.setValue("unableToObtainInformation.estimatedAge", undefined, {
-          shouldValidate: false
+          shouldValidate: false,
         });
       }
       if (!form.getValues("unableToObtainInformation.notes")) {
         form.setValue("unableToObtainInformation.notes", "", {
-          shouldValidate: false
+          shouldValidate: false,
         });
       }
 
@@ -141,90 +141,106 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
       // Only initialize if they don't exist
       if (!form.getValues("age")) {
         form.setValue("age", undefined, {
-          shouldValidate: false
+          shouldValidate: false,
         });
       }
       if (!form.getValues("ageUnit")) {
         form.setValue("ageUnit", "years", {
-          shouldValidate: false
+          shouldValidate: false,
         });
       }
       if (!form.getValues("gender")) {
         form.setValue("gender", undefined, {
-          shouldValidate: false
+          shouldValidate: false,
         });
       }
       if (!form.getValues("patientName")) {
         form.setValue("patientName", "", {
-          shouldValidate: false
+          shouldValidate: false,
         });
       }
       if (!form.getValues("patientSurname")) {
         form.setValue("patientSurname", "", {
-          shouldValidate: false
+          shouldValidate: false,
         });
       }
       if (!form.getValues("id")) {
         form.setValue("id", "", {
-          shouldValidate: false
+          shouldValidate: false,
         });
       }
       if (!form.getValues("passport")) {
         form.setValue("passport", "", {
-          shouldValidate: false
+          shouldValidate: false,
         });
       }
 
       // Initialize optional fields with empty values if they don't exist
       if (!form.getValues("nextOfKin")) {
-        form.setValue("nextOfKin", {
-          name: "",
-          relationToPatient: "",
-          email: "",
-          physicalAddress: "",
-          phoneNo: "",
-          alternatePhoneNo: "",
-          otherNOKPhoneNo: "",
-        }, {
-          shouldValidate: false
-        });
+        form.setValue(
+          "nextOfKin",
+          {
+            name: "",
+            relationToPatient: "",
+            email: "",
+            physicalAddress: "",
+            phoneNo: "",
+            alternatePhoneNo: "",
+            otherNOKPhoneNo: "",
+          },
+          {
+            shouldValidate: false,
+          },
+        );
       }
       if (!form.getValues("medicalAid")) {
-        form.setValue("medicalAid", {
-          name: "",
-          number: "",
-          principalMember: "",
-          authNo: "",
-        }, {
-          shouldValidate: false
-        });
+        form.setValue(
+          "medicalAid",
+          {
+            name: "",
+            number: "",
+            principalMember: "",
+            authNo: "",
+          },
+          {
+            shouldValidate: false,
+          },
+        );
       }
       if (!form.getValues("employer")) {
-        form.setValue("employer", {
-          name: "",
-          workPhoneNo: "",
-          workAddress: "",
-        }, {
-          shouldValidate: false
-        });
+        form.setValue(
+          "employer",
+          {
+            name: "",
+            workPhoneNo: "",
+            workAddress: "",
+          },
+          {
+            shouldValidate: false,
+          },
+        );
       }
       if (!form.getValues("pastHistory")) {
-        form.setValue("pastHistory", {
-          allergies: "",
-          medication: "",
-          medicalHx: "",
-          lastMeal: "",
-          cva: false,
-          epilepsy: false,
-          cardiac: false,
-          byPass: false,
-          dmOneOrTwo: false,
-          HPT: false,
-          asthma: false,
-          copd: false,
-        }, {
-          shouldValidate: false
-        });
+        form.setValue(
+          "pastHistory",
+          {
+            allergies: "",
+            medication: "",
+            medicalHx: "",
+            lastMeal: "",
+            cva: false,
+            epilepsy: false,
+            cardiac: false,
+            byPass: false,
+            dmOneOrTwo: false,
+            HPT: false,
+            asthma: false,
+            copd: false,
+          },
+          {
+            shouldValidate: false,
+          },
+        );
       }
 
       // Clear any existing errors since fields are now optional
@@ -239,39 +255,26 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
   };
 
   // Add this function to handle form errors
-  const onError = (errors: any) => {
-    console.log("Form validation errors:", errors);
-
-    // Check if there are any errors
-    if (Object.keys(errors).length === 0) {
-      return;
-    }
-
-    // Get all error messages
-    const errorMessages = Object.entries(errors)
-      .map(([key, error]: [string, any]) => {
-        if (error?.message) {
-          return error.message;
+  const onError: SubmitErrorHandler<PatientDetailsType> = (errors) => {
+    const extractFirstMessage = (err: unknown): string | null => {
+      if (!err) return null;
+      if (typeof err === "object") {
+        if ("message" in (err as Record<string, unknown>)) {
+          const maybe = (err as { message?: unknown }).message;
+          if (typeof maybe === "string") return maybe;
         }
-        // Handle nested errors
-        if (typeof error === "object" && error !== null) {
-          const nestedErrors = Object.values(error)
-            .filter(Boolean)
-            .map((e: any) => e?.message)
-            .filter(Boolean);
-
-          if (nestedErrors.length > 0) {
-            return nestedErrors[0];
-          }
+        for (const value of Object.values(err as Record<string, unknown>)) {
+          const found = extractFirstMessage(value);
+          if (found) return found;
         }
-        return null;
-      })
-      .filter(Boolean);
+      }
+      return null;
+    };
 
-    const errorMessage =
-      errorMessages[0] || "Please fill in all required fields";
+    const firstMessage =
+      extractFirstMessage(errors) || "Please fill in all required fields";
 
-    toast.error(errorMessage, {
+    toast.error(firstMessage, {
       duration: 3000,
       position: "top-right",
     });
@@ -287,7 +290,6 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
       return;
     }
 
-
     const prfUpdateValue: PRF_FORM = {
       prfFormId: prfId,
       prfData: {
@@ -302,7 +304,7 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         toast.success("Form Summary Updated", {
           duration: 3000,
           position: "top-right",
@@ -310,7 +312,7 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
 
         router.push(`/edit-prf/${prfId}`);
       },
-      onError: (error) => {
+      onError: () => {
         toast.error("An error occurred", {
           duration: 3000,
           position: "top-right",
@@ -359,7 +361,7 @@ const PatientDetailsForm = ({ }: PatientDetailsFormProps) => {
                   form.formState.errors.patientName ||
                   form.formState.errors.patientSurname ||
                   form.formState.errors.id ||
-                  form.formState.errors.passport
+                  form.formState.errors.passport,
               })}
             >
               <h4

@@ -1,10 +1,8 @@
 "use client";
 
-import { FormTemplateSummary } from "@/types/form-template";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchFormTemplates } from "@/lib/api/dynamic-forms-api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import LegacyPrfPage from "@/components/legacy-prf-page";
 import { Separator } from "@/components/ui/separator";
 import { FormsDataTable } from "@/components/forms-table/forms-data-table";
@@ -64,4 +62,3 @@ export default function FormsListPage() {
     </div>
   );
 }
-

@@ -1,9 +1,4 @@
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  useQueries,
-} from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   fetchFormTemplateById,
   fetchFormTemplateWithResponses,
@@ -149,7 +144,7 @@ export const useUpdateFormResponse = () => {
       apiUpdateFormResponse(responseId, payload),
     onSuccess: (result, variables) => {
       result.match(
-        (data) => {
+        () => {
           toast.success("Form response updated successfully!");
           // Invalidate the form response query to refresh data
           queryClient.invalidateQueries({

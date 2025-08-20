@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { FormTemplate, DetailedFormResponse } from "@/types/form-template";
 import {
   Table,
@@ -20,7 +20,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CheckCircle, XCircle, AlertCircle, ArrowUpDown, ChevronDown, ChevronUp, MoreHorizontal } from "lucide-react";
+import {
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  ArrowUpDown,
+  ChevronDown,
+  ChevronUp,
+  MoreHorizontal,
+} from "lucide-react";
 import Link from "next/link";
 import {
   ColumnDef,
@@ -31,7 +39,7 @@ import {
   getFilteredRowModel,
   getSortedRowModel,
   SortingState,
-  Row
+  Row,
 } from "@tanstack/react-table";
 
 interface SectionsTableProps {
@@ -40,7 +48,7 @@ interface SectionsTableProps {
   formId: string;
 }
 
-type BaseSectionType = FormTemplate['sections'][number];
+type BaseSectionType = FormTemplate["sections"][number];
 type EnrichedSection = BaseSectionType & {
   statusText: string;
   isCompleted: boolean;
@@ -57,7 +65,7 @@ export function SectionsTable({
 
   const getSectionStatus = (sectionId: string): boolean => {
     const status = formResponse.sectionStatuses?.find(
-      (status) => status.sectionId === sectionId
+      (status) => status.sectionId === sectionId,
     );
     return status?.isCompleted ?? false;
   };
@@ -66,7 +74,7 @@ export function SectionsTable({
     if (!formTemplate.sections || !Array.isArray(formTemplate.sections)) {
       return [];
     }
-    return formTemplate.sections.map(section => {
+    return formTemplate.sections.map((section) => {
       const isCompleted = getSectionStatus(section.id);
       let statusText = "Incomplete";
       if (isCompleted) {
@@ -74,9 +82,9 @@ export function SectionsTable({
       } else if (section.isRequired) {
         statusText = "Required";
       }
-      return { ...section, isCompleted, statusText }; // No explicit cast needed if types align
+      return { ...section, isCompleted, statusText };
     });
-  }, [formTemplate.sections, formResponse.sectionStatuses]);
+  }, [formTemplate.sections, formResponse.sectionStatuses, getSectionStatus]);
 
   const columns = useMemo<ColumnDef<EnrichedSection>[]>(
     () => [
@@ -89,10 +97,18 @@ export function SectionsTable({
             className="px-1"
           >
             Section Name
-            {column.getIsSorted() === "asc" ? <ChevronUp className="ml-2 h-4 w-4" /> : column.getIsSorted() === "desc" ? <ChevronDown className="ml-2 h-4 w-4" /> : <ArrowUpDown className="ml-2 h-4 w-4" />}
+            {column.getIsSorted() === "asc" ? (
+              <ChevronUp className="ml-2 h-4 w-4" />
+            ) : column.getIsSorted() === "desc" ? (
+              <ChevronDown className="ml-2 h-4 w-4" />
+            ) : (
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            )}
           </Button>
         ),
-        cell: ({ row }) => <div className="font-medium">{row.original.name}</div>,
+        cell: ({ row }) => (
+          <div className="font-medium">{row.original.name}</div>
+        ),
       },
       {
         accessorKey: "description",
@@ -112,26 +128,41 @@ export function SectionsTable({
             className="px-1"
           >
             Status
-            {column.getIsSorted() === "asc" ? <ChevronUp className="ml-2 h-4 w-4" /> : column.getIsSorted() === "desc" ? <ChevronDown className="ml-2 h-4 w-4" /> : <ArrowUpDown className="ml-2 h-4 w-4" />}
+            {column.getIsSorted() === "asc" ? (
+              <ChevronUp className="ml-2 h-4 w-4" />
+            ) : column.getIsSorted() === "desc" ? (
+              <ChevronDown className="ml-2 h-4 w-4" />
+            ) : (
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            )}
           </Button>
         ),
         cell: ({ row }) => {
           const section = row.original;
           if (section.isCompleted) {
             return (
-              <Badge variant="default" className="bg-green-500 hover:bg-green-600">
+              <Badge
+                variant="default"
+                className="bg-green-500 hover:bg-green-600"
+              >
                 <CheckCircle className="mr-1 h-3 w-3" /> Completed
               </Badge>
             );
           } else if (section.isRequired) {
             return (
-              <Badge variant="destructive" className="bg-red-500 hover:bg-red-600">
+              <Badge
+                variant="destructive"
+                className="bg-red-500 hover:bg-red-600"
+              >
                 <AlertCircle className="mr-1 h-3 w-3" /> Required
               </Badge>
             );
           }
           return (
-            <Badge variant="secondary" className="bg-yellow-500 hover:bg-yellow-600">
+            <Badge
+              variant="secondary"
+              className="bg-yellow-500 hover:bg-yellow-600"
+            >
               <XCircle className="mr-1 h-3 w-3" /> Incomplete
             </Badge>
           );
@@ -148,7 +179,10 @@ export function SectionsTable({
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+            <DropdownMenuContent
+              align="end"
+              onClick={(e) => e.stopPropagation()}
+            >
               <DropdownMenuItem asChild>
                 <Link
                   href={`/forms/${formId}/${formResponse.id}/${row.original.id}`}
@@ -163,7 +197,7 @@ export function SectionsTable({
         ),
       },
     ],
-    [formId, formResponse.id]
+    [formId, formResponse.id],
   );
 
   const table = useReactTable({
@@ -197,7 +231,7 @@ export function SectionsTable({
 
   return (
     <div className="w-full space-y-4">
-       <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <Input
           placeholder="Search sections..."
           value={globalFilter ?? ""}
@@ -221,7 +255,7 @@ export function SectionsTable({
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                   </TableHead>
                 ))}
@@ -241,7 +275,7 @@ export function SectionsTable({
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
@@ -253,7 +287,9 @@ export function SectionsTable({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  {globalFilter ? "No sections matching your search." : "No sections found."}
+                  {globalFilter
+                    ? "No sections matching your search."
+                    : "No sections found."}
                 </TableCell>
               </TableRow>
             )}
@@ -273,7 +309,8 @@ export function SectionsTable({
           <span className="text-sm">
             Page{" "}
             <strong>
-              {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+              {table.getState().pagination.pageIndex + 1} of{" "}
+              {table.getPageCount()}
             </strong>
           </span>
           <Button
@@ -288,4 +325,4 @@ export function SectionsTable({
       )}
     </div>
   );
-} 
+}

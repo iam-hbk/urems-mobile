@@ -1,4 +1,9 @@
-import { schemaChangePasswordForm, schemaLoginForm, schemaForgotPasswordForm, schemaResetPasswordForm, schemaConfirmEmailForm } from "@/schema/auth";
+import {
+  schemaChangePasswordForm,
+  schemaForgotPasswordForm,
+  schemaResetPasswordForm,
+  schemaConfirmEmailForm,
+} from "@/schema/auth";
 import * as z from "zod";
 
 export type LoginPayload = {

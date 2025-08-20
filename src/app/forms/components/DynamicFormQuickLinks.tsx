@@ -9,15 +9,15 @@ interface DynamicFormQuickLinksProps {
   initialFormTemplate?: FormTemplate;
 }
 
-export default async function DynamicFormQuickLinks({ 
-  formId: propFormId, 
-  responseId: propResponseId, 
-  initialFormTemplate 
+export default async function DynamicFormQuickLinks({
+  formId: propFormId,
+  responseId: propResponseId,
+  initialFormTemplate,
 }: DynamicFormQuickLinksProps) {
   // Extract formId and responseId from URL pathname if not provided as props
-  let formId = propFormId;
-  let responseId = propResponseId;
-  
+  const formId = propFormId;
+  const responseId = propResponseId;
+
   if (!formId || !responseId) {
     // This is a workaround for server components that can't use usePathname
     // In practice, you should pass these as props from the parent page
@@ -34,10 +34,10 @@ export default async function DynamicFormQuickLinks({
       );
     }
   }
-  
+
   // Use provided form template or fetch it server-side
   let formTemplate = initialFormTemplate;
-  
+
   if (!formTemplate) {
     const result = await fetchFormTemplateById(formId!);
     if (result.isErr()) {
@@ -45,7 +45,8 @@ export default async function DynamicFormQuickLinks({
         <nav className="w-full rounded-lg border bg-card p-4 shadow">
           <div className="flex items-center justify-center">
             <div className="text-sm text-red-500">
-              Failed to load form template for quick links: {result.error.detail}
+              Failed to load form template for quick links:{" "}
+              {result.error.detail}
             </div>
           </div>
         </nav>

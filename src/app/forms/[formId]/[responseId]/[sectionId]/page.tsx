@@ -1,4 +1,3 @@
-import { SectionFormBuilder } from "@/components/section-form-builder";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { fetchFormTemplateById } from "@/lib/api/dynamic-forms-api";
@@ -15,22 +14,28 @@ interface SectionPageProps {
 
 export default async function SectionPage({ params }: SectionPageProps) {
   const { formId, responseId, sectionId } = await params;
-  
+
   // Fetch form template server-side (no loading state needed)
   const formTemplateResult = await fetchFormTemplateById(formId);
-  
+
   if (formTemplateResult.isErr()) {
-    console.error("❌ Failed to fetch form template:", formTemplateResult.error);
+    console.error(
+      "❌ Failed to fetch form template:",
+      formTemplateResult.error,
+    );
     notFound();
   }
-  
+
   const formTemplate = formTemplateResult.value;
-  
+
   // Validate that the section exists
   const currentSection = formTemplate.sections.find((s) => s.id === sectionId);
-  
+
   if (!currentSection) {
-    console.error("❌ Section not found:", { sectionId, availableSections: formTemplate.sections.map(s => s.id) });
+    console.error("❌ Section not found:", {
+      sectionId,
+      availableSections: formTemplate.sections.map((s) => s.id),
+    });
     notFound();
   }
 

@@ -13,15 +13,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Accordion } from "@/components/ui/accordion";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
-import { Loader2, Plus, Trash2, AlertCircle } from "lucide-react";
+import { Loader2, Trash2, AlertCircle } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
@@ -30,23 +24,9 @@ import { toast } from "sonner";
 import { InventorySchema, InventoryType } from "@/interfaces/prf-schema";
 import { useZuStandCrewStore } from "@/lib/zuStand/crew";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -57,6 +37,8 @@ export default function InventorySection() {
   const prf_from_store = useStore((state) => state.prfForms).find((prf) => {
     return prf.prfFormId?.toString() === prfId;
   });
+
+  const inputRef = React.useRef<HTMLInputElement>(null);
   //   console.log("PRF From Store -> ", prf_from_store);
   const {
     zsVehicle,
@@ -210,14 +192,14 @@ export default function InventorySection() {
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         toast.success("Inventory Information Updated", {
           duration: 3000,
           position: "top-right",
         });
         router.push(`/edit-prf/${prfId}`);
       },
-      onError: (error) => {
+      onError: () => {
         toast.error("An error occurred", {
           duration: 3000,
           position: "top-right",
@@ -307,9 +289,6 @@ export default function InventorySection() {
                             control={form.control}
                             name={`items.${index}.quantityUsed`}
                             render={({ field }) => {
-                              const inputRef =
-                                React.useRef<HTMLInputElement>(null);
-
                               const handleQuantityChange = (
                                 newValue: number,
                               ) => {

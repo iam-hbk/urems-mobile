@@ -8,7 +8,6 @@ import {
   Users,
   Settings,
   LogOut,
-  Menu,
   HelpCircle,
   User2,
 } from "lucide-react";
@@ -23,22 +22,18 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   SidebarFooter,
   useSidebar,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { Button } from "./ui/button";
-import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { authClient } from "@/lib/auth/client";
+
 import { useLogoutMutation } from "@/hooks/auth/useLogout";
 
 // This is our navigation data structure
 const navigationData = {
-  mainMenu: [
+mainMenu: [
     {
       title: "Main",
       items: [

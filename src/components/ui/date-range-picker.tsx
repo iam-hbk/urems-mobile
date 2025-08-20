@@ -4,7 +4,13 @@ import { cn } from "@/lib/utils";
 import { RangeCalendar } from "@/components/ui/calendar-rac";
 import { DateInput, dateInputStyle } from "@/components/ui/datefield-rac";
 import { CalendarIcon } from "lucide-react";
-import { Button, DateRangePicker, Dialog, Group, Label, Popover } from "react-aria-components";
+import {
+  Button,
+  DateRangePicker,
+  Dialog,
+  Group,
+  Popover,
+} from "react-aria-components";
 import { DateValue } from "@internationalized/date";
 import { RangeValue } from "@react-types/shared";
 
@@ -20,8 +26,8 @@ export function DatePickerWithRange({
   onChange,
 }: DatePickerWithRangeProps) {
   return (
-    <DateRangePicker 
-      className={cn("space-y-2", className)} 
+    <DateRangePicker
+      className={cn("space-y-2", className)}
       value={value}
       onChange={onChange}
       aria-label="Date range picker"
@@ -48,4 +54,4 @@ export function DatePickerWithRange({
       </Popover>
     </DateRangePicker>
   );
-} 
+}

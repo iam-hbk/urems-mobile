@@ -17,7 +17,7 @@ import { useStore } from "@/lib/store";
 import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
 import { PRF_FORM } from "@/interfaces/prf-form";
 import { toast } from "sonner";
-import { CalendarIcon, Link, Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import {
   PatientHandoverSchema,
   PatientHandoverType,
@@ -29,7 +29,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { SignatureField } from "@/components/signature-field";
 import { SignaturePreview } from "@/components/signature-preview";
@@ -50,7 +50,7 @@ export default function PatientHandoverForm() {
   const { zsEmployee } = useZuStandEmployeeStore();
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
-  const user = useStore((state) => state.user);
+  // const user = useStore((state) => state.user);
   const [signatureModalOpen, setSignatureModalOpen] = useState(false);
   const [currentSignatureField, setCurrentSignatureField] = useState<
     "patientSignature" | "witnessSignature" | null
@@ -71,7 +71,8 @@ export default function PatientHandoverForm() {
   });
 
   function onSubmit(values: PatientHandoverType) {
-    if (!zsEmployee) { // no needed .. just for building
+    if (!zsEmployee) {
+      // no needed .. just for building
       return;
     }
     const prfUpdateValue: PRF_FORM = {
@@ -84,11 +85,11 @@ export default function PatientHandoverForm() {
           isOptional: false,
         },
       },
-      EmployeeID: zsEmployee.id || "2" // fallback
+      EmployeeID: zsEmployee.id || "2", // fallback
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         toast.success("Patient Handover Information Updated", {
           duration: 3000,
           position: "bottom-right",
@@ -99,7 +100,7 @@ export default function PatientHandoverForm() {
         });
         router.push(`/edit-prf/${prfId}`);
       },
-      onError: (error) => {
+      onError: () => {
         toast.error("An error occurred", {
           duration: 3000,
           position: "bottom-right",
@@ -110,11 +111,11 @@ export default function PatientHandoverForm() {
 
   const handleEditSignature =
     (field: "patientSignature" | "witnessSignature") =>
-      (event: React.MouseEvent) => {
-        event.preventDefault();
-        setCurrentSignatureField(field);
-        setSignatureModalOpen(true);
-      };
+    (event: React.MouseEvent) => {
+      event.preventDefault();
+      setCurrentSignatureField(field);
+      setSignatureModalOpen(true);
+    };
 
   const handleSaveSignature = (signature: string) => {
     if (currentSignatureField) {
@@ -135,10 +136,10 @@ export default function PatientHandoverForm() {
           </h3>
         </div>
         <p className="col-span-full flex flex-row px-6 text-sm text-muted-foreground">
-          "I, the patient or responsible person, hereby waive any treatment or
-          transportation offered to me by the National EMS and understand that
-          by signing this waiver, I indemnify the National EMS from all further
-          responsibility for my well-being henceforth."
+          &quot;I, the patient or responsible person, hereby waive any treatment
+          or transportation offered to me by the National EMS and understand
+          that by signing this waiver, I indemnify the National EMS from all
+          further responsibility for my well-being henceforth.&quot;
         </p>
 
         <div className="grid grid-cols-1 items-center justify-center gap-2 md:grid-cols-2">

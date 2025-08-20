@@ -1,6 +1,9 @@
-import { apiCrewGetCurrent, apiCrewGetCurrentv1, apiCrewGetEmployee, apiGetCrewEmployeeID } from "@/lib/api/crew-apis";
+import {
+  apiCrewGetCurrent,
+  apiCrewGetCurrentv1,
+  apiCrewGetEmployee,
+} from "@/lib/api/crew-apis";
 import { useQuery } from "@tanstack/react-query";
-import { redirect } from "next/navigation";
 import { WretchError } from "wretch";
 import { toast } from "sonner";
 import { getCookie } from "@/utils/cookies";
@@ -9,14 +12,13 @@ import { UserTokenCookieName } from "@/lib/auth/config";
 import { typeCrew, typeCrewInfoV1 } from "@/types/crew";
 
 export function useGetCrewEmployeeID() {
-
   // returns -> typeCrewInfoV1[]
   return useQuery({
-    queryKey: ['crewEmployeeID'],
+    queryKey: ["crewEmployeeID"],
     queryFn: async () => {
       try {
-        const token = await getCookie(UserTokenCookieName)
-        const userId = await getCookie(cookieNameUserId)
+        const token = await getCookie(UserTokenCookieName);
+        const userId = await getCookie(cookieNameUserId);
 
         if (!token || !userId) {
           throw new Error("Invalid user session, please try again");
@@ -27,25 +29,24 @@ export function useGetCrewEmployeeID() {
         if (error) throw new Error(error);
 
         return data;
-        // 
+        //
       } catch (error: unknown) {
         const err = error as WretchError;
         toast.error(`Error Fetching Employee Crew ID -> ${err.json.title}`);
         // redirect("/login");
       }
-    }
-  })
+    },
+  });
 }
 
 // employee current or future crew
 export function useCrewGetCurrent() {
-
   return useQuery<typeCrew[]>({
-    queryKey: ['crewEmployeeID'],
+    queryKey: ["crewEmployeeID"],
     queryFn: async () => {
       try {
-        const token = await getCookie(UserTokenCookieName)
-        const userId = await getCookie(cookieNameUserId)
+        const token = await getCookie(UserTokenCookieName);
+        const userId = await getCookie(cookieNameUserId);
 
         if (!token || !userId) {
           throw new Error("Invalid user session, please try again");
@@ -71,23 +72,23 @@ export function useCrewGetCurrent() {
         }
 
         return data;
-
       } catch (error: unknown) {
         const err = error as WretchError;
-        toast.error(`Error Fetching Employee Current Crew ID -> ${err.json.title}`);
+        toast.error(
+          `Error Fetching Employee Current Crew ID -> ${err.json.title}`,
+        );
       }
-    }
-  })
+    },
+  });
 }
 
 export function useCrewGetCurrentv1() {
-
   return useQuery<typeCrewInfoV1>({
-    queryKey: ['crewEmployeeID'],
+    queryKey: ["crewEmployeeID"],
     queryFn: async () => {
       try {
-        const token = await getCookie(UserTokenCookieName)
-        const userId = await getCookie(cookieNameUserId)
+        const token = await getCookie(UserTokenCookieName);
+        const userId = await getCookie(cookieNameUserId);
 
         if (!token || !userId) {
           throw new Error("Invalid user session, please try again");
@@ -98,13 +99,14 @@ export function useCrewGetCurrentv1() {
         if (error) throw new Error(error);
 
         return data;
-
       } catch (error: unknown) {
         const err = error as WretchError;
-        toast.error(`Error Fetching Employee Current Crew ID -> ${err.json.title}`);
+        toast.error(
+          `Error Fetching Employee Current Crew ID -> ${err.json.title}`,
+        );
       }
     },
     refetchInterval: 1000 * 60 * 60, // 1 hour
     refetchOnWindowFocus: false,
-  })
+  });
 }

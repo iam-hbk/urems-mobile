@@ -1,5 +1,4 @@
 import React from "react";
-import { SectionsTable } from "@/components/response-meta-table/sections-table";
 import { ProgressRing } from "@/components/response-meta-table/section-progress-ring";
 import { ResponseMetaCard } from "@/components/response-meta-table/response-meta-card";
 import { fetchFormTemplateById } from "@/lib/api/dynamic-forms-api";
@@ -11,17 +10,24 @@ type Props = Promise<{
   responseId: string;
 }>;
 
-export default async function RootFormResponseSectionPage({ params }: { params: Props }) {
+export default async function RootFormResponseSectionPage({
+  params,
+}: {
+  params: Props;
+}) {
   const { responseId, formId } = await params;
 
   // Fetch form template server-side (no loading state needed)
   const formTemplateResult = await fetchFormTemplateById(formId);
-  
+
   if (formTemplateResult.isErr()) {
-    console.error("❌ Failed to fetch form template:", formTemplateResult.error);
+    console.error(
+      "❌ Failed to fetch form template:",
+      formTemplateResult.error,
+    );
     notFound();
   }
-  
+
   const formTemplate = formTemplateResult.value;
 
   return (
@@ -34,10 +40,7 @@ export default async function RootFormResponseSectionPage({ params }: { params: 
         <div className="flex flex-col items-center justify-center">
           <div className="flex h-full w-full flex-col items-center justify-center space-y-6 rounded-lg p-4">
             <h2 className="text-xl font-semibold">Form Completion Progress</h2>
-            <ProgressRing
-              progress={0}
-              className="scale-110 transform"
-            />
+            <ProgressRing progress={0} className="scale-110 transform" />
           </div>
         </div>
       </div>

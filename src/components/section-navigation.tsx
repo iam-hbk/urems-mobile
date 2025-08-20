@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type {
   FormTemplate,
   DetailedFormResponse,
-  Section,
   SubSection,
 } from "@/types/form-template";
 import {

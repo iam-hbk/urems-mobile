@@ -40,7 +40,6 @@ import {
   VitalSignsSchema,
   VitalSignsType,
 } from "@/interfaces/prf-vital-signs-schema";
-import { z } from "zod";
 import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 const VitalSignsForm: React.FC = () => {
@@ -88,14 +87,14 @@ const VitalSignsForm: React.FC = () => {
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         toast.success("Vital Signs Updated", {
           duration: 3000,
           position: "top-right",
         });
         router.push(`/edit-prf/${prfId}`);
       },
-      onError: (error) => {
+      onError: () => {
         toast.error("An error occurred", {
           duration: 3000,
           position: "top-right",
@@ -105,9 +104,11 @@ const VitalSignsForm: React.FC = () => {
   }
 
   // Add this function to handle form errors
-  const onError = (errors: any) => {
-    const errorMessages = Object.entries(errors)
-      .map(([_, error]: [string, any]) => error?.message)
+  const onError = (errors: unknown) => {
+    const errorMessages = Object.entries(
+      errors as Record<string, { message: string }>,
+    )
+      .map(([, error]: [string, { message: string }]) => error?.message)
       .filter(Boolean);
 
     const errorMessage =

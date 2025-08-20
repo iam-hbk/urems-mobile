@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Field, FieldError, FieldPath, useForm } from "react-hook-form";
+import { FieldError, FieldPath, useForm, SubmitErrorHandler } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 
 import {
@@ -35,9 +35,8 @@ import {
 } from "@/interfaces/prf-primary-survey-schema";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
-import { usePrfForm } from "@/hooks/prf/usePrfForms";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Textarea } from "../ui/textarea";
+import { Textarea } from "@/components/ui/textarea";
 
 type PrimarySurveyType = z.infer<typeof PrimarySurveySchema>;
 
@@ -81,6 +80,7 @@ export default function PrimarySurveyForm({
   );
   const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
+  console.log("INITIAL DATA -> ", initialData);
 
   // Initialize assessment type based on which field has data
   const [assessmentType, setAssessmentType] = useState<"GCS" | "AVPU">(() => {
@@ -214,14 +214,14 @@ export default function PrimarySurveyForm({
     console.log("FROM THE FORM -> ", prfUpdateValue);
 
     updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         toast.success("Primary Survey Updated", {
           duration: 3000,
           position: "top-right",
         });
         router.push(`/edit-prf/${prfId}`);
       },
-      onError: (error) => {
+      onError: () => {
         toast.error("An error occurred", {
           duration: 3000,
           position: "top-right",
@@ -231,14 +231,19 @@ export default function PrimarySurveyForm({
   }
 
   // Add this function to handle form errors
-  const onError = (errors: any) => {
-    const errorMessages = Object.entries(errors)
-      .map(([_, error]: [string, any]) => error?.message)
-      .filter(Boolean);
-    
-    const errorMessage = errorMessages[0] || "Please fill in all required fields";
-    
-    toast.error(errorMessage, {
+  const onError: SubmitErrorHandler<PrimarySurveyType> = (errors) => {
+    const firstMessage =
+      Object.values(errors)
+        .map((err) => {
+          if (err && typeof err === "object" && "message" in err) {
+            const maybeMessage = (err as { message?: unknown }).message;
+            return typeof maybeMessage === "string" ? maybeMessage : null;
+          }
+          return null;
+        })
+        .find(Boolean) || "Please fill in all required fields";
+
+    toast.error(firstMessage, {
       duration: 3000,
       position: "top-right",
     });
@@ -569,27 +574,26 @@ export default function PrimarySurveyForm({
                   {Object.keys(
                     PrimarySurveySchema.shape.circulation.shape.perfusion.shape,
                   ).map((key) => (
-                    <React.Fragment key={key}>
-                      <FormField
-                        control={form.control}
-                        name={
-                          `circulation.perfusion.${key}` as FieldPath<PrimarySurveyType>
-                        }
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value as boolean}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <FormLabel className="font-normal capitalize">
-                              {key.split(/(?=[A-Z])/).join(" ")}
-                            </FormLabel>
-                          </FormItem>
-                        )}
-                      />
-                    </React.Fragment>
+                    <FormField
+                      key={key}
+                      control={form.control}
+                      name={
+                        `circulation.perfusion.${key}` as FieldPath<PrimarySurveyType>
+                      }
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value as boolean}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormLabel className="font-normal capitalize">
+                            {key.split(/(?=[A-Z])/).join(" ")}
+                          </FormLabel>
+                        </FormItem>
+                      )}
+                    />
                   ))}
                 </div>
               </div>

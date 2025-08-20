@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { LoadScript } from "@react-google-maps/api";
 
 interface GoogleMapsContextType {
@@ -8,7 +8,9 @@ interface GoogleMapsContextType {
   loadError: Error | undefined;
 }
 
-const GoogleMapsContext = createContext<GoogleMapsContextType | undefined>(undefined);
+const GoogleMapsContext = createContext<GoogleMapsContextType | undefined>(
+  undefined,
+);
 
 export const useGoogleMaps = () => {
   const context = useContext(GoogleMapsContext);
@@ -24,10 +26,10 @@ interface GoogleMapsProviderProps {
   libraries?: ("places" | "geometry" | "drawing" | "visualization")[];
 }
 
-export function GoogleMapsProvider({ 
-  children, 
-  apiKey, 
-  libraries = ["places"] 
+export function GoogleMapsProvider({
+  children,
+  apiKey,
+  libraries = ["places"],
 }: GoogleMapsProviderProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [loadError, setLoadError] = useState<Error | undefined>(undefined);

@@ -13,11 +13,14 @@ import { Label } from "@/components/ui/label"
 import { Upload, X } from "lucide-react"
 import { useState, useEffect } from "react"
 import DatePickerWithCalendarSelect from "@/components/date-picker-with-calendar-select"
-import { AddressInput } from "@/components/address-input"
+import { AddressInput, type AddressData } from "@/components/address-input"
+
+type DynamicFieldValue = string | number | boolean | string[] | AddressData
+type DynamicFormValues = Record<string, DynamicFieldValue>
 
 interface FormFieldProps {
   fieldDefinition: FieldDefinition
-  form: UseFormReturn<any>
+  form: UseFormReturn<DynamicFormValues>
   entryIndex: number
   existingResponse?: DetailedFormResponse
 }
@@ -102,7 +105,7 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
       case "Phone":
       case "Password":
         return (
-          <ShadcnFormField
+          <ShadcnFormField<DynamicFormValues, string>
             control={form.control}
             name={fieldName}
             rules={{
@@ -125,7 +128,7 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
                     type={fieldDefinition.type.toLowerCase()}
                     placeholder={`Enter ${fieldDefinition.label.toLowerCase()}`}
                     {...field}
-                    value={field.value || ""}
+                    value={typeof field.value === "string" || typeof field.value === "number" ? field.value : ""}
                   />
                 </FormControl>
                 <FormMessage />
@@ -136,7 +139,7 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
 
       case "TextArea":
         return (
-          <ShadcnFormField
+          <ShadcnFormField<DynamicFormValues, string>
             control={form.control}
             name={fieldName}
             rules={{
@@ -153,7 +156,7 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
                     placeholder={`Enter ${fieldDefinition.label.toLowerCase()}`}
                     className="min-h-[100px]"
                     {...field}
-                    value={field.value || ""}
+                    value={typeof field.value === "string" ? field.value : ""}
                   />
                 </FormControl>
                 <FormMessage />
@@ -164,7 +167,7 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
 
       case "Number":
         return (
-          <ShadcnFormField
+          <ShadcnFormField<DynamicFormValues, string>
             control={form.control}
             name={fieldName}
             rules={{
@@ -181,7 +184,7 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
                     type="number"
                     placeholder={`Enter ${fieldDefinition.label.toLowerCase()}`}
                     {...field}
-                    value={field.value || ""}
+                    value={typeof field.value === "number" || field.value === "" ? (field.value as number | "") : ""}
                     onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : "")}
                   />
                 </FormControl>
@@ -193,7 +196,7 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
 
       case "Date":
         return (
-          <ShadcnFormField
+          <ShadcnFormField<DynamicFormValues, string>
             control={form.control}
             name={fieldName}
             rules={{
@@ -204,7 +207,7 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
                 <FormControl>
                   <DatePickerWithCalendarSelect
                     label={`${fieldDefinition.label}${fieldDefinition.isRequired ? ' *' : ''}`}
-                    value={field.value ? new Date(field.value) : undefined}
+                    value={typeof field.value === "string" ? new Date(field.value) : undefined}
                     onChange={(date: Date | undefined) => {
                       field.onChange(date ? date.toISOString().split('T')[0] : "")
                     }}
@@ -219,7 +222,7 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
 
       case "Time":
         return (
-          <ShadcnFormField
+          <ShadcnFormField<DynamicFormValues, string>
             control={form.control}
             name={fieldName}
             rules={{
@@ -232,7 +235,7 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
                   {fieldDefinition.isRequired && <span className="text-destructive ml-1">*</span>}
                 </FormLabel>
                 <FormControl>
-                  <Input type="time" {...field} value={field.value || ""} />
+                  <Input type="time" {...field} value={typeof field.value === "string" ? field.value : ""} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -242,7 +245,7 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
 
       case "DateTime":
         return (
-          <ShadcnFormField
+          <ShadcnFormField<DynamicFormValues, string>
             control={form.control}
             name={fieldName}
             rules={{
@@ -255,7 +258,7 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
                   {fieldDefinition.isRequired && <span className="text-destructive ml-1">*</span>}
                 </FormLabel>
                 <FormControl>
-                  <Input type="datetime-local" {...field} value={field.value || ""} />
+                  <Input type="datetime-local" {...field} value={typeof field.value === "string" ? field.value : ""} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -265,7 +268,7 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
 
       case "Boolean":
         return (
-          <ShadcnFormField
+          <ShadcnFormField<DynamicFormValues, string>
             control={form.control}
             name={fieldName}
             rules={{
@@ -294,7 +297,7 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
 
       case "Select":
         return (
-          <ShadcnFormField
+          <ShadcnFormField<DynamicFormValues, string>
             control={form.control}
             name={fieldName}
             rules={{
@@ -306,7 +309,7 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
                   {fieldDefinition.label}
                   {fieldDefinition.isRequired && <span className="text-destructive ml-1">*</span>}
                 </FormLabel>
-                <Select onValueChange={field.onChange} value={field.value || ""}>
+                <Select onValueChange={field.onChange} value={typeof field.value === "string" ? field.value : ""}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder={`Select ${fieldDefinition.label.toLowerCase()}`} />
@@ -328,7 +331,7 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
 
       case "RadioGroup":
         return (
-          <ShadcnFormField
+          <ShadcnFormField<DynamicFormValues, string>
             control={form.control}
             name={fieldName}
             rules={{
@@ -343,7 +346,7 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
                 <FormControl>
                   <RadioGroup
                     onValueChange={field.onChange}
-                    value={field.value || ""}
+                    value={typeof field.value === "string" ? field.value : ""}
                     className="flex flex-col space-y-1"
                   >
                     {fieldDefinition.fieldOptions?.map((option) => (
@@ -362,7 +365,7 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
 
       case "CheckboxGroup":
         return (
-          <ShadcnFormField
+          <ShadcnFormField<DynamicFormValues, string>
             control={form.control}
             name={fieldName}
             rules={{
@@ -380,9 +383,9 @@ export function FormFieldBuilder({ fieldDefinition, form, entryIndex, existingRe
                   <FormItem key={option.id} className="flex flex-row items-start space-x-3 space-y-0">
                     <FormControl>
                       <Checkbox
-                        checked={(field.value || []).includes(option.value)}
+                        checked={(Array.isArray(field.value) ? field.value : []).includes(option.value)}
                         onCheckedChange={(checked) => {
-                          const currentValue = field.value || []
+                          const currentValue = Array.isArray(field.value) ? field.value : []
                           if (checked) {
                             field.onChange([...currentValue, option.value])
                           } else {

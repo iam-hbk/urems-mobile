@@ -13,10 +13,10 @@ import type {
   FieldResponseUpdateDto,
   SectionStatusUpdateDto,
 } from "@/types/form-template";
+import type { AddressData } from "@/components/address-input";
 import { FormSubSection } from "./form-subsection";
 import { Button } from "@/components/ui/button";
 import { Save, Send, ArrowLeft, ArrowRight } from "lucide-react";
-import { toast } from "sonner";
 import { Form } from "@/components/ui/form";
 import Link from "next/link";
 import { FormFieldBuilder } from "@/components/form-field";
@@ -48,15 +48,23 @@ export function SectionFormBuilder({
   responseId,
   existingResponse,
 }: SectionFormBuilderProps) {
-  const [isCompleted, setIsCompleted] = useState(false);
+  const [, setIsCompleted] = useState(false);
   const [showUntouchedDialog, setShowUntouchedDialog] = useState(false);
-  const [untouchedFieldsBySubSection, setUntouchedFieldsBySubSection] = useState<Record<string, string[]>>({});
+  const [untouchedFieldsBySubSection, setUntouchedFieldsBySubSection] =
+    useState<Record<string, string[]>>({});
 
   const updateFormResponseMutation = useUpdateFormResponse();
 
+  type SectionFieldValue = string | number | boolean | string[] | AddressData;
+  type SectionFormValues = Record<string, SectionFieldValue>;
+
+  const isAddressData = (value: unknown): value is AddressData => {
+    return typeof value === "object" && value !== null && "fullAddress" in value;
+  };
+
   // Create default values from existing response for this section
-  const getDefaultValues = () => {
-    const defaults: Record<string, any> = {};
+  const getDefaultValues = (): SectionFormValues => {
+    const defaults: SectionFormValues = {};
 
     if (existingResponse?.fieldResponses) {
       // Get all field definitions for this section
@@ -91,13 +99,11 @@ export function SectionFormBuilder({
                 defaults[key] = response.value === "true";
                 break;
               case "Number":
-                defaults[key] = response.value
-                  ? Number(response.value)
-                  : undefined;
+                defaults[key] = response.value ? Number(response.value) : "";
                 break;
               case "CheckboxGroup":
                 try {
-                  defaults[key] = JSON.parse(response.value);
+                  defaults[key] = JSON.parse(response.value) as string[];
                 } catch {
                   defaults[key] = [];
                 }
@@ -112,7 +118,7 @@ export function SectionFormBuilder({
     return defaults;
   };
 
-  const form = useForm({
+  const form = useForm<SectionFormValues>({
     defaultValues: getDefaultValues(),
   });
 
@@ -126,25 +132,24 @@ export function SectionFormBuilder({
     }
   }, [existingResponse, section.id]);
 
-  const onSubmit = async (hookFormData: any) => {
+  const onSubmit = async (hookFormData: SectionFormValues) => {
     console.log("Section submission data from react-hook-form:", hookFormData);
-    
+
     // Check for untouched required fields before submitting
     const directFieldDefs = section.directFields || [];
     const subSectionFieldDefs = (section.groupedSubSections || []).flatMap(
       (ss: SubSection) => ss.fieldDefinitions,
     );
-    const allFieldDefsInSection = [
-      ...directFieldDefs,
-      ...subSectionFieldDefs,
-    ];
+    const allFieldDefsInSection = [...directFieldDefs, ...subSectionFieldDefs];
 
     const untouchedRequiredFields: string[] = [];
-    
-    allFieldDefsInSection.forEach(fieldDef => {
+
+    allFieldDefsInSection.forEach((fieldDef) => {
       if (fieldDef.isRequired) {
         const fieldName = `${fieldDef.id}_1`; // Assuming entryIndex 1 for now
-        const isTouched = form.formState.touchedFields[fieldName];
+        const isTouched = Boolean(
+          (form.formState.touchedFields as Record<string, unknown>)[fieldName],
+        );
         if (!isTouched) {
           untouchedRequiredFields.push(fieldDef.label);
         }
@@ -155,36 +160,44 @@ export function SectionFormBuilder({
     if (untouchedRequiredFields.length > 0) {
       // Group fields by subsection
       const groupedFields: Record<string, string[]> = {};
-      
+
       // Check direct fields (main section)
       const directUntouchedFields: string[] = [];
-      (section.directFields || []).forEach(fieldDef => {
+      (section.directFields || []).forEach((fieldDef) => {
         if (fieldDef.isRequired) {
           const fieldName = `${fieldDef.id}_1`;
-          const isTouched = form.formState.touchedFields[fieldName];
+          const isTouched = Boolean(
+            (form.formState.touchedFields as Record<string, unknown>)[
+              fieldName
+            ],
+          );
           if (!isTouched) {
             directUntouchedFields.push(fieldDef.label);
           }
         }
       });
-      
+
       if (directUntouchedFields.length > 0) {
         groupedFields[section.name] = directUntouchedFields;
       }
 
       // Check subsection fields
-      (section.groupedSubSections || []).forEach(subSection => {
+      (section.groupedSubSections || []).forEach((subSection) => {
         const subSectionUntouchedFields: string[] = [];
-        subSection.fieldDefinitions.forEach(fieldDef => {
+        subSection.fieldDefinitions.forEach((fieldDef) => {
           if (fieldDef.isRequired) {
             const fieldName = `${fieldDef.id}_1`;
-            const isTouched = form.formState.touchedFields[fieldName];
+            const isTouched = Boolean(
+              (form.formState.touchedFields as Record<string, unknown>)[
+                fieldName
+              ],
+            );
             if (!isTouched) {
               subSectionUntouchedFields.push(fieldDef.label);
             }
           }
         });
-        
+
         if (subSectionUntouchedFields.length > 0) {
           groupedFields[subSection.name] = subSectionUntouchedFields;
         }
@@ -200,18 +213,17 @@ export function SectionFormBuilder({
     submitFormData(hookFormData);
   };
 
-  const submitFormData = (hookFormData: any) => {
+  const submitFormData = (hookFormData: SectionFormValues) => {
     const directFieldDefs = section.directFields || [];
     const subSectionFieldDefs = (section.groupedSubSections || []).flatMap(
       (ss: SubSection) => ss.fieldDefinitions,
     );
-    const allFieldDefsInSection = [
-      ...directFieldDefs,
-      ...subSectionFieldDefs,
-    ];
+    const allFieldDefsInSection = [...directFieldDefs, ...subSectionFieldDefs];
 
-    const sectionDataToProcess: Record<string, any> = {};
-    const allValidFieldKeysPrefixes = allFieldDefsInSection.map(fd => fd.name);
+    const sectionDataToProcess: Record<string, SectionFieldValue> = {};
+    const allValidFieldKeysPrefixes = allFieldDefsInSection.map(
+      (fd) => fd.name,
+    );
 
     for (const key in hookFormData) {
       const fieldNamePrefix = key.split("_")[0];
@@ -228,16 +240,25 @@ export function SectionFormBuilder({
       // For direct fields or single entry fields, it might be 0 or not present in the key.
       // This logic might need adjustment based on how repeatable fields are keyed.
       const entrySequenceParts = key.split("_");
-      const entrySequenceNumber = entrySequenceParts.length > 1 && !isNaN(parseInt(entrySequenceParts[entrySequenceParts.length -1])) ? parseInt(entrySequenceParts[entrySequenceParts.length -1]) : 0;
+      const entrySequenceNumber =
+        entrySequenceParts.length > 1 &&
+        !isNaN(parseInt(entrySequenceParts[entrySequenceParts.length - 1]))
+          ? parseInt(entrySequenceParts[entrySequenceParts.length - 1])
+          : 0;
 
-      const fieldDef = allFieldDefsInSection.find(fd => fd.name === fieldNamePrefix);
+      const fieldDef = allFieldDefsInSection.find(
+        (fd) => fd.name === fieldNamePrefix,
+      );
       if (fieldDef) {
         let valueToSave = sectionDataToProcess[key];
 
         // Check if the field is an Address and the value is an object
-        if (fieldDef.type === "Address" && typeof valueToSave === "object" && valueToSave !== null && "fullAddress" in valueToSave) {
+        if (fieldDef.type === "Address" && isAddressData(valueToSave)) {
           valueToSave = String(valueToSave.fullAddress || ""); // Use fullAddress or empty string if undefined
-        } else if (fieldDef.type === "CheckboxGroup" && Array.isArray(valueToSave)) {
+        } else if (
+          fieldDef.type === "CheckboxGroup" &&
+          Array.isArray(valueToSave)
+        ) {
           valueToSave = JSON.stringify(valueToSave);
         } else {
           valueToSave = String(valueToSave);
@@ -251,10 +272,12 @@ export function SectionFormBuilder({
       }
     }
 
-    const sectionStatusPayload: SectionStatusUpdateDto[] = [{
-      sectionId: section.id,
-      isCompleted: true, // Section is considered completed on submission
-    }];
+    const sectionStatusPayload: SectionStatusUpdateDto[] = [
+      {
+        sectionId: section.id,
+        isCompleted: true, // Section is considered completed on submission
+      },
+    ];
 
     const updatePayload: FormResponseUpdateDto = {
       fieldResponses: fieldResponsesPayload,
@@ -271,7 +294,7 @@ export function SectionFormBuilder({
   const handleForcedSubmit = async () => {
     setShowUntouchedDialog(false);
     const hookFormData = form.getValues();
-    
+
     // Proceed with submission without checking touched fields
     setIsCompleted(true);
     submitFormData(hookFormData);
@@ -289,24 +312,6 @@ export function SectionFormBuilder({
       : null;
 
   // Check if any field in this section has been touched
-  const getSectionFieldNames = () => {
-    const directFieldDefs = section.directFields || [];
-    const subSectionFieldDefs = (section.groupedSubSections || []).flatMap(
-      (ss: SubSection) => ss.fieldDefinitions,
-    );
-    const allFieldDefsInSection = [
-      ...directFieldDefs,
-      ...subSectionFieldDefs,
-    ];
-    
-    // Generate field names as they appear in the form (fieldId_entryIndex)
-    return allFieldDefsInSection.map(fd => `${fd.id}_1`); // Assuming entryIndex 1 for now
-  };
-
-  const sectionFieldNames = getSectionFieldNames();
-  const hasAnyFieldBeenTouched = sectionFieldNames.some(
-    fieldName => form.formState.touchedFields[fieldName]
-  );
 
   const isSubmitDisabled = updateFormResponseMutation.isPending;
 
@@ -370,17 +375,25 @@ export function SectionFormBuilder({
               {nextSection ? (
                 <Link href={`/forms/${formId}/${responseId}/${nextSection.id}`}>
                   <Button type="submit" disabled={isSubmitDisabled}>
-                    {updateFormResponseMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {updateFormResponseMutation.isPending && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     Save & Continue
-                    {!updateFormResponseMutation.isPending && <ArrowRight className="ml-2 h-4 w-4" />}
+                    {!updateFormResponseMutation.isPending && (
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    )}
                   </Button>
                 </Link>
               ) : (
                 <Link href={`/forms/${formId}/${responseId}`}>
                   <Button type="submit" disabled={isSubmitDisabled}>
-                    {updateFormResponseMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {updateFormResponseMutation.isPending && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     Save & Return to Overview
-                    {!updateFormResponseMutation.isPending && <Send className="ml-2 h-4 w-4" />}
+                    {!updateFormResponseMutation.isPending && (
+                      <Send className="ml-2 h-4 w-4" />
+                    )}
                   </Button>
                 </Link>
               )}
@@ -390,30 +403,37 @@ export function SectionFormBuilder({
       </Form>
 
       {/* Untouched Required Fields Dialog */}
-      <AlertDialog open={showUntouchedDialog} onOpenChange={setShowUntouchedDialog}>
-        <AlertDialogContent className="max-w-2xl max-h-[80vh]">
+      <AlertDialog
+        open={showUntouchedDialog}
+        onOpenChange={setShowUntouchedDialog}
+      >
+        <AlertDialogContent className="max-h-[80vh] max-w-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Incomplete Required Fields</AlertDialogTitle>
             <AlertDialogDescription>
-              The following required fields haven't been touched yet. You can submit anyway with their default values, or go back to complete them:
+              The following required fields have not been touched yet. You can
+              submit anyway with their default values, or go back to complete
+              them:
             </AlertDialogDescription>
           </AlertDialogHeader>
-          
-          <div className="py-4 max-h-96 overflow-y-auto">
-            {Object.entries(untouchedFieldsBySubSection).map(([sectionName, fieldLabels]) => (
-              <div key={sectionName} className="mb-6 last:mb-0">
-                <h4 className="font-semibold text-sm text-foreground mb-2 border-b pb-1">
-                  {sectionName}
-                </h4>
-                <ul className="list-disc list-inside space-y-1 ml-2">
-                  {fieldLabels.map((fieldLabel, index) => (
-                    <li key={index} className="text-sm text-muted-foreground">
-                      {fieldLabel}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+
+          <div className="max-h-96 overflow-y-auto py-4">
+            {Object.entries(untouchedFieldsBySubSection).map(
+              ([sectionName, fieldLabels]) => (
+                <div key={sectionName} className="mb-6 last:mb-0">
+                  <h4 className="mb-2 border-b pb-1 text-sm font-semibold text-foreground">
+                    {sectionName}
+                  </h4>
+                  <ul className="ml-2 list-inside list-disc space-y-1">
+                    {fieldLabels.map((fieldLabel, index) => (
+                      <li key={index} className="text-sm text-muted-foreground">
+                        {fieldLabel}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ),
+            )}
           </div>
 
           <AlertDialogFooter>

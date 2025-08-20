@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import { Control, useController } from "react-hook-form";
+import React, { useState, useRef } from "react";
+import { Control, useController, FieldPath, FieldValues } from "react-hook-form";
 import { Autocomplete } from "@react-google-maps/api";
 import { MapPin, X, Loader } from "lucide-react";
 import { Button } from "./ui/button";
@@ -23,23 +23,29 @@ export interface AddressData {
   };
 }
 
-interface AddressInputProps {
-  name: string;
-  control: Control<any>;
+interface AddressInputProps<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+> {
+  name: TName;
+  control: Control<TFieldValues>;
   label?: string;
   isRequired?: boolean;
   placeholder?: string;
   disabled?: boolean;
 }
 
-export function AddressInput({
+export function AddressInput<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+>({
   name,
   control,
   label = "Address",
   isRequired = false,
   placeholder = "Enter address",
   disabled = false,
-}: AddressInputProps) {
+}: AddressInputProps<TFieldValues, TName>) {
   const { isLoaded: isGoogleMapsLoaded, loadError } = useGoogleMaps();
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
@@ -52,18 +58,9 @@ export function AddressInput({
   const {
     field: { value, onChange, onBlur },
     fieldState: { error },
-  } = useController({
+  } = useController<TFieldValues, TName>({
     name,
     control,
-    defaultValue: {
-      street: "",
-      city: "",
-      state: "",
-      zipCode: "",
-      country: "",
-      fullAddress: "",
-      coordinates: undefined,
-    } as AddressData,
   });
 
   const isValueStructuredAddress =
@@ -279,20 +276,6 @@ export function AddressInput({
     setUserExplicitlyWantsDetailed(true);
   };
 
-  const handleSummaryInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newFullAddress = e.target.value;
-    setCommittedValueForCancel(value);
-    onChange({
-      street: "",
-      city: "",
-      state: "",
-      zipCode: "",
-      country: "",
-      fullAddress: newFullAddress,
-      coordinates: undefined,
-    } as AddressData);
-    setUserExplicitlyWantsDetailed(true);
-  };
 
   const handleCancelDetailedEdit = () => {
     if (committedValueForCancel !== null) {
