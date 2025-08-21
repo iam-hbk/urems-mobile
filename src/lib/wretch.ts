@@ -1,3 +1,4 @@
+
 // src/lib/wretch.ts
 import wretch from "wretch";
 import QueryStringAddon from "wretch/addons/queryString";
@@ -15,6 +16,7 @@ export const API_BASE_URL =
 /* -------------------------------------------------------------------------- */
 const toResult = async <T>(res: Response): Promise<Result<T, ApiError>> => {
   try {
+
     const json = (await res.json().catch(() => ({}))) as unknown;
 
     if (res.ok) {

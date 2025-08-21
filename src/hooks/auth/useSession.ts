@@ -16,8 +16,6 @@ export const useSessionQuery = () => {
     queryFn: async () => {
       const result = await getSession();
 
-      console.log(' ... results use session ... ', result);
-
       return result.match(
         (session) => session,
         (e) => {

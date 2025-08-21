@@ -1,5 +1,6 @@
 
-export const cookieNameUserId = 'sidbf-sodfb-tfugyihu-cvug-tyvubin-yfvgubhivgb';
+export const cookieNameUserId = 'user_id';
+export const cookieNameAccessToken = 'access_token';
 
 export const EMPLOYEE_TYPE = {
   1: 'Full Time',

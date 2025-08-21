@@ -13,7 +13,7 @@ type Params = Promise<{ prfID: string }>;
 
 export default function Page(props: { params: Params }) {
   const params = use(props.params);
-  console.log(params);
+  // console.log(params);
   const prfID = params.prfID;
 
   const { data, isLoading, error } = useGetPrfFormById(prfID);
@@ -40,7 +40,7 @@ export default function Page(props: { params: Params }) {
           {`Patient Report Form #${prfID.split("-")[0]}`}
         </h2>
         <div className="flex flex-row items-center gap-2">
-          <Button disabled={true} onClick={() => {}}>
+          <Button disabled={true} onClick={() => { }}>
             {false ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -107,8 +107,8 @@ export default function Page(props: { params: Params }) {
                 <div className="text-muted-foreground">
                   {prf.prfData.case_details?.data.dateOfCase
                     ? new Date(
-                        prf.prfData.case_details?.data.dateOfCase,
-                      ).toDateString()
+                      prf.prfData.case_details?.data.dateOfCase,
+                    ).toDateString()
                     : prf.createdAt
                       ? new Date(prf.createdAt).toDateString()
                       : "Unknown"}
