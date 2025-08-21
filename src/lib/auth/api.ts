@@ -38,8 +38,6 @@ export const getSession = async (): Promise<
 > => {
   try {
     const res = await fetch("/api/auth/session");
-    // const res = await verifySession();
-    console.log(" ... res in get session ... ", res);
 
     if (!res.ok) {
       return err({

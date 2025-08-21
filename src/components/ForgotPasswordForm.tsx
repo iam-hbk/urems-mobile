@@ -32,7 +32,8 @@ export default function ForgotPasswordForm() {
   const onSubmit = (values: TypeForgotPasswordForm) => {
     sendPasswordResetCodeMutation.mutate(values, {
       onSuccess: (result) => {
-        console.log("values", result);
+        if (result) { }
+        // console.log("values", result);
         router.push(`/forgot-password/reset-password?email=${values.email}`);
       },
     });

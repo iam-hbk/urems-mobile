@@ -32,8 +32,6 @@ export default function LoginPage() {
     defaultValues: {
       email: "",
       password: "",
-      // email: "hbk@urems.com",
-      // password: "@Urems2020",
     },
   });
 

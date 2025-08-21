@@ -46,13 +46,13 @@ export const verifySession = cache(
       });
     }
 
-    if (!userId) {
-      return err({
-        type: "AuthError",
-        title: "No user session Id",
-        status: 401,
-        detail: "No user session reference Id found in cookies.",
-      });
+    if (userId) {
+      // return err({
+      //   type: "AuthError",
+      //   title: "No user session Id",
+      //   status: 401,
+      //   detail: "No user session reference Id found in cookies.",
+      // });
     }
 
     try {

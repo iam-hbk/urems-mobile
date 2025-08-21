@@ -27,7 +27,7 @@ export const useFormTemplate = (formId: string) => {
       const result = await fetchFormTemplateById(formId);
       return result.match(
         (data) => {
-          console.log("🚀 Hook unwrapped data:", data);
+          // console.log("🚀 Hook unwrapped data:", data);
           return data;
         },
         (e) => {

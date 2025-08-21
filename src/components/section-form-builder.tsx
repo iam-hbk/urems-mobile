@@ -168,7 +168,7 @@ export function SectionFormBuilder({
           const fieldName = `${fieldDef.id}_1`;
           const isTouched = Boolean(
             (form.formState.touchedFields as Record<string, unknown>)[
-              fieldName
+            fieldName
             ],
           );
           if (!isTouched) {
@@ -189,7 +189,7 @@ export function SectionFormBuilder({
             const fieldName = `${fieldDef.id}_1`;
             const isTouched = Boolean(
               (form.formState.touchedFields as Record<string, unknown>)[
-                fieldName
+              fieldName
               ],
             );
             if (!isTouched) {
@@ -231,7 +231,7 @@ export function SectionFormBuilder({
         sectionDataToProcess[key] = hookFormData[key];
       }
     }
-    console.log("Filtered section submission data:", sectionDataToProcess);
+    // console.log("Filtered section submission data:", sectionDataToProcess);
 
     const fieldResponsesPayload: FieldResponseUpdateDto[] = [];
     for (const key in sectionDataToProcess) {
@@ -242,7 +242,7 @@ export function SectionFormBuilder({
       const entrySequenceParts = key.split("_");
       const entrySequenceNumber =
         entrySequenceParts.length > 1 &&
-        !isNaN(parseInt(entrySequenceParts[entrySequenceParts.length - 1]))
+          !isNaN(parseInt(entrySequenceParts[entrySequenceParts.length - 1]))
           ? parseInt(entrySequenceParts[entrySequenceParts.length - 1])
           : 0;
 
@@ -284,7 +284,7 @@ export function SectionFormBuilder({
       sectionStatuses: sectionStatusPayload,
     };
 
-    console.log("Payload to send to API via mutation:");
+    // console.log("Payload to send to API via mutation:");
     console.dir(updatePayload, { depth: null });
 
     updateFormResponseMutation.mutate({ responseId, payload: updatePayload });

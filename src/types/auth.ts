@@ -13,7 +13,9 @@ export type LoginPayload = {
 
 export type LoginResponse = {
   message: string;
-  userId: string;
+  // will be removed when cookies are working in prod
+  user_id: string;
+  access_token: string;
 };
 
 export type TypeLoginForm = {
@@ -28,3 +30,16 @@ export type TypeForgotPasswordForm = z.infer<typeof schemaForgotPasswordForm>;
 export type TypeResetPasswordForm = z.infer<typeof schemaResetPasswordForm>;
 
 export type TypeConfirmEmailForm = z.infer<typeof schemaConfirmEmailForm>;
+
+
+export interface typeParsedCookie {
+  name: string;
+  value: string;
+  httpOnly?: boolean;
+  secure?: boolean;
+  sameSite?: typeSameSite;
+  path?: string;
+  expires?: string;
+}
+
+export type typeSameSite = 'lax' | 'strict' | 'none' | undefined;

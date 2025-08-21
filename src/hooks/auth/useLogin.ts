@@ -10,8 +10,8 @@ import {
   // login,
 } from "@/lib/auth/api";
 import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
-import { cookieNameUserId } from "@/utils/constant";
-import { setCookie } from "@/utils/cookies";
+import { cookieNameAccessToken, cookieNameUserId } from "@/utils/constant";
+import { getCookie, setCookie } from "@/utils/cookies";
 import { login } from "@/lib/auth/apis";
 
 export const useLoginMutation = () => {
@@ -22,12 +22,27 @@ export const useLoginMutation = () => {
   return useMutation({
     mutationFn: login,
     onSuccess: async (result) => {
-      console.log(' ... login results ... ', result);
+
       if (result.isOk()) {
-        const { userId } = result.value;
-        zsSetEmployeeId(userId);
-        // set cookie
-        await setCookie(cookieNameUserId, userId);
+        const { access_token, user_id } = result.value;
+
+        let token = await getCookie(cookieNameAccessToken);
+
+        if (!token) { // when no access token is founed
+
+          // set cookie manually. bc cookie might have failed to set, if not available
+          await setCookie(cookieNameAccessToken, access_token);
+          await setCookie(cookieNameUserId, user_id);
+
+          token = await getCookie(cookieNameAccessToken);
+
+          if (!token) {
+            throw new Error("Invalid session information, please try again");
+          }
+        }
+
+        zsSetEmployeeId(user_id);
+
         // Invalidate the session query to trigger a refetch
         queryClient.invalidateQueries({ queryKey: ["session"] });
         toast.success("Logged in successfully!");

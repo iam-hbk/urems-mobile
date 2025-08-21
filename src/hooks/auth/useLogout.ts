@@ -14,8 +14,9 @@ export const useLogoutMutation = () => {
     mutationFn: logout,
     onSuccess: () => {
       // delete cookies
-      deleteCookie(cookieNameUserId)
-      deleteCookie(UserTokenCookieName)
+      deleteCookie(cookieNameUserId);
+      deleteCookie('user_id');
+      deleteCookie(UserTokenCookieName);
 
       toast.success("You have been logged out.");
       // Clear the session in the cache and redirect
@@ -25,6 +26,7 @@ export const useLogoutMutation = () => {
     onError: (error) => {
       // when api fails, send user to login , token might have expired
       deleteCookie(cookieNameUserId)
+      deleteCookie('user_id')
       deleteCookie(UserTokenCookieName)
 
       queryClient.setQueryData(["session"], null);
