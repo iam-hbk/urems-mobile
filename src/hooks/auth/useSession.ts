@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { getUser, type Session } from "@/lib/auth/dal";
 import type { ApiError } from "@/types/api";
 import { usePathname, useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const useSessionQuery = () => {
   const router = useRouter();
@@ -35,8 +36,8 @@ export const useSessionQuery = () => {
       }
       return failureCount < 2;
     },
-    // staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnWindowFocus: true,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -53,3 +54,18 @@ export function useGetUser() {
     }
   });
 }
+
+// Lightweight selector hook to access just the user from the session cache
+export const useAuthedUser = () => {
+  const { data } = useSessionQuery();
+  return data?.user ?? null;
+};
+
+// Cached-only read: returns whatever is already in the cache without fetching
+export const useCachedUser = (): { user: Session["user"] | null } => {
+  const queryClient = useQueryClient();
+  const cached = queryClient.getQueryData<Pick<Session, "user"> | null>([
+    "session",
+  ]);
+  return { user: cached?.user ?? null };
+};

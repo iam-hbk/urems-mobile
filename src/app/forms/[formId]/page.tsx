@@ -45,9 +45,9 @@ export default function FormPage(props: { params: Params }) {
     if (!userId) return;
     createResponseMutation.mutate({
       employeeId: userId,
-      patientId: 0,
-      vehicleId: 0,
-      crewId: 0,
+      patientId: null,
+      vehicleId: null,
+      crewId: null,
     });
   };
 

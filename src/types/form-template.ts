@@ -1,3 +1,5 @@
+import { PRF_FORM_CASE_DETAILS } from "@/interfaces/prf-form";
+
 export interface FieldOption {
   id: string;
   value: string;
@@ -124,10 +126,17 @@ export interface FormTemplateWithResponses extends FormTemplate {
 export interface CreateFormResponsePayload {
   formTemplateId: string;
   employeeId: string;
-  patientId?: number | null;
-  vehicleId?: number | null;
-  crewId?: number | null;
-  // Any other fields required by POST /api/FormResponses, defaulting to 0 or null if optional
+  patientId?: string | null;
+  vehicleId?: string | null;
+  crewId?: string | null;
+}
+export interface CreatePRFResponsePayload {
+  formTemplateId: string;
+  employeeId: string;
+  patientId?: string | null;
+  vehicleId?: string | null;
+  crewId?: string | null;
+  caseDetails: PRF_FORM_CASE_DETAILS | null;
 }
 
 export interface FieldResponseUpdateDto {

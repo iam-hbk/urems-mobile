@@ -76,7 +76,6 @@ export const useCreateFormResponse = ({
   sections,
 }: CreateFormResponseOptions) => {
   const queryClient = useQueryClient();
-  const router = useRouter();
 
   return useMutation<
     Result<FormResponseSummary, ApiError>,
@@ -87,19 +86,11 @@ export const useCreateFormResponse = ({
     onSuccess: (result) => {
       result.match(
         (newResponseData) => {
+          console.log("🚀 newResponseData:", newResponseData);
           toast.success("New form response created successfully!");
           queryClient.invalidateQueries({
             queryKey: ["formTemplateWithResponses", formTemplateId],
           });
-          const firstSectionId = sections?.[0]?.id;
-          if (firstSectionId) {
-            router.push(
-              `/forms/${formTemplateId}/${newResponseData.id}/${firstSectionId}`,
-            );
-          } else {
-            toast.info("Form has no sections. Staying on current page.");
-            router.push(`/forms/${formTemplateId}/${newResponseData.id}`);
-          }
         },
         (e) => {
           toast.error(`Failed to create response: ${e.detail}`);
@@ -108,6 +99,7 @@ export const useCreateFormResponse = ({
     },
     onError: (error) => {
       // This will only be called for unexpected errors, not API errors wrapped in Result
+      console.log("🚀 Unexpected error:", error);
       toast.error(`An unexpected error occurred: ${error.detail}`);
     },
   });

@@ -1,4 +1,4 @@
-'use server'
+"use server";
 
 import "server-only";
 import { cookies } from "next/headers";
@@ -33,7 +33,7 @@ export const verifySession = cache(
   async (): Promise<Result<Session, ApiError>> => {
     const cookieStore = await cookies();
     const token = cookieStore.get(UserTokenCookieName)?.value;
-    const userId = cookieStore.get(cookieNameUserId)?.value
+    const userId = cookieStore.get(cookieNameUserId)?.value;
 
     // console.log(' ... api url ... ', API_BASE_URL, token, userId);
 
@@ -60,15 +60,18 @@ export const verifySession = cache(
       // Get all cookies to forward to the backend
       const cookieStore = await cookies();
       const allCookies = cookieStore.getAll();
-      const cookieHeader = allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; ');
+      const cookieHeader = allCookies
+        .map((cookie) => `${cookie.name}=${cookie.value}`)
+        .join("; ");
 
-      const response = await fetch(`${API_BASE_URL}/api/auth/get-employee`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
         headers: {
           "Content-Type": "application/json",
-          "Cookie": cookieHeader,
+          Cookie: cookieHeader,
         },
-        credentials: 'include',
+        credentials: "include",
       });
+      console.log(" ... response ... ", response);
 
       if (!response.ok) {
         const errorJson = (await response
@@ -78,7 +81,7 @@ export const verifySession = cache(
           type: errorJson.type || "ApiError",
           title: errorJson.title || "Session verification failed",
           status: response.status,
-          detail: errorJson.detail || "The /me endpoint returned an error.",
+          detail: errorJson.detail || "The endpoint returned an error.",
         });
       }
 
@@ -103,10 +106,12 @@ export const verifySession = cache(
 );
 
 // Get user data (with session verification)
-export const getUser = cache(async (): Promise<Result<typeEmployee, ApiError>> => {
-  const sessionResult = await verifySession();
-  return sessionResult.map((session) => session.user);
-});
+export const getUser = cache(
+  async (): Promise<Result<typeEmployee, ApiError>> => {
+    const sessionResult = await verifySession();
+    return sessionResult.map((session) => session.user);
+  },
+);
 
 // Get session token
 export const getSessionToken = cache(

@@ -7,6 +7,7 @@ import {
   DetailedFormResponse,
   CreateFormResponsePayload,
   FormResponseUpdateDto,
+  CreatePRFResponsePayload,
 } from "@/types/form-template";
 import { Result } from "neverthrow";
 
@@ -40,6 +41,16 @@ export const fetchFormTemplateWithResponses = async (
     `/formtemplates/${templateId}/with-responses`,
   );
 };
+/**
+ * Fetches a The PRF template, including its associated form responses.
+ */
+export const fetchPRFTemplateWithResponses = async (): Promise<
+  Result<FormTemplateWithResponses, ApiError>
+> => {
+  return api.get<FormTemplateWithResponses>(
+    `/formtemplates/get-prf-with-responses`,
+  );
+};
 
 /**
  * Creates a new form response.
@@ -49,9 +60,9 @@ export const createFormResponse = async (
   payload: CreateFormResponsePayload,
 ): Promise<Result<DetailedFormResponse, ApiError>> => {
   const requestBody = {
-    patientId: payload.patientId || 0,
-    vehicleId: payload.vehicleId || 0,
-    crewId: payload.crewId || 0,
+    patientId: payload.patientId,
+    vehicleId: payload.vehicleId,
+    crewId: payload.crewId,
     employeeId: payload.employeeId,
     formTemplateId: payload.formTemplateId,
   };
@@ -59,6 +70,30 @@ export const createFormResponse = async (
   return api.post<DetailedFormResponse>("/FormResponses", requestBody);
 };
 
+/**
+ * Creates a new PRF response.
+ * @param payload The data needed to create the form response.
+ */
+export const createPRFResponse = async (
+  payload: CreatePRFResponsePayload,
+): Promise<Result<DetailedFormResponse, ApiError>> => {
+  const requestBody = {
+    patientId: payload.patientId,
+    vehicleId: payload.vehicleId,
+    crewId: payload.crewId,
+    employeeId: payload.employeeId,
+    formTemplateId: payload.formTemplateId,
+    caseDetails: payload.caseDetails,
+  };
+
+  return api.post<DetailedFormResponse>("/FormResponses", requestBody);
+};
+
+export const getPRFTemplate = async (): Promise<
+  Result<FormTemplate, ApiError>
+> => {
+  return api.get<FormTemplate>("/formtemplates/get-prf");
+};
 /**
  * Fetches a single form response by its ID.
  * @param responseId The ID of the form response to fetch.
@@ -81,8 +116,5 @@ export const apiUpdateFormResponse = async (
   responseId: string,
   payload: FormResponseUpdateDto,
 ): Promise<Result<{ status: number }, ApiError>> => {
-  return api.put<{ status: number }>(
-    `/FormResponses/${responseId}`,
-    payload,
-  );
+  return api.put<{ status: number }>(`/FormResponses/${responseId}`, payload);
 };

@@ -26,61 +26,68 @@ import {
 } from "@/components/ui/form";
 import { toast } from "sonner";
 import { FileEdit, Loader2, MoveRight, Plus } from "lucide-react";
-import { PRF_FORM } from "@/interfaces/prf-form";
-import { useCreatePrf } from "@/hooks/prf/useCreatePrf";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
+import { PRF_FORM_CASE_DETAILS } from "@/interfaces/prf-form";
+import {
+  useCreatePrf,
+  useGetPRFResponseSectionByName,
+  useUpdatePrfResponse,
+} from "@/hooks/prf/usePrfForms";
 import { CaseDetailsSchema } from "@/interfaces/prf-schema";
-import { useZuStandCrewStore } from "@/lib/zuStand/crew";
 import { DatePicker, Group } from "react-aria-components";
 import { DateInput } from "../ui/datefield-rac";
 import { CalendarDate } from "@internationalized/date";
 import { useSessionQuery } from "@/hooks/auth/useSession";
+import { useGetCrewEmployeeID } from "@/hooks/crew/useCrew";
 
 export type CaseDetailsType = z.infer<typeof CaseDetailsSchema>;
 
 type CaseDetailsFormProps = {
   buttonTitle: string;
   action?: "create" | "edit";
-  initialData?: PRF_FORM;
+  prfResponseId: string;
 };
 
 const PRFEditSummary = ({
   buttonTitle,
   action = "create",
-  initialData,
+  prfResponseId,
 }: CaseDetailsFormProps) => {
   const createPrfQuery = useCreatePrf();
-  const updatePrfQuery = useUpdatePrf();
+  const updatePrfQuery = useUpdatePrfResponse(prfResponseId, "case_details");
+  const { data: caseDetails } = useGetPRFResponseSectionByName(
+    prfResponseId,
+    "case_details",
+  );
   const { data: session } = useSessionQuery();
-  const { zsCrewID, zsVehicle } = useZuStandCrewStore();
+  const { data: crew } = useGetCrewEmployeeID();
+
   const dialogCloseRef = React.useRef<HTMLButtonElement>(null);
   const form = useForm<z.infer<typeof CaseDetailsSchema>>({
     resolver: zodResolver(CaseDetailsSchema),
     defaultValues: {
-      regionDistrict:
-        initialData?.prfData.case_details?.data.regionDistrict || "",
-      base: initialData?.prfData.case_details?.data.base || "",
-      province: initialData?.prfData.case_details?.data.province || "",
+      regionDistrict: caseDetails?.data.regionDistrict || "",
+      base: caseDetails?.data.base || "",
+      province: caseDetails?.data.province || "",
       vehicle:
-        initialData?.prfData.case_details?.data.vehicle ||
-        (zsVehicle
+        caseDetails?.data.vehicle ||
+        (crew
           ? {
-            id: zsVehicle.vehicleId,
-            name: zsVehicle.vehicleName,
-            license: zsVehicle.vehicleLicense,
-            registrationNumber: zsVehicle.vehicleRegistrationNumber,
-          }
+              id: crew[0].crew.vehicleId,
+              name: crew[0].crew.vehicleId,
+              license: crew[0].crew.vehicleId,
+              registrationNumber: crew[0].crew.vehicleId,
+            }
           : {
-            id: 0,
-            name: "",
-            license: "",
-            registrationNumber: "",
-          }),
+              id: "",
+              name: "",
+              license: "",
+              registrationNumber: "",
+            }),
       dateOfCase:
         action === "create"
           ? new Date()
-          : initialData?.prfData.case_details?.data.dateOfCase
-            ? new Date(initialData?.prfData.case_details?.data.dateOfCase)
+          : caseDetails?.data.dateOfCase
+            ? new Date(caseDetails.data.dateOfCase)
             : new Date(),
     },
   });
@@ -94,27 +101,25 @@ const PRFEditSummary = ({
       return;
     }
 
-    const prf: PRF_FORM = {
-      prfFormId: initialData?.prfFormId,
-      prfData: {
-        ...initialData?.prfData,
-        case_details: {
-          data: values,
-          isCompleted: true,
-          isOptional: false,
-        },
-      },
-      EmployeeID: session?.user.id,
-      CrewID: zsCrewID?.toString(),
+    const caseDetails: PRF_FORM_CASE_DETAILS = {
+      ...values,
     };
 
     if (action === "create") {
-      createPrfQuery.mutate(prf);
-    } else {
-      updatePrfQuery.mutate({
-        prfFormId: initialData?.prfFormId,
-        prfData: { case_details: prf.prfData.case_details },
-      } as PRF_FORM);
+      // TODO: This needs to be updated and reviewed
+      createPrfQuery.mutate({
+        case_details: {
+          data: caseDetails,
+          isOptional: false,
+          isCompleted: true,
+        },
+      });
+      // } else {
+      //   updatePrfQuery.mutate({
+      //     prfFormId: initialData?.prfFormId,
+      //     prfData: { case_details: prf.prfData.case_details },
+      //   } as PRF_FORM);
+      //TODO: Add update case details
     }
     dialogCloseRef.current?.click();
   };
@@ -126,12 +131,9 @@ const PRFEditSummary = ({
       });
       return;
     }
-    const prf: PRF_FORM = {
-      prfData: {},
-      EmployeeID: session?.user.id,
-    };
+
     if (action === "create") {
-      createPrfQuery.mutate(prf);
+      createPrfQuery.mutate({});
     }
     dialogCloseRef.current?.click();
   };
@@ -219,13 +221,14 @@ const PRFEditSummary = ({
                     </FormLabel>
                     <FormControl>
                       <DatePicker
+                        aria-label="Date of Case"
                         value={
                           field.value
                             ? new CalendarDate(
-                              field.value.getFullYear(),
-                              field.value.getMonth() + 1,
-                              field.value.getDate(),
-                            )
+                                field.value.getFullYear(),
+                                field.value.getMonth() + 1,
+                                field.value.getDate(),
+                              )
                             : null
                         }
                         onChange={(date) => {
@@ -306,10 +309,10 @@ const PRFEditSummary = ({
                         </div>
                       </FormControl>
                       <FormMessage />
-                      {zsVehicle && field.value.id !== zsVehicle.vehicleId && (
+                      {crew && field.value.id !== crew[0].crew.vehicleId && (
                         <p className="mt-2 text-xs text-muted-foreground">
                           Note: This vehicle differs from your assigned vehicle
-                          ({zsVehicle.vehicleName})
+                          ({crew[0].crew.vehicleId})
                         </p>
                       )}
                     </FormItem>
@@ -319,7 +322,12 @@ const PRFEditSummary = ({
             </div>
 
             <DialogFooter>
-              <Button disabled={form.formState.isDirty === false} type="submit">
+              <Button
+                disabled={
+                  form.formState.isDirty === false || createPrfQuery.isReady
+                }
+                type="submit"
+              >
                 {createPrfQuery.isPending || updatePrfQuery.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving

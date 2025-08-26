@@ -2,101 +2,104 @@ import { z } from "zod";
 import { PrimarySurveySchema } from "./prf-primary-survey-schema";
 import { VitalSignsSchema } from "./prf-vital-signs-schema";
 
-export const PatientDetailsSchema = z.object({
-  unableToObtainInformation: z.object({
-    status: z.boolean().default(false),
-    estimatedAge: z.number().optional(),
-    notes: z.string().optional(),
-  }),
-  age: z.number().optional(),
-  ageUnit: z.enum(["years", "months", "days"]).default("years"),
-  gender: z.enum(["male", "female"]).optional(),
-  patientName: z.string().optional(),
-  patientSurname: z.string().optional(),
-  id: z.string().optional(),
-  passport: z.string().optional(),
+export const PatientDetailsSchema = z
+  .object({
+    unableToObtainInformation: z.object({
+      status: z.boolean().default(false),
+      estimatedAge: z.number().optional(),
+      notes: z.string().optional(),
+    }),
+    age: z.number().optional(),
+    ageUnit: z.enum(["years", "months", "days"]).default("years"),
+    gender: z.enum(["male", "female"]).optional(),
+    patientName: z.string().optional(),
+    patientSurname: z.string().optional(),
+    id: z.string().optional(),
+    passport: z.string().optional(),
 
-  // ------------------------------------
-  nextOfKin: z
-    .object({
-      name: z.string(),
-      relationToPatient: z.string(),
-      email: z.string().email().optional(),
-      physicalAddress: z.string(),
-      phoneNo: z.string(),
-      alternatePhoneNo: z.string().optional(),
-      otherNOKPhoneNo: z.string().optional(),
-    })
-    .optional(),
-  medicalAid: z
-    .object({
-      name: z.string(),
-      number: z.string(),
-      principalMember: z.string(),
-      authNo: z.string().optional(),
-    })
-    .optional(),
-  employer: z
-    .object({
-      name: z.string(),
-      workPhoneNo: z.string(),
-      workAddress: z.string(),
-    })
-    .optional(),
-  pastHistory: z
-    .object({
-      allergies: z.string().optional(),
-      medication: z.string().optional(),
-      medicalHx: z.string().optional(),
-      lastMeal: z.string().optional(),
-      cva: z.boolean().default(false),
-      epilepsy: z.boolean().default(false),
-      cardiac: z.boolean().default(false),
-      byPass: z.boolean().default(false),
-      dmOneOrTwo: z.boolean().default(false),
-      HPT: z.boolean().default(false),
-      asthma: z.boolean().default(false),
-      copd: z.boolean().default(false),
-    })
-    .optional(),
-})
-.superRefine((val, ctx) => {
-  // Skip validation if unable to obtain information
-  if (val.unableToObtainInformation.status === true) return true;
+    // ------------------------------------
+    nextOfKin: z
+      .object({
+        name: z.string(),
+        relationToPatient: z.string(),
+        email: z.string().email().optional(),
+        physicalAddress: z.string(),
+        phoneNo: z.string(),
+        alternatePhoneNo: z.string().optional(),
+        otherNOKPhoneNo: z.string().optional(),
+      })
+      .optional(),
+    medicalAid: z
+      .object({
+        name: z.string(),
+        number: z.string(),
+        principalMember: z.string(),
+        authNo: z.string().optional(),
+      })
+      .optional(),
+    employer: z
+      .object({
+        name: z.string(),
+        workPhoneNo: z.string(),
+        workAddress: z.string(),
+      })
+      .optional(),
+    pastHistory: z
+      .object({
+        allergies: z.string().optional(),
+        medication: z.string().optional(),
+        medicalHx: z.string().optional(),
+        lastMeal: z.string().optional(),
+        cva: z.boolean().default(false),
+        epilepsy: z.boolean().default(false),
+        cardiac: z.boolean().default(false),
+        byPass: z.boolean().default(false),
+        dmOneOrTwo: z.boolean().default(false),
+        HPT: z.boolean().default(false),
+        asthma: z.boolean().default(false),
+        copd: z.boolean().default(false),
+      })
+      .optional(),
+  })
+  .superRefine((val, ctx) => {
+    // Skip validation if unable to obtain information
+    if (val.unableToObtainInformation.status === true) return true;
 
-  // Check required fields when able to obtain information
-  if (val.age === undefined || val.age === null) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Age is required when able to obtain patient information",
-      path: ["age"],
-    });
-  }
+    // Check required fields when able to obtain information
+    if (val.age === undefined || val.age === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Age is required when able to obtain patient information",
+        path: ["age"],
+      });
+    }
 
-  if (!val.gender) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Gender is required when able to obtain patient information",
-      path: ["gender"],
-    });
-  }
+    if (!val.gender) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Gender is required when able to obtain patient information",
+        path: ["gender"],
+      });
+    }
 
-  if (!val.patientName || val.patientName.trim() === "") {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Patient name is required when able to obtain patient information",
-      path: ["patientName"],
-    });
-  }
+    if (!val.patientName || val.patientName.trim() === "") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "Patient name is required when able to obtain patient information",
+        path: ["patientName"],
+      });
+    }
 
-  if (!val.patientSurname || val.patientSurname.trim() === "") {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Patient surname is required when able to obtain patient information",
-      path: ["patientSurname"],
-    });
-  }
-});
+    if (!val.patientSurname || val.patientSurname.trim() === "") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "Patient surname is required when able to obtain patient information",
+        path: ["patientSurname"],
+      });
+    }
+  });
 
 export const CaseDetailsSchema = z.object({
   regionDistrict: z.string().min(2, "Region/District is required").max(50),
@@ -104,9 +107,9 @@ export const CaseDetailsSchema = z.object({
   province: z.string().min(2, "Province is required").max(50),
   vehicle: z.object(
     {
-      id: z.number({
+      id: z.string({
         required_error: "Vehicle ID is required",
-        invalid_type_error: "Vehicle ID must be a number",
+        invalid_type_error: "Vehicle ID must be a string",
       }),
       name: z
         .string({
@@ -1164,11 +1167,12 @@ export const PRFFormDataSchema = z.object({
 
 // Define the full form schema
 export const PRFFormSchema = z.object({
-  prfFormId: z.string().optional(),
+  responseId: z.string(),
   patientId: z.string().optional(),
   prfData: PRFFormDataSchema,
   createdAt: z.union([z.string(), z.date()]).optional(),
+  updatedAt: z.union([z.string(), z.date()]).optional(),
   isCompleted: z.boolean().default(false).optional(),
-  EmployeeID: z.string(), // added employee and crew IDs
-  CrewID: z.string().default("CrewID").optional(), // this can be optional for now
+  employeeId: z.string(), // added employee and crew IDs
+  crewId: z.string().default("crewId").optional(), // this can be optional for now
 });

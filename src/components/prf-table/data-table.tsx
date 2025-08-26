@@ -32,16 +32,16 @@ import { X } from "lucide-react";
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { CalendarDate, DateValue, today } from "@internationalized/date";
 import { RangeValue } from "@react-types/shared";
-import { PRF_FORM } from "@/interfaces/prf-form";
 import { useRouter } from "next/navigation";
+import { FormResponseSummary } from "@/types/form-template";
 
 interface DataTableProps {
-  columns: ColumnDef<PRF_FORM>[];
-  data: PRF_FORM[];
+  columns: ColumnDef<FormResponseSummary>[];
+  data: FormResponseSummary[];
 }
 
 // Custom filter function for date ranges
-export const dateRangeFilter: FilterFn<PRF_FORM> = (
+export const dateRangeFilter: FilterFn<FormResponseSummary> = (
   row,
   columnId,
   filterValue: RangeValue<DateValue>,
@@ -117,22 +117,13 @@ export function DataTable({ columns, data }: DataTableProps) {
       <div className="flex items-center gap-4">
         <Input
           placeholder="Filter by PRF Number..."
-          value={
-            (table.getColumn("prfFormId")?.getFilterValue() as string) ?? ""
-          }
+          value={(table.getColumn("id")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("prfFormId")?.setFilterValue(event.target.value)
+            table.getColumn("id")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
-        {/* <Input
-          placeholder="Filter by Employee..."
-          value={(table.getColumn("prfData.case_details.employeeId")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("prfData.case_details.employeeId")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        /> */}
+
         <DatePickerWithRange
           value={dateRange}
           onChange={handleDateRangeChange}
@@ -189,7 +180,7 @@ export function DataTable({ columns, data }: DataTableProps) {
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   onClick={() => {
-                    router.push(`/edit-prf/${row.original.prfFormId}`);
+                    router.push(`/edit-prf/${row.original.id}`);
                   }}
                   className="cursor-pointer"
                 >

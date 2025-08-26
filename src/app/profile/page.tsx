@@ -62,7 +62,7 @@ export default async function EmployeeProfilePage() {
             </Badge>
             <Badge variant="outline" className="mt-2 mr-2 capitalize ">
               {
-                userData.employeeType.typeDescription || "Emp type"
+                userData.employeeType?.typeDescription || "Emp type"
               }
             </Badge>
             <Badge variant="outline" className="mt-2 mr-2">
