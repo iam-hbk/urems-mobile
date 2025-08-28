@@ -26,57 +26,36 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
-import { PRF_FORM } from "@/interfaces/prf-form";
 import { toast } from "sonner";
 import { IntravenousTherapySchema } from "@/interfaces/prf-schema";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { TimePicker } from "@/components/ui/time-picker";
 import { useZuStandCrewStore } from "@/lib/zuStand/crew";
+import {
+  ensurePRFResponseSectionByName,
+  useUpdatePrfResponse,
+} from "@/hooks/prf/usePrfForms";
+import { useQueryClient } from "@tanstack/react-query";
 
 export type IntravenousTherapyType = z.infer<typeof IntravenousTherapySchema>;
 
 export default function IntravenousTherapyForm() {
   const prfId = usePathname().split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId,
-  );
+  const qc = useQueryClient();
+  // Using this store until we connect backend stock and inventory
   const { zsVehicle, zsUpdateFluidStock } = useZuStandCrewStore();
 
-  const updatePrfQuery = useUpdatePrf();
+  const updatePrfQuery = useUpdatePrfResponse(prfId, "intravenous_therapy");
   const router = useRouter();
   const form = useForm<IntravenousTherapyType>({
     resolver: zodResolver(IntravenousTherapySchema),
-    values: prf_from_store?.prfData?.intravenous_therapy?.data,
-    defaultValues: prf_from_store?.prfData?.intravenous_therapy?.data || {
-      therapyDetails: [
-        {
-          fluid: "",
-          fluidId: undefined,
-          volume: 0,
-          admin: "10dropper",
-          rate: "",
-          time: {
-            value: new Date().toLocaleTimeString("en-GB", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            unknown: false,
-          },
-          jelco: "20G",
-          site: "Right Antecubital",
-          volumeAdministered: 0,
-        },
-      ],
-      motivationForIV: {
-        drugRoute: false,
-        fluidBolus: false,
-        p1Unstable: false,
-        p1Stable: false,
-      },
-      weight: "",
-      weightMeasurementType: "estimated",
+    defaultValues: async () => {
+      const intravenousTherapy = await ensurePRFResponseSectionByName(
+        qc,
+        prfId,
+        "intravenous_therapy",
+      );
+      return intravenousTherapy?.data;
     },
   });
 
@@ -87,27 +66,20 @@ export default function IntravenousTherapyForm() {
 
   function onSubmit(values: IntravenousTherapyType) {
     // Update vehicle inventory for each therapy detail
-    values.therapyDetails.forEach((therapy) => {
-      if (therapy.fluidId) {
-        // Only update stock if it's a fluid from inventory
-        zsUpdateFluidStock(
-          therapy.fluidId,
-          Math.ceil(therapy.volumeAdministered / therapy.volume),
-        );
-      }
-    });
+    // values.therapyDetails.forEach((therapy) => {
+    //   if (therapy.fluidId) {
+    //     // Only update stock if it's a fluid from inventory
+    //     zsUpdateFluidStock(
+    //       therapy.fluidId,
+    //       Math.ceil(therapy.volumeAdministered / therapy.volume),
+    //     );
+    //   }
+    // });
 
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        ...prf_from_store?.prfData,
-        intravenous_therapy: {
-          data: values,
-          isCompleted: true,
-          isOptional: false,
-        },
-      },
-      EmployeeID: prf_from_store?.EmployeeID || "2",
+    const prfUpdateValue = {
+      data: values,
+      isCompleted: true,
+      isOptional: false,
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
@@ -579,6 +551,9 @@ export default function IntravenousTherapyForm() {
             type="submit"
             disabled={!form.formState.isDirty}
             className="self-end"
+            onClick={() => {
+              console.log("form.getValues() 🚀", form.getValues());
+            }}
           >
             {form.formState.isSubmitting || updatePrfQuery.isPending ? (
               <>

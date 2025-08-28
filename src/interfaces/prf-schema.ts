@@ -101,6 +101,8 @@ export const PatientDetailsSchema = z
     }
   });
 
+export type PatientDetailsType = z.infer<typeof PatientDetailsSchema>;
+
 export const CaseDetailsSchema = z.object({
   regionDistrict: z.string().min(2, "Region/District is required").max(50),
   base: z.string().min(2, "Base is required").max(50),
@@ -441,10 +443,10 @@ export const DiagnosisSchema = z.object({
       occurred: z.boolean().optional(),
       symptoms: z
         .array(
-          z.enum(["Stridor", "Wheezes", "Erythema", "Pruritus", "Urticaria"]),
+          z.enum(["stridor", "wheezes", "erythema", "pruritus", "urticaria"]),
         )
         .optional(),
-      location: z.array(z.enum(["Abd", "Head", "Limbs", "Torso"])).optional(),
+      location: z.array(z.enum(["abd", "head", "limbs", "torso"])).optional(),
     })
     .optional(),
   poisoning: z.boolean(),
@@ -1011,7 +1013,7 @@ export type NotesType = z.infer<typeof NotesSchema>;
 export const PRFFormDataSchema = z.object({
   case_details: z
     .object({
-      isOptional: z.boolean().default(false),
+      isOptional: z.boolean().default(false).optional(),
       isCompleted: z.boolean().default(false),
       data: CaseDetailsSchema,
     })

@@ -31,7 +31,7 @@ import { z } from "zod";
 export type SectionWrapper<T> = {
   data: T;
   isCompleted: boolean;
-  isOptional: boolean;
+  isOptional?: boolean | null;
 };
 
 // Create type mapping for each section
@@ -39,7 +39,9 @@ export type SectionDataTypeMap = {
   case_details: SectionWrapper<PRF_FORM_CASE_DETAILS>;
   patient_details: SectionWrapper<z.infer<typeof PatientDetailsSchema>>;
   transportation: SectionWrapper<PRF_FORM_TRANSPORTATION>;
-  incident_information: SectionWrapper<z.infer<typeof IncidentInformationSchema>>;
+  incident_information: SectionWrapper<
+    z.infer<typeof IncidentInformationSchema>
+  >;
   primary_survey: SectionWrapper<PRF_FORM_PRIMARY_SURVEY>;
   secondary_survey: SectionWrapper<PRF_FORM_SECONDARY_SURVEY>;
   vital_signs: SectionWrapper<z.infer<typeof VitalSignsSchema>>;
@@ -58,10 +60,13 @@ export type SectionDataTypeMap = {
 };
 
 // Helper type to extract just the data type from a section wrapper
-export type SectionData<T extends SectionName> = SectionDataTypeMap[T]['data'];
+export type SectionData<T extends SectionName> = SectionDataTypeMap[T]["data"];
 
 // Utility types for working with section wrappers
-export type SectionStatus = Pick<SectionWrapper<any>, 'isCompleted' | 'isOptional'>;
+export type SectionStatus = Pick<
+  SectionWrapper<any>,
+  "isCompleted" | "isOptional"
+>;
 
 // Type for creating new section data (without the wrapper)
 export type CreateSectionData<T extends SectionName> = SectionData<T>;
@@ -116,8 +121,8 @@ export function updatePrfResponse<T extends SectionName>(
   sectionName: T,
   data: SectionDataTypeMap[T],
 ): ApiResult<SectionDataTypeMap[T]> {
-  return api.put<SectionDataTypeMap[T]>(
-    `/FormResponses/${prfResponseId}/${sectionName}`,
+  return api.post<SectionDataTypeMap[T]>(
+    `/FormResponses/${prfResponseId}/prf-sections/${sectionName}`,
     data,
   );
 }

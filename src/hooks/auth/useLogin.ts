@@ -22,7 +22,6 @@ export const useLoginMutation = () => {
   return useMutation({
     mutationFn: login,
     onSuccess: async (result) => {
-
       if (result.isOk()) {
         const { access_token, user_id } = result.value;
 

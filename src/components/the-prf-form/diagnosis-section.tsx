@@ -18,7 +18,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { usePathname, useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
+import {
+  ensurePRFResponseSectionByName,
+  useUpdatePrfResponse,
+} from "@/hooks/prf/usePrfForms";
 import { PRF_FORM } from "@/interfaces/prf-form";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -26,30 +29,33 @@ import { DiagnosisSchema, DiagnosisType } from "@/interfaces/prf-schema";
 import { Switch } from "../ui/switch";
 import { Checkbox } from "../ui/checkbox";
 import { cn } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function DiagnosisForm() {
   const prfId = usePathname().split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId,
-  );
-
-  const updatePrfQuery = useUpdatePrf();
+  const qc = useQueryClient();
+  const updatePrfQuery = useUpdatePrfResponse(prfId, "diagnosis");
   const router = useRouter();
 
   const form = useForm<DiagnosisType>({
     resolver: zodResolver(DiagnosisSchema),
-    values: prf_from_store?.prfData?.diagnosis?.data,
-    defaultValues: prf_from_store?.prfData?.diagnosis?.data || {
-      diagnosis: "",
-      priorityType: "number",
-      priority: "1",
-      allergicReaction: {
-        occurred: false,
-        symptoms: [],
-        location: [],
-      },
-      poisoning: false,
-      symptoms: [],
+    defaultValues: async () => {
+      const section = await ensurePRFResponseSectionByName(
+        qc,
+        prfId,
+        "diagnosis",
+      );
+      console.log("[][][][][]section", section);
+      return {
+        ...section.data,
+        priorityType:
+          (section.data.priorityType ?? "").length > 0
+            ? section.data.priorityType
+            : "color",
+        
+        poisoning: section.data.poisoning || false,
+        symptoms: section.data.symptoms || [],
+      };
     },
   });
 
@@ -77,34 +83,24 @@ export default function DiagnosisForm() {
   };
 
   function onSubmit(values: DiagnosisType) {
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        ...prf_from_store?.prfData,
-        diagnosis: {
-          data: values,
-          isCompleted: true,
-          isOptional: false,
+    updatePrfQuery.mutate(
+      { data: values, isCompleted: true },
+      {
+        onSuccess: () => {
+          toast.success("Diagnosis Information Updated", {
+            duration: 3000,
+            position: "top-right",
+          });
+          router.push(`/edit-prf/${prfId}`);
+        },
+        onError: () => {
+          toast.error("An error occurred", {
+            duration: 3000,
+            position: "top-right",
+          });
         },
       },
-      EmployeeID: prf_from_store?.EmployeeID || "2",
-    };
-
-    updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: () => {
-        toast.success("Diagnosis Information Updated", {
-          duration: 3000,
-          position: "top-right",
-        });
-        router.push(`/edit-prf/${prfId}`);
-      },
-      onError: () => {
-        toast.error("An error occurred", {
-          duration: 3000,
-          position: "top-right",
-        });
-      },
-    });
+    );
   }
 
   return (
@@ -118,7 +114,6 @@ export default function DiagnosisForm() {
             Diagnosis
           </h3>
         </div>
-
         <FormField
           control={form.control}
           name="diagnosis"
@@ -303,11 +298,11 @@ export default function DiagnosisForm() {
                   <FormLabel>Allergic Reaction Symptoms</FormLabel>
                   <div className="flex flex-wrap gap-4">
                     {[
-                      "Stridor",
-                      "Wheezes",
-                      "Erythema",
-                      "Pruritus",
-                      "Urticaria",
+                      "stridor",
+                      "wheezes",
+                      "erythema",
+                      "pruritus",
+                      "urticaria",
                     ].map((item) => (
                       <FormField
                         key={item}
@@ -320,11 +315,11 @@ export default function DiagnosisForm() {
                                 checked={
                                   field.value?.includes(
                                     item as
-                                      | "Stridor"
-                                      | "Wheezes"
-                                      | "Erythema"
-                                      | "Pruritus"
-                                      | "Urticaria",
+                                      | "stridor"
+                                      | "wheezes"
+                                      | "erythema"
+                                      | "pruritus"
+                                      | "urticaria",
                                   ) || false
                                 }
                                 onCheckedChange={(checked) => {
@@ -339,7 +334,7 @@ export default function DiagnosisForm() {
                                 }}
                               />
                             </FormControl>
-                            <FormLabel className="font-normal">
+                            <FormLabel className="font-normal capitalize">
                               {item}
                             </FormLabel>
                           </FormItem>
@@ -358,7 +353,7 @@ export default function DiagnosisForm() {
                 <FormItem>
                   <FormLabel>Allergic Reaction Location</FormLabel>
                   <div className="flex flex-wrap gap-4">
-                    {["Abd", "Head", "Limbs", "Torso"].map((item) => (
+                    {["abd", "head", "limbs", "torso"].map((item) => (
                       <FormField
                         key={item}
                         control={form.control}
@@ -369,7 +364,7 @@ export default function DiagnosisForm() {
                               <Checkbox
                                 checked={
                                   field.value?.includes(
-                                    item as "Abd" | "Head" | "Limbs" | "Torso",
+                                    item as "abd" | "head" | "limbs" | "torso",
                                   ) || false
                                 }
                                 onCheckedChange={(checked) => {
@@ -384,7 +379,7 @@ export default function DiagnosisForm() {
                                 }}
                               />
                             </FormControl>
-                            <FormLabel className="font-normal">
+                            <FormLabel className="font-normal capitalize">
                               {item}
                             </FormLabel>
                           </FormItem>
@@ -484,7 +479,10 @@ export default function DiagnosisForm() {
           type="submit"
           disabled={!form.formState.isDirty}
           className="w-full self-end sm:w-auto"
-          onClick={() => {}}
+          onClick={() => {
+            console.log(form.getValues());
+            console.log(form.formState.errors);
+          }}
         >
           {form.formState.isSubmitting || updatePrfQuery.isPending ? (
             <>

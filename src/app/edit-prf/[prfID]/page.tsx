@@ -16,7 +16,6 @@ type Params = Promise<{ prfID: string }>;
 export default function Page(props: { params: Params }) {
   const params = use(props.params);
   const prfID = params.prfID;
-  console.log(prfID);
 
   const {
     data: prfResponseMetadata,

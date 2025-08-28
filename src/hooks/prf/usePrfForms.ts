@@ -1,11 +1,15 @@
-import { PRFFormDataSchema } from "./../../interfaces/prf-schema";
 import {
   PRF_FORM_RESPONSE_METADATA,
   SectionName,
   PRF_FORM_DATA,
   PRFormResponseStatus,
 } from "@/interfaces/prf-form";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from "@tanstack/react-query";
 import { useStore } from "@/lib/store";
 import { toast } from "sonner";
 import { ApiError } from "@/types/api";
@@ -35,7 +39,7 @@ export const useGetPrfForms = () => {
   const setPrfForms = useStore((state) => state.setPrfForms);
 
   return useQuery<FormTemplateWithResponses | null, ApiError>({
-    queryKey: ["prfForms"],
+    queryKey: ["PRF_TEMPLATE_WITH_RESPONSES"],
     queryFn: async () => {
       const templateResult = await fetchPRFTemplateWithResponses();
 
@@ -102,7 +106,7 @@ export const useCreatePrf = () => {
       const payload: CreatePRFResponsePayload = {
         formTemplateId: prfTemplate.id,
         employeeId,
-        patientId: null, // New PRFs start without a patient
+        patientId: null,
         vehicleId: null,
         crewId: null,
         caseDetails: prfData.case_details?.data || null,
@@ -160,17 +164,33 @@ export const useGetPRFTemplate = () => {
   });
 };
 
-/**
- * Type-safe hook to fetch a specific PRF section by name.
- * The return type is automatically inferred based on the section name.
- *
- * @example
- * // TypeScript knows this returns case details data
- * const { data: caseDetails } = useGetPRFResponseSectionByName("123", "case_details");
- *
- * // TypeScript knows this returns vital signs data
- * const { data: vitalSigns } = useGetPRFResponseSectionByName("123", "vital_signs");
- */
+// Reusable query key
+export const prfSectionKey = <T extends SectionName>(id: string, name: T) =>
+  ["prfSection", id, name] as const;
+
+// Reusable query options (works with useQuery *and* ensureQueryData)
+export function prfSectionQueryOptions<T extends SectionName>(
+  id: string,
+  name: T,
+) {
+  return {
+    queryKey: prfSectionKey(id, name),
+    // Note the explicit Promise type to preserve T mapping
+    queryFn: async (): Promise<SectionDataTypeMap[T]> => {
+      const result = await getPrfResponseSectionByName(id, name);
+      return result.match(
+        (data) => data,
+        (error: ApiError) => {
+          toast.error(`Error fetching ${name} section: ${error.detail}`);
+          throw error;
+        },
+      );
+    },
+    staleTime: 0, // Always refetch when invalidated
+    refetchOnWindowFocus: false, // Prevent unnecessary refetches
+  };
+}
+
 export function useGetPRFResponseSectionByName<T extends SectionName>(
   PRFResponseId: string,
   sectionName: T,
@@ -180,37 +200,18 @@ export function useGetPRFResponseSectionByName<T extends SectionName>(
   PRFResponseId: string,
   sectionName: T,
 ) {
-  return useQuery<SectionDataTypeMap[T], ApiError>({
-    queryKey: ["prfSection", PRFResponseId, sectionName],
-    queryFn: async () => {
-      const result = await getPrfResponseSectionByName(
-        PRFResponseId,
-        sectionName,
-      );
-      return result.match(
-        (data) => data,
-        (error) => {
-          toast.error(`Error fetching ${sectionName} section: ${error.detail}`);
-          throw error;
-        },
-      );
-    },
-  });
+  return useQuery<SectionDataTypeMap[T], ApiError>(
+    prfSectionQueryOptions(PRFResponseId, sectionName),
+  );
+}
+export function ensurePRFResponseSectionByName<T extends SectionName>(
+  qc: QueryClient,
+  PRFResponseId: string,
+  sectionName: T,
+) {
+  return qc.ensureQueryData(prfSectionQueryOptions(PRFResponseId, sectionName));
 }
 
-/**
- * Type-safe hook to update a specific PRF section.
- * The data parameter type is automatically enforced based on the section name.
- *
- * @example
- * // TypeScript enforces case details structure
- * const updateCaseDetails = useUpdatePrfResponse("123", "case_details");
- * updateCaseDetails.mutate({ regionDistrict: "...", base: "...", ... });
- *
- * // TypeScript enforces vital signs structure
- * const updateVitalSigns = useUpdatePrfResponse("123", "vital_signs");
- * updateVitalSigns.mutate({ vital_signs: [...], ... });
- */
 export function useUpdatePrfResponse<T extends SectionName>(
   prfResponseId: string,
   sectionName: T,
@@ -223,15 +224,20 @@ export function useUpdatePrfResponse<T extends SectionName>(
     },
     onSuccess: (result) => {
       result.match(
-        (data) => {
-          toast.success(`${sectionName} section updated successfully!`);
-          // Invalidate the specific section query to refetch updated data
+        () => {
+          // Invalidate and immediately refetch the specific section query
           queryClient.invalidateQueries({
-            queryKey: ["prfSection", prfResponseId, sectionName],
+            queryKey: prfSectionKey(prfResponseId, sectionName),
           });
-          // Also invalidate the form metadata to update completion status
+
+          // Force a refetch to ensure immediate data update
+          queryClient.refetchQueries({
+            queryKey: prfSectionKey(prfResponseId, sectionName),
+          });
+
+          // Also invalidate the form section status to update completion status
           queryClient.invalidateQueries({
-            queryKey: ["prfResponseMetadata", prfResponseId],
+            queryKey: ["prfResponseSectionStatus", prfResponseId],
           });
         },
         (error) => {

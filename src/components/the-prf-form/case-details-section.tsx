@@ -25,11 +25,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
-import { FileEdit, Loader2, MoveRight, Plus } from "lucide-react";
+import { FileEdit, Loader, Plus } from "lucide-react";
 import { PRF_FORM_CASE_DETAILS } from "@/interfaces/prf-form";
 import {
+  ensurePRFResponseSectionByName,
   useCreatePrf,
-  useGetPRFResponseSectionByName,
   useUpdatePrfResponse,
 } from "@/hooks/prf/usePrfForms";
 import { CaseDetailsSchema } from "@/interfaces/prf-schema";
@@ -38,61 +38,89 @@ import { DateInput } from "../ui/datefield-rac";
 import { CalendarDate } from "@internationalized/date";
 import { useSessionQuery } from "@/hooks/auth/useSession";
 import { useGetCrewEmployeeID } from "@/hooks/crew/useCrew";
+import { useQueryClient } from "@tanstack/react-query";
 
 export type CaseDetailsType = z.infer<typeof CaseDetailsSchema>;
 
-type CaseDetailsFormProps = {
+type BaseProps = {
   buttonTitle: string;
-  action?: "create" | "edit";
+};
+
+type CreateProps = BaseProps & {
+  action?: "create";
+};
+
+type EditProps = BaseProps & {
+  action: "edit";
   prfResponseId: string;
 };
 
-const PRFEditSummary = ({
-  buttonTitle,
-  action = "create",
-  prfResponseId,
-}: CaseDetailsFormProps) => {
+/* -------------------------------- Create -------------------------------- */
+const CreatePRFButton = ({ buttonTitle }: CreateProps) => {
   const createPrfQuery = useCreatePrf();
-  const updatePrfQuery = useUpdatePrfResponse(prfResponseId, "case_details");
-  const { data: caseDetails } = useGetPRFResponseSectionByName(
-    prfResponseId,
-    "case_details",
+  const { data: session } = useSessionQuery();
+
+  const onCreate = async () => {
+    if (!session?.user.id) {
+      toast.error("No Employee Information Found", {
+        duration: 3000,
+        position: "top-right",
+      });
+      return;
+    }
+
+    createPrfQuery.mutate({});
+  };
+
+  const isSubmitting = createPrfQuery.isPending;
+
+  return (
+    <Button
+      disabled={isSubmitting}
+      onClick={onCreate}
+      className="flex items-center"
+    >
+      <Plus className="mr-2" />
+      {buttonTitle}
+      {isSubmitting && <Loader className="ml-2 h-4 w-4 animate-spin" />}
+    </Button>
   );
+};
+
+/* --------------------------------- Edit --------------------------------- */
+const EditCaseDetailsDialog = ({ buttonTitle, prfResponseId }: EditProps) => {
+  const updatePrfQuery = useUpdatePrfResponse(prfResponseId, "case_details");
   const { data: session } = useSessionQuery();
   const { data: crew } = useGetCrewEmployeeID();
+  const qc = useQueryClient();
 
   const dialogCloseRef = React.useRef<HTMLButtonElement>(null);
+
   const form = useForm<z.infer<typeof CaseDetailsSchema>>({
     resolver: zodResolver(CaseDetailsSchema),
-    defaultValues: {
-      regionDistrict: caseDetails?.data.regionDistrict || "",
-      base: caseDetails?.data.base || "",
-      province: caseDetails?.data.province || "",
-      vehicle:
-        caseDetails?.data.vehicle ||
-        (crew
-          ? {
-              id: crew[0].crew.vehicleId,
-              name: crew[0].crew.vehicleId,
-              license: crew[0].crew.vehicleId,
-              registrationNumber: crew[0].crew.vehicleId,
-            }
-          : {
-              id: "",
-              name: "",
-              license: "",
-              registrationNumber: "",
-            }),
-      dateOfCase:
-        action === "create"
-          ? new Date()
-          : caseDetails?.data.dateOfCase
-            ? new Date(caseDetails.data.dateOfCase)
-            : new Date(),
+    mode: "onChange",
+    defaultValues: async () => {
+      const section = await ensurePRFResponseSectionByName(
+        qc,
+        prfResponseId,
+        "case_details",
+      );
+      const data = section.data;
+      return {
+        ...data,
+        vehicle: {
+          id: data.vehicle?.id ?? crew?.[0]?.crew?.vehicleId ?? "",
+          name: data.vehicle?.name ?? "",
+          license: data.vehicle?.license ?? "",
+          registrationNumber: data.vehicle?.registrationNumber ?? "",
+        },
+        dateOfCase: data.dateOfCase ? new Date(data.dateOfCase) : new Date(),
+      };
     },
   });
 
   const onSubmit = async (values: z.infer<typeof CaseDetailsSchema>) => {
+    console.log("submitting");
     if (!session?.user.id) {
       toast.error("No Employee Information Found", {
         duration: 3000,
@@ -101,52 +129,26 @@ const PRFEditSummary = ({
       return;
     }
 
-    const caseDetails: PRF_FORM_CASE_DETAILS = {
-      ...values,
-    };
-
-    if (action === "create") {
-      // TODO: This needs to be updated and reviewed
-      createPrfQuery.mutate({
-        case_details: {
-          data: caseDetails,
-          isOptional: false,
-          isCompleted: true,
+    const caseDetails: PRF_FORM_CASE_DETAILS = { ...values };
+    console.log(caseDetails);
+    updatePrfQuery.mutate(
+      { data: caseDetails, isCompleted: true },
+      {
+        onSuccess: () => dialogCloseRef.current?.click(),
+        onError: (error) => {
+          console.log(error);
         },
-      });
-      // } else {
-      //   updatePrfQuery.mutate({
-      //     prfFormId: initialData?.prfFormId,
-      //     prfData: { case_details: prf.prfData.case_details },
-      //   } as PRF_FORM);
-      //TODO: Add update case details
-    }
-    dialogCloseRef.current?.click();
+      },
+    );
   };
-  const onSkipForNow = async () => {
-    if (!session?.user.id) {
-      toast.error("No Employee Information Found", {
-        duration: 3000,
-        position: "top-right",
-      });
-      return;
-    }
 
-    if (action === "create") {
-      createPrfQuery.mutate({});
-    }
-    dialogCloseRef.current?.click();
-  };
+  const isSubmitting = updatePrfQuery.isPending;
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant={action == "edit" ? "outline" : "default"}>
-          {action == "create" ? (
-            <Plus className="mr-2" />
-          ) : (
-            <FileEdit className="mr-2" />
-          )}
+        <Button variant={"outline"}>
+          <FileEdit className="mr-2" />
           {buttonTitle}
         </Button>
       </DialogTrigger>
@@ -157,14 +159,17 @@ const PRFEditSummary = ({
         <DialogHeader>
           <DialogTitle>Patient Report Form Case Details</DialogTitle>
           <DialogDescription>
-            {action == "edit"
-              ? "Edit the Patient Report Form Case Details"
-              : "Create a new Patient Report Form Case Details"}
+            Edit the Patient Report Form Case Details
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(onSubmit)}
+            onSubmit={(e) => {
+              e.preventDefault();
+              console.log("🌟", form.getValues());
+              console.log("🚀", form.formState.errors);
+              form.handleSubmit(onSubmit)();
+            }}
             className="flex flex-col space-y-8"
           >
             <div className="grid grid-cols-2 gap-6">
@@ -181,6 +186,7 @@ const PRFEditSummary = ({
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="base"
@@ -194,6 +200,7 @@ const PRFEditSummary = ({
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="province"
@@ -216,6 +223,7 @@ const PRFEditSummary = ({
                     <FormLabel>
                       Date of Case
                       <span className="text-xs text-muted-foreground">
+                        {" "}
                         (mm/dd/yyyy)
                       </span>
                     </FormLabel>
@@ -225,9 +233,18 @@ const PRFEditSummary = ({
                         value={
                           field.value
                             ? new CalendarDate(
-                                field.value.getFullYear(),
-                                field.value.getMonth() + 1,
-                                field.value.getDate(),
+                                (field.value instanceof Date
+                                  ? field.value
+                                  : new Date(field.value)
+                                ).getFullYear(),
+                                (field.value instanceof Date
+                                  ? field.value
+                                  : new Date(field.value)
+                                ).getMonth() + 1,
+                                (field.value instanceof Date
+                                  ? field.value
+                                  : new Date(field.value)
+                                ).getDate(),
                               )
                             : null
                         }
@@ -254,67 +271,49 @@ const PRFEditSummary = ({
                 )}
               />
 
-              <div className="col-span-2">
+              <div className="col-span-2 grid grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
-                  name="vehicle"
+                  name="vehicle.id"
+                  render={({ field }) => <input type="hidden" {...field} />}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="vehicle.name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Vehicle Information</FormLabel>
+                      <FormLabel>Vehicle Name</FormLabel>
                       <FormControl>
-                        <div className="grid grid-cols-3 gap-4">
-                          <div className="space-y-2">
-                            <FormLabel className="text-sm">
-                              Vehicle Name
-                            </FormLabel>
-                            <Input
-                              placeholder="Vehicle Name"
-                              value={field.value.name}
-                              onChange={(e) =>
-                                field.onChange({
-                                  ...field.value,
-                                  name: e.target.value,
-                                })
-                              }
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <FormLabel className="text-sm">License</FormLabel>
-                            <Input
-                              placeholder="License"
-                              value={field.value.license}
-                              onChange={(e) =>
-                                field.onChange({
-                                  ...field.value,
-                                  license: e.target.value,
-                                })
-                              }
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <FormLabel className="text-sm">
-                              Registration Number
-                            </FormLabel>
-                            <Input
-                              placeholder="Registration Number"
-                              value={field.value.registrationNumber}
-                              onChange={(e) =>
-                                field.onChange({
-                                  ...field.value,
-                                  registrationNumber: e.target.value,
-                                })
-                              }
-                            />
-                          </div>
-                        </div>
+                        <Input placeholder="Vehicle Name" {...field} />
                       </FormControl>
                       <FormMessage />
-                      {crew && field.value.id !== crew[0].crew.vehicleId && (
-                        <p className="mt-2 text-xs text-muted-foreground">
-                          Note: This vehicle differs from your assigned vehicle
-                          ({crew[0].crew.vehicleId})
-                        </p>
-                      )}
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="vehicle.license"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>License</FormLabel>
+                      <FormControl>
+                        <Input placeholder="License" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="vehicle.registrationNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Registration Number</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Registration Number" {...field} />
+                      </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -323,28 +322,17 @@ const PRFEditSummary = ({
 
             <DialogFooter>
               <Button
-                disabled={
-                  form.formState.isDirty === false || createPrfQuery.isReady
-                }
+                disabled={isSubmitting || !form.formState.isDirty}
                 type="submit"
               >
-                {createPrfQuery.isPending || updatePrfQuery.isPending ? (
+                {isSubmitting ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving
+                    <Loader className="mr-2 h-4 w-4 animate-spin" /> Saving
                   </>
-                ) : action === "edit" ? (
-                  "Update PRF Summary"
                 ) : (
-                  "Create PRF"
+                  "Update Case Details"
                 )}
               </Button>
-              {action == "create" && (
-                <DialogClose asChild>
-                  <Button variant={"outline"} onClick={onSkipForNow}>
-                    <MoveRight className="mr-2 h-4 w-4" /> Skip For Now
-                  </Button>
-                </DialogClose>
-              )}
             </DialogFooter>
           </form>
         </Form>
@@ -354,4 +342,21 @@ const PRFEditSummary = ({
   );
 };
 
-export default PRFEditSummary;
+/* ------------------------------ Default wrapper ------------------------------ */
+type WrapperProps = (CreateProps | EditProps) & { prfResponseId?: string };
+
+const PRFCaseDetailsDialog = (props: WrapperProps) => {
+  if (props.action === "edit" && props.prfResponseId) {
+    return (
+      <EditCaseDetailsDialog
+        buttonTitle={props.buttonTitle}
+        action="edit"
+        prfResponseId={props.prfResponseId}
+      />
+    );
+  }
+  return <CreatePRFButton buttonTitle={props.buttonTitle} action="create" />;
+};
+
+export { CreatePRFButton, EditCaseDetailsDialog };
+export default PRFCaseDetailsDialog;
