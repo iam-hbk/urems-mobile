@@ -21,8 +21,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
+import { useUpdatePrfResponse } from "@/hooks/prf/usePrfForms";
 import { PRF_FORM } from "@/interfaces/prf-form";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -31,122 +30,51 @@ import { TimePicker } from "@/components/ui/time-picker";
 import { DatePicker, Group } from "react-aria-components";
 import { CalendarDate } from "@internationalized/date";
 import { DateInput } from "../ui/datefield-rac";
+import { useQueryClient } from "@tanstack/react-query";
+import { ensurePRFResponseSectionByName } from "@/hooks/prf/usePrfForms";
 
 export default function AssessmentForm() {
   const prfId = usePathname().split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId,
-  );
+  const qc = useQueryClient();
 
-  const updatePrfQuery = useUpdatePrf();
+  const updatePrfQuery = useUpdatePrfResponse(prfId, "assessments");
   const router = useRouter();
 
   const form = useForm<AssessmentsType>({
     resolver: zodResolver(AssessmentsSchema),
-    values: prf_from_store?.prfData?.assessments?.data,
-    defaultValues: prf_from_store?.prfData?.assessments?.data || {
-      neuroAssessment: {
-        cincinnatiScale: {
-          armDrift: false,
-          facialDroop: false,
-          slurredSpeech: false,
-        },
-        seizure: { tonic: false, clonic: false, petite: false },
-        acuteDelirium: false,
-        aphasia: false,
-        incontinence: { urine: false, stool: false },
-        stupor: false,
-        syncopeEvents: false,
-      },
-      neuroConditions: [],
-      abdominalAssessment: {
-        urineOutput: {
-          burning: false,
-          darkYellow: false,
-          normal: false,
-          blood: false,
-          poly: false,
-          noOutput: false,
-          ihtFoleyCath: false,
-          uo: "",
-        },
-        hx: [],
-        git: [],
-        gastroenteritis: false,
-        hematemesis: false,
-        melaenaStool: false,
-        pegTube: false,
-        diarrhoea: false,
-        emesis: false,
-        emesisAmount: "",
-        emesisDays: "",
-        pain: [],
-        contractions: { mild: false, mod: false, severe: false, amount: "" },
-        pregnant: false,
-        twinPregnancy: false,
-        paraGravida: "",
-        discharge: false,
-        pvBleeding: false,
-        lastDrVisit: new Date(),
-        gestation: "",
-      },
-      painAssessment: {
-        provocation: {
-          onsetDuringExertion: false,
-          duringRest: false,
-          wokenByPain: false,
-          onsetDuringMild: false,
-          onsetDuringMod: false,
-          onsetDuringActivity: false,
-        },
-        quality: [],
-        radiating: {
-          yes: false,
-          lArm: false,
-          rArm: false,
-          face: false,
-          back: false,
-          leg: false,
-        },
-        severity: { atOnset: "", current: "" },
-        timeOfOnset: "",
-        negativeMurphysSign: false,
-      },
-      cardiacRiskFactors: [],
-      signsOfDehydration: [],
-      signsOfAcuteCoronarySyndrome: [],
+    defaultValues: async () => {
+      const assessments = await ensurePRFResponseSectionByName(
+        qc,
+        prfId,
+        "assessments",
+      );
+      return assessments.data;
     },
   });
 
   function onSubmit(values: AssessmentsType) {
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        ...prf_from_store?.prfData,
-        assessments: {
-          data: values,
-          isCompleted: true,
-          isOptional: false,
+    updatePrfQuery.mutate(
+      {
+        data: values,
+        isCompleted: true,
+        isOptional: false,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Assessment Information Updated", {
+            duration: 3000,
+            position: "top-right",
+          });
+          router.push(`/edit-prf/${prfId}`);
+        },
+        onError: () => {
+          toast.error("An error occurred", {
+            duration: 3000,
+            position: "top-right",
+          });
         },
       },
-      EmployeeID: prf_from_store?.EmployeeID || "2",
-    };
-
-    updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: () => {
-        toast.success("Assessment Information Updated", {
-          duration: 3000,
-          position: "top-right",
-        });
-        router.push(`/edit-prf/${prfId}`);
-      },
-      onError: () => {
-        toast.error("An error occurred", {
-          duration: 3000,
-          position: "top-right",
-        });
-      },
-    });
+    );
   }
 
   // Add this function to handle form errors
@@ -228,7 +156,139 @@ export default function AssessmentForm() {
                 )}
               />
 
-              {/* Add more fields for Neuro Assessment here */}
+              {/* Seizure Assessment */}
+              <FormField
+                control={form.control}
+                name="neuroAssessment.seizure"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Seizure Assessment</FormLabel>
+                    <div className="flex flex-wrap gap-4">
+                      {["tonic", "clonic", "petite"].map((item) => (
+                        <FormField
+                          key={item}
+                          control={form.control}
+                          name={`neuroAssessment.seizure.${item}` as FieldPath<AssessmentsType>}
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                              <FormControl>
+                                <Checkbox
+                                  checked={!!field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal">
+                                {item.charAt(0).toUpperCase() + item.slice(1)}
+                              </FormLabel>
+                            </FormItem>
+                          )}
+                        />
+                      ))}
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              {/* Acute Delirium */}
+              <FormField
+                control={form.control}
+                name="neuroAssessment.acuteDelirium"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={!!field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal">Acute Delirium</FormLabel>
+                  </FormItem>
+                )}
+              />
+
+              {/* Aphasia */}
+              <FormField
+                control={form.control}
+                name="neuroAssessment.aphasia"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={!!field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal">Aphasia</FormLabel>
+                  </FormItem>
+                )}
+              />
+
+              {/* Incontinence */}
+              <FormField
+                control={form.control}
+                name="neuroAssessment.incontinence"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Incontinence</FormLabel>
+                    <div className="flex flex-wrap gap-4">
+                      {["urine", "stool"].map((item) => (
+                        <FormField
+                          key={item}
+                          control={form.control}
+                          name={`neuroAssessment.incontinence.${item}` as FieldPath<AssessmentsType>}
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                              <FormControl>
+                                <Checkbox
+                                  checked={!!field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal">
+                                {item.charAt(0).toUpperCase() + item.slice(1)}
+                              </FormLabel>
+                            </FormItem>
+                          )}
+                        />
+                      ))}
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              {/* Stupor */}
+              <FormField
+                control={form.control}
+                name="neuroAssessment.stupor"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={!!field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal">Stupor</FormLabel>
+                  </FormItem>
+                )}
+              />
+
+              {/* Syncope Events */}
+              <FormField
+                control={form.control}
+                name="neuroAssessment.syncopeEvents"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={!!field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal">Syncope Events</FormLabel>
+                  </FormItem>
+                )}
+              />
             </AccordionContent>
           </AccordionItem>
 
@@ -569,6 +629,45 @@ export default function AssessmentForm() {
                     />
                   ))}
                 </div>
+              </div>
+
+              {/* Contractions */}
+              <div className="space-y-4">
+                <FormLabel className="text-base">Contractions</FormLabel>
+                <div className="grid grid-cols-2 gap-4">
+                  {(["mild", "mod", "severe"] as const).map((item) => (
+                    <FormField
+                      key={item}
+                      control={form.control}
+                      name={`abdominalAssessment.contractions.${item}` as const}
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={!!field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormLabel className="font-normal">
+                            {item === "mod" ? "Moderate" : item.charAt(0).toUpperCase() + item.slice(1)}
+                          </FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                </div>
+                <FormField
+                  control={form.control}
+                  name="abdominalAssessment.contractions.amount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Amount</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="text" />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
               </div>
 
               {/* Pregnancy Related */}
