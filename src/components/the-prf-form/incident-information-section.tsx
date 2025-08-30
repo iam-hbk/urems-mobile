@@ -31,7 +31,7 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 
 import { toast } from "sonner";
-import AddressAutoComplete from "@/components/AddressAutoComplete";
+import { AddressInput } from "@/components/address-input";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader } from "lucide-react";
 
@@ -147,10 +147,14 @@ const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
               </h4>
             </AccordionTrigger>
             <AccordionContent className="grid gap-3 px-4 sm:grid-cols-2 lg:grid-cols-3">
-              <AddressAutoComplete
+              <AddressInput
                 name="sceneAddress"
+                control={form.control}
                 label="Scene Address"
                 placeholder="Scene Address"
+                disabled={updatePrfQuery.isPending}
+                className="col-span-full"
+                useFullAddressAsValueOnly={true}
               />
               <FormField
                 control={form.control}
@@ -195,11 +199,17 @@ const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
           </AccordionItem>
           {/* Submit form */}
           <Button
-            disabled={form.formState.isDirty === false || form.formState.isSubmitting}
+            disabled={
+              form.formState.isDirty === false || updatePrfQuery.isPending
+            }
             type="submit"
             className="self-end"
+            onClick={() => {
+              console.log("form.getValues() 🚀", form.getValues());
+              console.log("form.formState.errors 🚀", form.formState.errors);
+            }}
           >
-            {form.formState.isSubmitting ? (
+            {form.formState.isSubmitting || updatePrfQuery.isPending ? (
               <>
                 <Loader className="mr-2 h-4 w-4 animate-spin" /> Saving
               </>
