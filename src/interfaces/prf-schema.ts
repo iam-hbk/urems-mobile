@@ -659,7 +659,7 @@ export const ProceduresSchema = z.object({
 });
 export type ProceduresType = z.infer<typeof ProceduresSchema>;
 
-const RespiratoryDistressSchema = z.object({
+export const RespiratoryDistressSchema = z.object({
   hx: z.array(
     z.enum([
       "Asthma",

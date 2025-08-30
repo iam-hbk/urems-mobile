@@ -1,6 +1,8 @@
 "use client";
+
+import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, SubmitErrorHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -11,11 +13,13 @@ import {
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
-import { PRF_FORM } from "@/interfaces/prf-form";
+import {
+  ensurePRFResponseSectionByName,
+  useUpdatePrfResponse,
+} from "@/hooks/prf/usePrfForms";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { RespiratoryDistressSchema } from "@/interfaces/prf-schema";
+import { Loader } from "lucide-react";
 import { z } from "zod";
 import {
   Accordion,
@@ -24,65 +28,7 @@ import {
   AccordionTrigger,
 } from "../ui/accordion";
 import { cn } from "@/lib/utils";
-import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
-
-const RespiratoryDistressSchema = z.object({
-  hx: z.array(
-    z.enum([
-      "Asthma",
-      "COPD",
-      "Emphysema",
-      "Hx of Pulmonary Emboli",
-      "Lung Cancer",
-      "Prone to Chest Infections / Pneumonia",
-      "Pulmonary TB",
-      "COVID +",
-    ]),
-  ),
-  riskFactorsForPulmEmbolus: z.array(
-    z.enum([
-      "Taking Contraceptives",
-      "Hx of DVTs",
-      "Recent: Long Distance Travel",
-      "Fracture",
-      "Recently given birth",
-    ]),
-  ),
-  additionalFindings: z.array(
-    z.enum([
-      "Accessory Muscles Use",
-      "Audible Wheezes",
-      "Audible Stridor",
-      "Apnea",
-      "On Home O2",
-      "Coughing: Wet",
-      "Coughing: Dry",
-      "Dyspnoea Not Relieved by Prescribed Medication",
-      "Guards Depth of Breathing",
-      "Hyperventilation",
-      "Inability to Talk",
-      "Kussmaul",
-      "Recent Flu",
-      "Severe Drooling",
-      "Signs of Respiratory Fatigue",
-      "Soot in Mouth",
-      "Tachypnoea",
-      "Tripod Position",
-      "Talks in Phrases",
-      "Uses Single Words Only",
-    ]),
-  ),
-  infant: z.array(
-    z.enum([
-      "Chest Recession",
-      "Grunting",
-      "Irritable",
-      "Prem Baby: Respiratory Distress Syndrome",
-      "Congenital Abnormality",
-      "Hyaline Membrane Disease",
-    ]),
-  ),
-});
+import { useQueryClient } from "@tanstack/react-query";
 
 type RespiratoryDistressType = z.infer<typeof RespiratoryDistressSchema>;
 type AdditionalFindingsOption =
@@ -90,83 +36,56 @@ type AdditionalFindingsOption =
 
 export default function RespiratoryDistressAssessmentForm() {
   const prfId = usePathname().split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId,
-  );
+  const qc = useQueryClient();
 
-  const updatePrfQuery = useUpdatePrf();
+  const updatePrfQuery = useUpdatePrfResponse(prfId, "respiratory_distress");
   const router = useRouter();
-
-  const { zsEmployee } = useZuStandEmployeeStore();
 
   const form = useForm<RespiratoryDistressType>({
     resolver: zodResolver(RespiratoryDistressSchema),
-    defaultValues: prf_from_store?.prfData?.respiratory_distress?.data || {
-      hx: [],
-      riskFactorsForPulmEmbolus: [],
-      additionalFindings: [],
-      infant: [],
+    mode: "all",
+    defaultValues: async () => {
+      const section = await ensurePRFResponseSectionByName(
+        qc,
+        prfId,
+        "respiratory_distress",
+      );
+      return {
+        ...section.data,
+        hx: section.data.hx || [],
+        riskFactorsForPulmEmbolus: section.data.riskFactorsForPulmEmbolus || [],
+        additionalFindings: section.data.additionalFindings || [],
+        infant: section.data.infant || [],
+      };
     },
   });
 
   function onSubmit(values: RespiratoryDistressType) {
-    if (!zsEmployee) {
-      // no needed .. just for building
-      return;
-    }
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        ...prf_from_store?.prfData,
-        respiratory_distress: {
-          data: values,
-          isCompleted: true,
-          isOptional: false,
+    updatePrfQuery.mutate(
+      { data: values, isCompleted: true },
+      {
+        onSuccess: () => {
+          toast.success("Respiratory Distress Assessment Updated", {
+            duration: 3000,
+            position: "top-right",
+          });
+          router.push(`/edit-prf/${prfId}`);
+        },
+        onError: () => {
+          toast.error("An error occurred", {
+            duration: 3000,
+            position: "top-right",
+          });
         },
       },
-      EmployeeID: zsEmployee.id || "2", // fallback
-    };
-
-    updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: () => {
-        toast.success("Respiratory Distress Assessment Updated", {
-          duration: 3000,
-          position: "top-right",
-        });
-        router.push(`/edit-prf/${prfId}`);
-      },
-      onError: () => {
-        toast.error("An error occurred", {
-          duration: 3000,
-          position: "top-right",
-        });
-      },
-    });
+    );
   }
-
-  const onError: SubmitErrorHandler<RespiratoryDistressType> = (errors) => {
-    const firstMessage =
-      Object.values(errors)
-        .map((err) => {
-          if (err && typeof err === "object" && "message" in err) {
-            const maybeMessage = (err as { message?: unknown }).message;
-            return typeof maybeMessage === "string" ? maybeMessage : null;
-          }
-          return null;
-        })
-        .find(Boolean) || "Please fill in all required fields";
-
-    toast.error(firstMessage, {
-      duration: 3000,
-      position: "top-right",
-    });
-  };
 
   return (
     <Form {...form}>
       <Accordion type="single" collapsible defaultValue="hx">
         <form
-          onSubmit={form.handleSubmit(onSubmit, onError)}
+          onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-8"
         >
           <div className="flex items-center justify-between">
@@ -223,13 +142,33 @@ export default function RespiratoryDistressAssessmentForm() {
                                       | "COVID +",
                                   )}
                                   onCheckedChange={(checked) => {
-                                    return checked
-                                      ? field.onChange([...field.value, item])
-                                      : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== item,
-                                          ),
-                                        );
+                                    const currentValue = Array.isArray(field.value)
+                                      ? field.value
+                                      : [];
+
+                                    if (checked) {
+                                      if (
+                                        !currentValue.includes(
+                                          item as
+                                            | "Asthma"
+                                            | "COPD"
+                                            | "Emphysema"
+                                            | "Hx of Pulmonary Emboli"
+                                            | "Lung Cancer"
+                                            | "Prone to Chest Infections / Pneumonia"
+                                            | "Pulmonary TB"
+                                            | "COVID +",
+                                        )
+                                      ) {
+                                        field.onChange([...currentValue, item]);
+                                      }
+                                    } else {
+                                      field.onChange(
+                                        currentValue.filter(
+                                          (value) => value !== item,
+                                        ),
+                                      );
+                                    }
                                   }}
                                 />
                               </FormControl>
@@ -291,13 +230,30 @@ export default function RespiratoryDistressAssessmentForm() {
                                         | "Recently given birth",
                                     )}
                                     onCheckedChange={(checked) => {
-                                      return checked
-                                        ? field.onChange([...field.value, item])
-                                        : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== item,
-                                            ),
-                                          );
+                                      const currentValue = Array.isArray(field.value)
+                                        ? field.value
+                                        : [];
+
+                                      if (checked) {
+                                        if (
+                                          !currentValue.includes(
+                                            item as
+                                              | "Taking Contraceptives"
+                                              | "Hx of DVTs"
+                                              | "Recent: Long Distance Travel"
+                                              | "Fracture"
+                                              | "Recently given birth",
+                                          )
+                                        ) {
+                                          field.onChange([...currentValue, item]);
+                                        }
+                                      } else {
+                                        field.onChange(
+                                          currentValue.filter(
+                                            (value) => value !== item,
+                                          ),
+                                        );
+                                      }
                                     }}
                                   />
                                 </FormControl>
@@ -320,7 +276,7 @@ export default function RespiratoryDistressAssessmentForm() {
             <AccordionTrigger
               className={cn({
                 "text-destructive":
-                  form.formState.errors.riskFactorsForPulmEmbolus,
+                  form.formState.errors.additionalFindings,
                 "p-2": true,
               })}
             >
@@ -372,13 +328,25 @@ export default function RespiratoryDistressAssessmentForm() {
                                       item as AdditionalFindingsOption,
                                     )}
                                     onCheckedChange={(checked) => {
-                                      return checked
-                                        ? field.onChange([...field.value, item])
-                                        : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== item,
-                                            ),
-                                          );
+                                      const currentValue = Array.isArray(field.value)
+                                        ? field.value
+                                        : [];
+
+                                      if (checked) {
+                                        if (
+                                          !currentValue.includes(
+                                            item as AdditionalFindingsOption,
+                                          )
+                                        ) {
+                                          field.onChange([...currentValue, item]);
+                                        }
+                                      } else {
+                                        field.onChange(
+                                          currentValue.filter(
+                                            (value) => value !== item,
+                                          ),
+                                        );
+                                      }
                                     }}
                                   />
                                 </FormControl>
@@ -400,8 +368,7 @@ export default function RespiratoryDistressAssessmentForm() {
           <AccordionItem value="infant">
             <AccordionTrigger
               className={cn({
-                "text-destructive":
-                  form.formState.errors.riskFactorsForPulmEmbolus,
+                "text-destructive": form.formState.errors.infant,
                 "p-2": true,
               })}
             >
@@ -444,13 +411,31 @@ export default function RespiratoryDistressAssessmentForm() {
                                         | "Hyaline Membrane Disease",
                                     )}
                                     onCheckedChange={(checked) => {
-                                      return checked
-                                        ? field.onChange([...field.value, item])
-                                        : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== item,
-                                            ),
-                                          );
+                                      const currentValue = Array.isArray(field.value)
+                                        ? field.value
+                                        : [];
+
+                                      if (checked) {
+                                        if (
+                                          !currentValue.includes(
+                                            item as
+                                              | "Chest Recession"
+                                              | "Grunting"
+                                              | "Irritable"
+                                              | "Prem Baby: Respiratory Distress Syndrome"
+                                              | "Congenital Abnormality"
+                                              | "Hyaline Membrane Disease",
+                                          )
+                                        ) {
+                                          field.onChange([...currentValue, item]);
+                                        }
+                                      } else {
+                                        field.onChange(
+                                          currentValue.filter(
+                                            (value) => value !== item,
+                                          ),
+                                        );
+                                      }
                                     }}
                                   />
                                 </FormControl>
@@ -472,11 +457,11 @@ export default function RespiratoryDistressAssessmentForm() {
           <Button
             type="submit"
             disabled={!form.formState.isDirty}
-            className="w-full sm:w-auto"
+            className="w-full self-end sm:w-auto"
           >
             {form.formState.isSubmitting || updatePrfQuery.isPending ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving
+                <Loader className="mr-2 h-4 w-4 animate-spin" /> Saving
               </>
             ) : (
               "Save Respiratory Distress Assessment"
