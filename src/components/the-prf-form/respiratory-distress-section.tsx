@@ -84,10 +84,7 @@ export default function RespiratoryDistressAssessmentForm() {
   return (
     <Form {...form}>
       <Accordion type="single" collapsible defaultValue="hx">
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-8"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <div className="flex items-center justify-between">
             <div className="scroll-m-20 text-2xl font-semibold tracking-tight">
               Respiratory Distress Assessment
@@ -142,7 +139,9 @@ export default function RespiratoryDistressAssessmentForm() {
                                       | "COVID +",
                                   )}
                                   onCheckedChange={(checked) => {
-                                    const currentValue = Array.isArray(field.value)
+                                    const currentValue = Array.isArray(
+                                      field.value,
+                                    )
                                       ? field.value
                                       : [];
 
@@ -230,7 +229,9 @@ export default function RespiratoryDistressAssessmentForm() {
                                         | "Recently given birth",
                                     )}
                                     onCheckedChange={(checked) => {
-                                      const currentValue = Array.isArray(field.value)
+                                      const currentValue = Array.isArray(
+                                        field.value,
+                                      )
                                         ? field.value
                                         : [];
 
@@ -245,7 +246,10 @@ export default function RespiratoryDistressAssessmentForm() {
                                               | "Recently given birth",
                                           )
                                         ) {
-                                          field.onChange([...currentValue, item]);
+                                          field.onChange([
+                                            ...currentValue,
+                                            item,
+                                          ]);
                                         }
                                       } else {
                                         field.onChange(
@@ -275,8 +279,7 @@ export default function RespiratoryDistressAssessmentForm() {
           <AccordionItem value="In Addition to A/E Findings">
             <AccordionTrigger
               className={cn({
-                "text-destructive":
-                  form.formState.errors.additionalFindings,
+                "text-destructive": form.formState.errors.additionalFindings,
                 "p-2": true,
               })}
             >
@@ -328,7 +331,9 @@ export default function RespiratoryDistressAssessmentForm() {
                                       item as AdditionalFindingsOption,
                                     )}
                                     onCheckedChange={(checked) => {
-                                      const currentValue = Array.isArray(field.value)
+                                      const currentValue = Array.isArray(
+                                        field.value,
+                                      )
                                         ? field.value
                                         : [];
 
@@ -338,7 +343,10 @@ export default function RespiratoryDistressAssessmentForm() {
                                             item as AdditionalFindingsOption,
                                           )
                                         ) {
-                                          field.onChange([...currentValue, item]);
+                                          field.onChange([
+                                            ...currentValue,
+                                            item,
+                                          ]);
                                         }
                                       } else {
                                         field.onChange(
@@ -411,7 +419,9 @@ export default function RespiratoryDistressAssessmentForm() {
                                         | "Hyaline Membrane Disease",
                                     )}
                                     onCheckedChange={(checked) => {
-                                      const currentValue = Array.isArray(field.value)
+                                      const currentValue = Array.isArray(
+                                        field.value,
+                                      )
                                         ? field.value
                                         : [];
 
@@ -427,7 +437,10 @@ export default function RespiratoryDistressAssessmentForm() {
                                               | "Hyaline Membrane Disease",
                                           )
                                         ) {
-                                          field.onChange([...currentValue, item]);
+                                          field.onChange([
+                                            ...currentValue,
+                                            item,
+                                          ]);
                                         }
                                       } else {
                                         field.onChange(
@@ -455,7 +468,11 @@ export default function RespiratoryDistressAssessmentForm() {
           </AccordionItem>
 
           <Button
-            type="submit"
+            // type="submit"
+            onClick={() => {
+              console.log("FORM ERRORS -> ", form.formState.errors);
+              console.log("FORM VALUES -> ", form.getValues());
+            }}
             disabled={!form.formState.isDirty}
             className="w-full self-end sm:w-auto"
           >

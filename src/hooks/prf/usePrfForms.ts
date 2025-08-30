@@ -220,6 +220,7 @@ export function useUpdatePrfResponse<T extends SectionName>(
 
   return useMutation({
     mutationFn: (data: SectionDataTypeMap[T]) => {
+      console.log(`DATA[${sectionName}] -> `, data);
       return updatePrfResponse(prfResponseId, sectionName, data);
     },
     onSuccess: (result) => {
