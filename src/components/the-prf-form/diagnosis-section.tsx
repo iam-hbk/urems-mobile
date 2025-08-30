@@ -45,14 +45,16 @@ export default function DiagnosisForm() {
         prfId,
         "diagnosis",
       );
-      console.log("[][][][][]section", section);
       return {
         ...section.data,
         priorityType:
           (section.data.priorityType ?? "").length > 0
             ? section.data.priorityType
             : "color",
-        
+        priority:
+          (section.data.priority ?? "").length > 0
+            ? section.data.priority
+            : "red",
         poisoning: section.data.poisoning || false,
         symptoms: section.data.symptoms || [],
       };

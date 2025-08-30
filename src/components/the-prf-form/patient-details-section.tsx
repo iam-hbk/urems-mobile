@@ -24,7 +24,6 @@ import {
   useUpdatePrfResponse,
 } from "@/hooks/prf/usePrfForms";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
 import {
   Accordion,
   AccordionContent,
@@ -75,7 +74,11 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
         prfId,
         "patient_details",
       );
-      const data = section.data;
+      const data = {
+        ...section.data,
+        ageUnit:
+          section.data.ageUnit.length > 0 ? section.data.ageUnit : "years",
+      };
 
       const defaultValuesObj = {
         patientName: "",

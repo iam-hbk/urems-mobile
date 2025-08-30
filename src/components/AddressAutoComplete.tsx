@@ -138,15 +138,14 @@ const AddressAutoComplete: React.FC<AddressAutoCompleteProps> = ({
   useEffect(() => {
     if (isGoogleMapsLoaded && !loadError) {
       autocompleteRef.current = new google.maps.places.AutocompleteService();
-      // handle Current Location call only if the default value is empty
-      if (!currentValue && useCurrentLocation) {
+      // Only auto-get location on first load when no value exists and user hasn't started editing
+      if (!currentValue && useCurrentLocation && !isEditing) {
         handleUseCurrentLocation();
       }
     }
   }, [
     isGoogleMapsLoaded,
     loadError,
-    currentValue,
     useCurrentLocation,
     handleUseCurrentLocation,
   ]);
@@ -198,7 +197,7 @@ const AddressAutoComplete: React.FC<AddressAutoCompleteProps> = ({
                 }
                 onChange={(e) => {
                   field.onChange(e);
-                  setIsEditing(true);
+                  setIsEditing(true); // Set editing state immediately when user types
                   if (e.target.value.length >= 2) {
                     setIsOpen(true);
                   } else {
@@ -254,6 +253,7 @@ const AddressAutoComplete: React.FC<AddressAutoCompleteProps> = ({
                       });
                       setSuggestions([]);
                       setIsOpen(false);
+                      setIsEditing(false); // Reset editing state to prevent auto-location from triggering again
                       if (inputRef.current) {
                         inputRef.current.focus();
                       }

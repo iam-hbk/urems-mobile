@@ -902,10 +902,10 @@ export const PatientHandoverSchema = z.object({
   date: z.date({ message: "Date is required" }),
   patientSignature: z.string({
     message: "Patient Signature is required",
-  }),
+  }).min(1, { message: "Patient Signature is required" }),
   witnessSignature: z.string({
     message: "Witness Signature is required",
-  }),
+  }).min(1, { message: "Witness Signature is required" }),
 });
 export type PatientHandoverType = z.infer<typeof PatientHandoverSchema>;
 

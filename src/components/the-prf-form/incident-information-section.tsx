@@ -24,11 +24,16 @@ import {
 import { cn } from "@/lib/utils";
 import { IncidentInformationSchema } from "@/interfaces/prf-schema";
 import { PRF_FORM } from "@/interfaces/prf-form";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
+import {
+  ensurePRFResponseSectionByName,
+  useUpdatePrfResponse,
+} from "@/hooks/prf/usePrfForms";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
+
 import { toast } from "sonner";
 import AddressAutoComplete from "@/components/AddressAutoComplete";
+import { useQueryClient } from "@tanstack/react-query";
+import { Loader } from "lucide-react";
 
 export type IncidentInformationType = z.infer<typeof IncidentInformationSchema>;
 
@@ -38,55 +43,50 @@ type IncidentInformationFormProps = {
 
 const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
   const prfId = usePathname().split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId,
-  );
+  const qc = useQueryClient();
 
-  const updatePrfQuery = useUpdatePrf();
+  const updatePrfQuery = useUpdatePrfResponse(prfId, "incident_information");
   const router = useRouter();
   const form = useForm<IncidentInformationType>({
     resolver: zodResolver(IncidentInformationSchema),
-    defaultValues: {
-      sceneAddress:
-        prf_from_store?.prfData.incident_information?.data.sceneAddress || "",
-      dispatchInfo:
-        prf_from_store?.prfData.incident_information?.data.dispatchInfo || "",
-      onArrival:
-        prf_from_store?.prfData.incident_information?.data.onArrival || "",
-      chiefComplaint:
-        prf_from_store?.prfData.incident_information?.data.chiefComplaint || "",
+    mode: "all",
+    defaultValues: async () => {
+      const section = await ensurePRFResponseSectionByName(
+        qc,
+        prfId,
+        "incident_information",
+      );
+      return {
+        sceneAddress: section.data.sceneAddress || "",
+        dispatchInfo: section.data.dispatchInfo || "",
+        onArrival: section.data.onArrival || "",
+        chiefComplaint: section.data.chiefComplaint || "",
+      };
     },
   });
 
   function onSubmit(values: IncidentInformationType) {
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        incident_information: {
-          data: values,
-          isCompleted: true,
-          isOptional: false,
+    updatePrfQuery.mutate(
+      {
+        data: values,
+        isCompleted: true,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Incident Information Updated", {
+            duration: 3000,
+            position: "top-right",
+          });
+          router.push(`/edit-prf/${prfId}`);
         },
-        ...prf_from_store?.prfData,
+        onError: () => {
+          toast.error("An error occurred", {
+            duration: 3000,
+            position: "top-right",
+          });
+        },
       },
-      EmployeeID: prf_from_store?.EmployeeID || "2",
-    };
-
-    updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: () => {
-        toast.success("Incident Information Updated", {
-          duration: 3000,
-          position: "top-right",
-        });
-        router.push(`/edit-prf/${prfId}`);
-      },
-      onError: () => {
-        toast.error("An error occurred", {
-          duration: 3000,
-          position: "top-right",
-        });
-      },
-    });
+    );
   }
 
   // Add this function to handle form errors
@@ -195,11 +195,17 @@ const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
           </AccordionItem>
           {/* Submit form */}
           <Button
-            disabled={form.formState.isDirty === false}
+            disabled={form.formState.isDirty === false || form.formState.isSubmitting}
             type="submit"
             className="self-end"
           >
-            Save
+            {form.formState.isSubmitting ? (
+              <>
+                <Loader className="mr-2 h-4 w-4 animate-spin" /> Saving
+              </>
+            ) : (
+              "Save"
+            )}
           </Button>
         </form>
       </Form>
