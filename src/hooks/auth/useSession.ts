@@ -41,17 +41,22 @@ export const useSessionQuery = () => {
   });
 };
 
-
-// 
+//
 // get current user
 export function useGetUser() {
-
   return useQuery({
-    queryKey: ['getUser'],
+    queryKey: ["getUser"],
     queryFn: async () => {
       const data = await getUser();
-      return data;
-    }
+      console.log("user-data", data);
+      return data.match(
+        (data) => data,
+        (e) => {
+          toast.error(`Error loading user: ${e.detail}`);
+          throw e;
+        },
+      );
+    },
   });
 }
 

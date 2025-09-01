@@ -21,14 +21,15 @@ import {
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
-import { PRF_FORM } from "@/interfaces/prf-form";
+import {
+  ensurePRFResponseSectionByName,
+  useUpdatePrfResponse,
+} from "@/hooks/prf/usePrfForms";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { SecondarySurveySchema } from "@/interfaces/prf-schema";
-import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 type SecondarySurveyType = z.infer<typeof SecondarySurveySchema>;
 
@@ -38,231 +39,44 @@ type SecondarySurveyType = z.infer<typeof SecondarySurveySchema>;
 
 export default function SecondarySurveyForm() {
   const prfId = usePathname().split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId,
-  );
+  const qc = useQueryClient();
 
-  const updatePrfQuery = useUpdatePrf();
+  const updatePrfQuery = useUpdatePrfResponse(prfId, "secondary_survey");
   const router = useRouter();
-  const { zsEmployee } = useZuStandEmployeeStore();
 
   const form = useForm<SecondarySurveyType>({
     resolver: zodResolver(SecondarySurveySchema),
-    values: prf_from_store?.prfData?.secondary_survey?.data,
-    defaultValues: prf_from_store?.prfData?.secondary_survey?.data || {
-      scalp: {
-        abrasion: false,
-        avulsion: false,
-        bruising: false,
-        burns: false,
-        deepWound: false,
-        GunShotWound: false,
-        PenetratingWound: false,
-        oedema: false,
-        laceration: false,
-        largeWound: false,
-        normal: false,
-      },
-      cranium: {
-        BOSFracture: false,
-        crepitus: false,
-        deformity: false,
-        fracture: false,
-        GunShotWound: false,
-        PenetratingWound: false,
-        frontal: false,
-        occipital: false,
-        parietal: false,
-        temporal: false,
-        normal: false,
-      },
-      face: {
-        abrasion: false,
-        anxious: false,
-        bloodInAirway: false,
-        bittenTongue: false,
-        bruising: false,
-        blind: false,
-        burns: false,
-        crepitus: false,
-        crying: false,
-        deformity: false,
-        deepWound: false,
-        epistaxis: false,
-        guarding: false,
-        GunShotWound: false,
-        PenetratingWound: false,
-        laceration: false,
-        largeWound: false,
-        orbitalInjury: false,
-        oedema: false,
-        normal: false,
-      },
-      neck: {
-        bruising: false,
-        burns: false,
-        crepitus: false,
-        deformity: false,
-        guarding: false,
-        laceration: false,
-        oedema: false,
-        penetratingWound: false,
-        normal: false,
-      },
-      spine: {
-        bruising: false,
-        crepitus: false,
-        deformity: false,
-        guarding: false,
-        GunShotWound: false,
-        PenetratingWound: false,
-        oedema: false,
-        penetratingWound: false,
-        sciaticPain: false,
-        normal: false,
-      },
-      chest: {
-        abrasion: false,
-        asymmetricalRiseAndFall: false,
-        bruising: false,
-        burns: false,
-        crepitus: false,
-        deformity: false,
-        dyspnoea: false,
-        flailSegment: false,
-        guardingPalpation: false,
-        guardingDepthOfBreathing: false,
-        GunShotWound: false,
-        PenetratingWound: false,
-        laceration: false,
-        oedema: false,
-        stabWound: false,
-        suckingWound: false,
-        normal: false,
-      },
-      abdomen: {
-        abrasion: false,
-        bruisingEcchymosis: false,
-        burns: false,
-        distended: false,
-        evisceration: false,
-        GunShotWound: false,
-        PenetratingWound: false,
-        guarding: false,
-        hernia: false,
-        laceration: false,
-        reboundTenderness: false,
-        rupturedMembranes: false,
-        severePain: false,
-        stabWound: false,
-        uterineContractions: false,
-        normalSoftOnPalpation: false,
-      },
-      pelvis: {
-        crepitus: false,
-        deformity: false,
-        GunShotWound: false,
-        PenetratingWound: false,
-        guarding: false,
-        incontinence: false,
-        openWound: false,
-        openBook: false,
-        severePain: false,
-        stable: false,
-      },
-      leftArm: {
-        abrasion: false,
-        amputation: false,
-        crepitus: false,
-        bruising: false,
-        deformity: false,
-        GunShotWound: false,
-        PenetratingWound: false,
-        guarding: false,
-        laceration: false,
-        oedema: false,
-        pulse: false,
-      },
-      rightArm: {
-        abrasion: false,
-        amputation: false,
-        crepitus: false,
-        bruising: false,
-        deformity: false,
-        GunShotWound: false,
-        PenetratingWound: false,
-        guarding: false,
-        laceration: false,
-        oedema: false,
-        pulse: false,
-      },
-      leftLeg: {
-        abrasion: false,
-        amputation: false,
-        crepitus: false,
-        bruising: false,
-        deformity: false,
-        GunShotWound: false,
-        PenetratingWound: false,
-        guarding: false,
-        laceration: false,
-        oedema: false,
-        pulse: false,
-      },
-      rightLeg: {
-        abrasion: false,
-        amputation: false,
-        crepitus: false,
-        bruising: false,
-        deformity: false,
-        GunShotWound: false,
-        PenetratingWound: false,
-        guarding: false,
-        laceration: false,
-        oedema: false,
-        pulse: false,
-      },
-      additionalFindings: "",
+    defaultValues: async () => {
+      const section = await ensurePRFResponseSectionByName(
+        qc,
+        prfId,
+        "secondary_survey",
+      );
+      return section.data;
     },
   });
 
   function onSubmit(values: SecondarySurveyType) {
     console.log("VALUES -> ", values);
-    if (!form.formState.isDirty) return;
 
-    if (!zsEmployee) {
-      // no needed .. just for building
-      return;
-    }
-
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        ...prf_from_store?.prfData,
-        secondary_survey: {
-          data: values,
-          isCompleted: true,
-          isOptional: false,
+    updatePrfQuery.mutate(
+      { data: values, isCompleted: true },
+      {
+        onSuccess: () => {
+          toast.success("Secondary Survey Updated", {
+            duration: 3000,
+            position: "top-right",
+          });
+          router.push(`/edit-prf/${prfId}`);
+        },
+        onError: () => {
+          toast.error("An error occurred", {
+            duration: 3000,
+            position: "top-right",
+          });
         },
       },
-      EmployeeID: zsEmployee.id || "",
-    };
-
-    updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: () => {
-        toast.success("Secondary Survey Updated", {
-          duration: 3000,
-          position: "top-right",
-        });
-        router.push(`/edit-prf/${prfId}`);
-      },
-      onError: () => {
-        toast.error("An error occurred", {
-          duration: 3000,
-          position: "top-right",
-        });
-      },
-    });
+    );
   }
 
   // Add this function to handle form errors

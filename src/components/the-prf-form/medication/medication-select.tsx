@@ -32,7 +32,7 @@ interface MedicationSelectProps {
 export const MedicationSelect = React.forwardRef<
   HTMLDivElement,
   MedicationSelectProps
->(({ value, onChange, index, onCustomMedication }) => {
+>(({ value, onChange, index, onCustomMedication }, _ref) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
   const form = useFormContext();

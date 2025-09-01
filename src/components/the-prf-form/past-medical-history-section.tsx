@@ -27,9 +27,11 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
-import { PRF_FORM } from "@/interfaces/prf-form";
+import {
+  ensurePRFResponseSectionByName,
+  useUpdatePrfResponse,
+} from "@/hooks/prf/usePrfForms";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import {
@@ -40,48 +42,20 @@ import { cn } from "@/lib/utils";
 
 export default function PastMedicalHistoryForm() {
   const prfId = usePathname().split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId,
-  );
+  const qc = useQueryClient();
 
-  const updatePrfQuery = useUpdatePrf();
+  const updatePrfQuery = useUpdatePrfResponse(prfId, "past_medical_history");
   const router = useRouter();
 
   const form = useForm<PastMedicalHistoryType>({
     resolver: zodResolver(PastMedicalHistorySchema),
-    values: prf_from_store?.prfData?.past_medical_history?.data,
-    defaultValues: prf_from_store?.prfData?.past_medical_history?.data || {
-      allergies: [],
-      currentMedications: [],
-      lastMeal: {
-        time: "",
-        description: "",
-      },
-      medicalConditions: {
-        cardiovascular: {
-          hasCondition: false,
-          conditions: [],
-          details: "",
-        },
-        respiratory: {
-          hasCondition: false,
-          conditions: [],
-          details: "",
-        },
-        neurological: {
-          hasCondition: false,
-          conditions: [],
-          details: "",
-        },
-        endocrine: {
-          hasCondition: false,
-          conditions: [],
-          details: "",
-        },
-      },
-      surgicalHistory: [],
-      familyHistory: [] as string[],
-      additionalNotes: "",
+    defaultValues: async () => {
+      const section = await ensurePRFResponseSectionByName(
+        qc,
+        prfId,
+        "past_medical_history",
+      );
+      return section.data;
     },
   });
 
@@ -114,37 +88,27 @@ export default function PastMedicalHistoryForm() {
   });
 
   // Handle family history manually since it's a simple string array
-  const familyHistory = form.watch("familyHistory") || [];
+  const familyHistory = form.watch("familyHistory") || "";
 
   function onSubmit(values: PastMedicalHistoryType) {
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        ...prf_from_store?.prfData,
-        past_medical_history: {
-          data: values,
-          isCompleted: true,
-          isOptional: false,
+    updatePrfQuery.mutate(
+      { data: values, isCompleted: true },
+      {
+        onSuccess: () => {
+          toast.success("Past Medical History Updated", {
+            duration: 3000,
+            position: "top-right",
+          });
+          router.push(`/edit-prf/${prfId}`);
+        },
+        onError: () => {
+          toast.error("An error occurred", {
+            duration: 3000,
+            position: "top-right",
+          });
         },
       },
-      EmployeeID: prf_from_store?.EmployeeID || "2",
-    };
-
-    updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: () => {
-        toast.success("Past Medical History Updated", {
-          duration: 3000,
-          position: "top-right",
-        });
-        router.push(`/edit-prf/${prfId}`);
-      },
-      onError: () => {
-        toast.error("An error occurred", {
-          duration: 3000,
-          position: "top-right",
-        });
-      },
-    });
+    );
   }
 
   const onError: SubmitErrorHandler<PastMedicalHistoryType> = (errors) => {
@@ -844,20 +808,21 @@ export default function PastMedicalHistoryForm() {
           <AccordionItem value="family-history">
             <AccordionTrigger>Family History</AccordionTrigger>
             <AccordionContent className="space-y-4 p-3">
-              {familyHistory.map((item, index) => (
+              {familyHistory.split(";").map((_item, index) => (
                 <div
                   key={index}
                   className="flex items-center space-x-2"
                 >
                   <FormField
                     control={form.control}
-                    name={`familyHistory.${index}`}
+                    name="familyHistory"
                     render={({ field }) => (
                       <FormItem className="flex-1">
                         <FormControl>
                           <Input
                             {...field}
                             placeholder="e.g., Father - Heart Disease, Mother - Diabetes"
+                            
                           />
                         </FormControl>
                         <FormMessage />
@@ -869,8 +834,8 @@ export default function PastMedicalHistoryForm() {
                     variant="ghost"
                     size="icon"
                     onClick={() => {
-                      const newHistory = familyHistory.filter((_, i) => i !== index);
-                      form.setValue("familyHistory", newHistory);
+                      const newHistory = familyHistory.split(";").filter((_, i) => i !== index);
+                      form.setValue("familyHistory", newHistory.join(";"));
                     }}
                     className="hover:text-destructive"
                   >
@@ -882,8 +847,8 @@ export default function PastMedicalHistoryForm() {
                 type="button"
                 variant="secondary"
                 onClick={() => {
-                  const newHistory = [...familyHistory, ""];
-                  form.setValue("familyHistory", newHistory);
+                  const newHistory = [...familyHistory.split(";"), ""];
+                  form.setValue("familyHistory", newHistory.join(";"));
                 }}
                 className="mt-2"
               >
@@ -921,6 +886,10 @@ export default function PastMedicalHistoryForm() {
           type="submit"
           disabled={!form.formState.isDirty}
           className="w-full self-end sm:w-auto"
+          onClick={() => {
+            console.log("Form Values -> ", form.getValues());
+            console.log("Form Errors -> ", form.formState.errors);
+          }}
         >
           {form.formState.isSubmitting || updatePrfQuery.isPending ? (
             <>

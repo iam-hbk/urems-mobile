@@ -740,6 +740,82 @@ export const AssessmentsSchema = z.object({
     stupor: z.boolean(),
     syncopeEvents: z.boolean(),
   }),
+  abdominalAssessment: z.object({
+    urineOutput: z.object({
+      burning: z.boolean().default(false),
+      darkYellow: z.boolean().default(false),
+      normal: z.boolean().default(false),
+      blood: z.boolean().default(false),
+      poly: z.boolean().default(false),
+      noOutput: z.boolean().default(false),
+      ihtFoleyCath: z.boolean().default(false),
+      uo: z.string(),
+    }),
+    contractions: z.object({
+      mild: z.boolean(),
+      mod: z.boolean(),
+      severe: z.boolean(),
+      amount: z.string(),
+    }),
+    hx: z.array(
+      z.enum(["Diverticulitis", "Liver or Renal Failure", "Stones", "UTIs"]),
+    ),
+    pain: z.array(
+      z.enum(["Burning", "Cramping", "Dull", "Sharp", "Tearing", "Reflux"]),
+    ),
+    git: z.array(z.enum(["Ascites", "Bloated", "Constipation", "Diaphoresis"])),
+    paraGravida: z.string(),
+    emesisAmount: z.string(),
+    emesisDays: z.string(),
+    gestation: z.string(),
+    gastroenteritis: z.boolean(),
+    hematemesis: z.boolean(),
+    melaenaStool: z.boolean(),
+    pegTube: z.boolean(),
+    diarrhoea: z.boolean(),
+    emesis: z.boolean(),
+    pregnant: z.boolean(),
+    twinPregnancy: z.boolean(),
+    discharge: z.boolean(),
+    pvBleeding: z.boolean(),
+    lastDrVisit: z.date(),
+  }),
+  painAssessment: z.object({
+    provocation: z.object({
+      onsetDuringExertion: z.boolean(),
+      duringRest: z.boolean(),
+      wokenByPain: z.boolean(),
+      onsetDuringMild: z.boolean(),
+      onsetDuringMod: z.boolean(),
+      onsetDuringActivity: z.boolean(),
+    }),
+    radiating: z.object({
+      yes: z.boolean(),
+      lArm: z.boolean(),
+      rArm: z.boolean(),
+      face: z.boolean(),
+      back: z.boolean(),
+      leg: z.boolean(),
+    }),
+    severity: z.object({
+      atOnset: z.string(),
+      current: z.string(),
+    }),
+    quality: z.array(
+      z.enum([
+        "Burning",
+        "Crushing / Weight",
+        "Intermittent",
+        "Constant",
+        "Dull",
+        "Sharp",
+        "Tearing",
+        "Cannot Describe",
+      ]),
+    ),
+    timeOfOnset: z.string(),
+    negativeMurphysSign: z.boolean(),
+  }),
   neuroConditions: z.array(
     z.enum([
       "Brain tumour",
@@ -759,83 +835,7 @@ export const AssessmentsSchema = z.object({
       "Syndrome",
     ]),
   ),
-  abdominalAssessment: z.object({
-    urineOutput: z.object({
-      burning: z.boolean(),
-      darkYellow: z.boolean(),
-      normal: z.boolean(),
-      blood: z.boolean(),
-      poly: z.boolean(),
-      noOutput: z.boolean(),
-      ihtFoleyCath: z.boolean(),
-      uo: z.string(),
-    }),
-    hx: z.array(
-      z.enum(["Diverticulitis", "Liver or Renal Failure", "Stones", "UTIs"]),
-    ),
-    git: z.array(z.enum(["Ascites", "Bloated", "Constipation", "Diaphoresis"])),
-    gastroenteritis: z.boolean(),
-    hematemesis: z.boolean(),
-    melaenaStool: z.boolean(),
-    pegTube: z.boolean(),
-    diarrhoea: z.boolean(),
-    emesis: z.boolean(),
-    emesisAmount: z.string(),
-    emesisDays: z.string(),
-    pain: z.array(
-      z.enum(["Burning", "Cramping", "Dull", "Sharp", "Tearing", "Reflux"]),
-    ),
-    contractions: z.object({
-      mild: z.boolean(),
-      mod: z.boolean(),
-      severe: z.boolean(),
-      amount: z.string(),
-    }),
-    pregnant: z.boolean(),
-    twinPregnancy: z.boolean(),
-    paraGravida: z.string(),
-    discharge: z.boolean(),
-    pvBleeding: z.boolean(),
-    lastDrVisit: z.date(),
-    gestation: z.string(),
-  }),
-  painAssessment: z.object({
-    provocation: z.object({
-      onsetDuringExertion: z.boolean(),
-      duringRest: z.boolean(),
-      wokenByPain: z.boolean(),
-      onsetDuringMild: z.boolean(),
-      onsetDuringMod: z.boolean(),
-      onsetDuringActivity: z.boolean(),
-    }),
-    quality: z.array(
-      z.enum([
-        "Burning",
-        "Crushing / Weight",
-        "Intermittent",
-        "Constant",
-        "Dull",
-        "Sharp",
-        "Tearing",
-        "Cannot Describe",
-      ]),
-    ),
-    radiating: z.object({
-      yes: z.boolean(),
-      lArm: z.boolean(),
-      rArm: z.boolean(),
-      face: z.boolean(),
-      back: z.boolean(),
-      leg: z.boolean(),
-    }),
-    severity: z.object({
-      atOnset: z.string(),
-      current: z.string(),
-    }),
-    timeOfOnset: z.string(),
-    negativeMurphysSign: z.boolean(),
-  }),
-  cardiacRiskFactors: z.array(
+  riskFactors: z.array(
     z.enum([
       "Age",
       "↑BMI",
@@ -848,7 +848,7 @@ export const AssessmentsSchema = z.object({
       "Stress",
     ]),
   ),
-  signsOfDehydration: z.array(
+  dehydrationSigns: z.array(
     z.enum([
       "Cold Peripheries",
       "Confused",
@@ -865,7 +865,7 @@ export const AssessmentsSchema = z.object({
       "Weak",
     ]),
   ),
-  signsOfAcuteCoronarySyndrome: z.array(
+  acsSigns: z.array(
     z.enum([
       "Chest Pain Not Increased by Deep Breathing",
       "Crushing Pain",
@@ -900,12 +900,16 @@ export type InjuryType = z.infer<typeof InjurySchema>;
 export const PatientHandoverSchema = z.object({
   fullName: z.string().min(3, { message: "Full Name is required" }),
   date: z.date({ message: "Date is required" }),
-  patientSignature: z.string({
-    message: "Patient Signature is required",
-  }).min(1, { message: "Patient Signature is required" }),
-  witnessSignature: z.string({
-    message: "Witness Signature is required",
-  }).min(1, { message: "Witness Signature is required" }),
+  patientSignature: z
+    .string({
+      message: "Patient Signature is required",
+    })
+    .min(1, { message: "Patient Signature is required" }),
+  witnessSignature: z
+    .string({
+      message: "Witness Signature is required",
+    })
+    .min(1, { message: "Witness Signature is required" }),
 });
 export type PatientHandoverType = z.infer<typeof PatientHandoverSchema>;
 
@@ -980,7 +984,8 @@ export const PastMedicalHistorySchema = z.object({
       complications: z.string().optional(),
     }),
   ),
-  familyHistory: z.array(z.string()).default([]),
+  // familyHistory: z.array(z.string()).default([]),
+  familyHistory: z.string(), // made it a string for now, TODO: change it to an array
   additionalNotes: z.string().optional(),
 });
 

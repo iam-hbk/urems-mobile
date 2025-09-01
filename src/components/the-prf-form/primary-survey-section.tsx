@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   FieldError,
@@ -28,9 +28,11 @@ import {
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
-import { useUpdatePrfResponse } from "@/hooks/prf/usePrfForms";
-import { PRF_FORM } from "@/interfaces/prf-form";
+import {
+  ensurePRFResponseSectionByName,
+  useUpdatePrfResponse,
+} from "@/hooks/prf/usePrfForms";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   PrimarySurveySchema,
@@ -44,10 +46,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 
 type PrimarySurveyType = z.infer<typeof PrimarySurveySchema>;
-
-type PrimarySurveyFormProps = {
-  initialData?: PrimarySurveyType;
-};
 
 const calculateTotal = (
   motor: string,
@@ -76,122 +74,22 @@ const calculateTotal = (
   return "";
 };
 
-export default function PrimarySurveyForm({
-  initialData,
-}: PrimarySurveyFormProps) {
+export default function PrimarySurveyForm() {
   const prfId = usePathname().split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId,
-  );
-  const updatePrfQuery = useUpdatePrf();
-  const router = useRouter();
-  console.log("INITIAL DATA -> ", initialData);
+  const qc = useQueryClient();
 
-  // Initialize assessment type based on which field has data
-  const [assessmentType, setAssessmentType] = useState<"GCS" | "AVPU">(() => {
-    if (
-      prf_from_store?.prfData?.primary_survey?.data?.disability?.AVPU?.value
-    ) {
-      return "AVPU";
-    }
-    return "GCS";
-  });
+  const updatePrfQuery = useUpdatePrfResponse(prfId, "primary_survey");
+  const router = useRouter();
 
   const form = useForm<PrimarySurveyType>({
     resolver: zodResolver(PrimarySurveySchema),
-    values: prf_from_store?.prfData?.primary_survey?.data,
-    defaultValues: prf_from_store?.prfData?.primary_survey?.data || {
-      airway: {
-        clear: false,
-        maintained: false,
-        lateral: false,
-        intubated: false,
-        surgical: false,
-        blood: false,
-        vomit: false,
-        saliva: false,
-        FBAO: false,
-      },
-      breathing: {
-        trachea: { midline: false, deviated: false },
-        airEntry: { clear: false, diminished: false, absent: false },
-        extraSounds: {
-          none: false,
-          soft: false,
-          loud: false,
-          wheezes: false,
-          crackles: false,
-          stridor: false,
-          frictionRub: false,
-        },
-        mechanics: {
-          accessoryMuscleUse: false,
-          apnea: false,
-          asymmetrical: false,
-          fatigue: false,
-          guarding: false,
-          normal: false,
-          hypoventilation: false,
-          ventilated: false,
-        },
-        neckVeins: { normal: false, distended: false },
-      },
-      circulation: {
-        haemorrhage: {
-          none: false,
-          arterial: false,
-          venous: false,
-          capillary: false,
-          mild: false,
-          moderate: false,
-          severe: false,
-          internal: false,
-        },
-        assessmentOfPulses: {
-          palpableCentral: false,
-          palpablePeripherals: false,
-          weak: false,
-          absent: false,
-          strong: false,
-        },
-        perfusion: {
-          good: false,
-          poor: false,
-          none: false,
-        },
-        mucosa: { pink: false, pale: false, cyanosed: false },
-        CRT: { lessThan2Sec: false, moreThan2Sec: false },
-      },
-      disability: {
-        assessmentType: "GCS",
-        initialGCS: {
-          total: "",
-          motor: "",
-          verbal: "",
-          eyes: "",
-        },
-        AVPU: null,
-        combative: false,
-        spinal: {
-          motorFunction: {
-            normal: false,
-            guarding: false,
-            loss: false,
-            deformity: { present: false, explanation: "" },
-          },
-          sensation: {
-            intact: false,
-            pinsAndNeedles: false,
-            numbness: false,
-            none: false,
-          },
-        },
-        location: {
-          fromNeck: false,
-          nippleLine: false,
-          abdomen: false,
-        },
-      },
+    defaultValues: async () => {
+      const section = await ensurePRFResponseSectionByName(
+        qc,
+        prfId,
+        "primary_survey",
+      );
+      return section.data;
     },
   });
 
@@ -201,38 +99,25 @@ export default function PrimarySurveyForm({
     if (!form.getValues("disability.spinal.motorFunction.deformity.present")) {
       values.disability.spinal.motorFunction.deformity.explanation = "";
     }
-    if (!form.formState.isDirty) return;
 
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        ...prf_from_store?.prfData,
-        primary_survey: {
-          data: values,
-          isCompleted: true,
-          isOptional: false,
+    updatePrfQuery.mutate(
+      { data: values, isCompleted: true },
+      {
+        onSuccess: () => {
+          toast.success("Primary Survey Updated", {
+            duration: 3000,
+            position: "top-right",
+          });
+          router.push(`/edit-prf/${prfId}`);
+        },
+        onError: () => {
+          toast.error("An error occurred", {
+            duration: 3000,
+            position: "top-right",
+          });
         },
       },
-      EmployeeID: prf_from_store?.EmployeeID || "2",
-    };
-
-    console.log("FROM THE FORM -> ", prfUpdateValue);
-
-    updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: () => {
-        toast.success("Primary Survey Updated", {
-          duration: 3000,
-          position: "top-right",
-        });
-        router.push(`/edit-prf/${prfId}`);
-      },
-      onError: () => {
-        toast.error("An error occurred", {
-          duration: 3000,
-          position: "top-right",
-        });
-      },
-    });
+    );
   }
 
   // Add this function to handle form errors
@@ -625,11 +510,9 @@ export default function PrimarySurveyForm({
                     <RadioGroup
                       value={field.value}
                       onValueChange={(value) => {
-                        const newType = value as "GCS" | "AVPU";
-                        field.onChange(newType);
-                        setAssessmentType(newType);
+                        field.onChange(value);
                         // Update form values based on assessment type
-                        if (newType === "GCS") {
+                        if (value === "GCS") {
                           form.setValue("disability", {
                             ...form.getValues("disability"),
                             assessmentType: "GCS",
@@ -691,7 +574,7 @@ export default function PrimarySurveyForm({
                 </div>
               </div>
 
-              {assessmentType === "GCS" ? (
+              {form.watch("disability.assessmentType") === "GCS" ? (
                 <div className="space-y-2">
                   <h5 className="font-bold">Initial GCS</h5>
                   <div className="grid gap-4 px-4 sm:grid-cols-2 lg:grid-cols-4">

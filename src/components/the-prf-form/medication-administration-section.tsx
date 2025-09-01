@@ -23,15 +23,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
+
+import {
+  ensurePRFResponseSectionByName,
+  useUpdatePrfResponse,
+} from "@/hooks/prf/usePrfForms";
 import { PRF_FORM } from "@/interfaces/prf-form";
 import { toast } from "sonner";
 import {
   MedicationAdministeredSchema,
   MedicationAdministeredType,
 } from "@/interfaces/prf-schema";
-import { useZuStandCrewStore } from "@/lib/zuStand/crew";
+
 import { CustomMedicationDialog } from "./medication/custom-medication-dialog";
 import { MedicationSelect } from "./medication/medication-select";
 import { TimePicker } from "@/components/ui/time-picker";
@@ -44,6 +47,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { useQueryClient } from "@tanstack/react-query";
+import { useGetUser } from "@/hooks/auth/useSession";
 
 export default function MedicationAdministeredForm() {
   const [customMedDialogOpen, setCustomMedDialogOpen] = React.useState(false);
@@ -59,41 +64,23 @@ export default function MedicationAdministeredForm() {
   >(undefined);
 
   const prfId = usePathname().split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId,
+  const qc = useQueryClient();
+  const { data: user } = useGetUser();
+  const updatePrfQuery = useUpdatePrfResponse(
+    prfId,
+    "medication_administration",
   );
-  const user = useStore((state) => state.user);
-  const { zsUpdateMedicationStock } = useZuStandCrewStore();
 
-  const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
   const form = useForm<MedicationAdministeredType>({
     resolver: zodResolver(MedicationAdministeredSchema),
-    defaultValues: prf_from_store?.prfData?.medication_administration?.data || {
-      medications: [
-        {
-          medicine: "",
-          medicationId: undefined,
-          dose: "",
-          route: "",
-          time: {
-            value: new Date().toLocaleTimeString("en-GB", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            unknown: false,
-          },
-          hpcsa: user?.hpcsaNumber || "",
-          name: user?.name || "",
-          signature: user?.signature || "",
-        },
-      ],
-      consultation: {
-        consulted: false,
-        practitioner: "",
-        hpcsa: "",
-        summaryOfConsult: "",
-      },
+    defaultValues: async () => {
+      const medicationAdministration = await ensurePRFResponseSectionByName(
+        qc,
+        prfId,
+        "medication_administration",
+      );
+      return medicationAdministration?.data;
     },
   });
 
@@ -145,7 +132,7 @@ export default function MedicationAdministeredForm() {
         unknown: false,
       },
       hpcsa: user?.hpcsaNumber || "",
-      name: user?.name || "",
+      name: user?.person?.firstName + " " + user?.person?.lastName || "",
       signature: user?.signature || "",
     });
   }, [append, user]);
@@ -173,42 +160,36 @@ export default function MedicationAdministeredForm() {
   );
 
   function onSubmit(values: MedicationAdministeredType) {
-    // Update medication inventory
-    values.medications.forEach((medication) => {
-      if (medication.medicationId) {
-        // Only update stock if it's a medication from inventory
-        zsUpdateMedicationStock(medication.medicationId, 1); // Assuming 1 unit per administration
-      }
-    });
+    // // Update medication inventory
+    // values.medications.forEach((medication) => {
+    //   if (medication.medicationId) {
+    //     // Only update stock if it's a medication from inventory
+    //     // zsUpdateMedicationStock(medication.medicationId, 1); // Assuming 1 unit per administration
+    //   }
+    // });
 
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        ...prf_from_store?.prfData,
-        medication_administration: {
-          data: values,
-          isCompleted: true,
-          isOptional: false,
+    updatePrfQuery.mutate(
+      {
+        data: values,
+        isCompleted: true,
+        isOptional: false,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Medication Administered Information Updated", {
+            duration: 3000,
+            position: "top-right",
+          });
+          router.push(`/edit-prf/${prfId}`);
+        },
+        onError: () => {
+          toast.error("An error occurred", {
+            duration: 3000,
+            position: "top-right",
+          });
         },
       },
-      EmployeeID: prf_from_store?.EmployeeID || "2",
-    };
-
-    updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: () => {
-        toast.success("Medication Administered Information Updated", {
-          duration: 3000,
-          position: "top-right",
-        });
-        router.push(`/edit-prf/${prfId}`);
-      },
-      onError: () => {
-        toast.error("An error occurred", {
-          duration: 3000,
-          position: "top-right",
-        });
-      },
-    });
+    );
   }
 
   return (
@@ -240,6 +221,10 @@ export default function MedicationAdministeredForm() {
               Medication Administered
             </h3>
           </div>
+          <pre>
+            user
+            {JSON.stringify(user, null, 2)}
+          </pre>
           <AccordionItem value="medication-administered">
             <AccordionTrigger
               className={cn({

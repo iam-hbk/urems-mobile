@@ -48,7 +48,15 @@ export default function AssessmentForm() {
         prfId,
         "assessments",
       );
-      return assessments.data;
+      return {
+        ...assessments.data,
+        abdominalAssessment: {
+          ...assessments.data.abdominalAssessment,
+          lastDrVisit: assessments.data.abdominalAssessment.lastDrVisit
+            ? new Date(assessments.data.abdominalAssessment.lastDrVisit)
+            : new Date(),
+        },
+      };
     },
   });
 
@@ -168,7 +176,9 @@ export default function AssessmentForm() {
                         <FormField
                           key={item}
                           control={form.control}
-                          name={`neuroAssessment.seizure.${item}` as FieldPath<AssessmentsType>}
+                          name={
+                            `neuroAssessment.seizure.${item}` as FieldPath<AssessmentsType>
+                          }
                           render={({ field }) => (
                             <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                               <FormControl>
@@ -201,7 +211,9 @@ export default function AssessmentForm() {
                         onCheckedChange={field.onChange}
                       />
                     </FormControl>
-                    <FormLabel className="font-normal">Acute Delirium</FormLabel>
+                    <FormLabel className="font-normal">
+                      Acute Delirium
+                    </FormLabel>
                   </FormItem>
                 )}
               />
@@ -235,7 +247,9 @@ export default function AssessmentForm() {
                         <FormField
                           key={item}
                           control={form.control}
-                          name={`neuroAssessment.incontinence.${item}` as FieldPath<AssessmentsType>}
+                          name={
+                            `neuroAssessment.incontinence.${item}` as FieldPath<AssessmentsType>
+                          }
                           render={({ field }) => (
                             <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                               <FormControl>
@@ -285,7 +299,9 @@ export default function AssessmentForm() {
                         onCheckedChange={field.onChange}
                       />
                     </FormControl>
-                    <FormLabel className="font-normal">Syncope Events</FormLabel>
+                    <FormLabel className="font-normal">
+                      Syncope Events
+                    </FormLabel>
                   </FormItem>
                 )}
               />
@@ -384,7 +400,9 @@ export default function AssessmentForm() {
             <AccordionContent className="space-y-4 p-3">
               {/* Urine Output Section */}
               <div className="space-y-4">
-                <FormLabel className="text-base">Urine Output</FormLabel>
+                <FormLabel className="text-base font-semibold">
+                  Urine Output
+                </FormLabel>
                 <div className="grid grid-cols-2 gap-4">
                   {(
                     [
@@ -437,7 +455,9 @@ export default function AssessmentForm() {
 
               {/* History Section */}
               <div className="space-y-4">
-                <FormLabel className="text-base">History</FormLabel>
+                <FormLabel className="text-base font-semibold">
+                  History
+                </FormLabel>
                 <div className="grid grid-cols-2 gap-4">
                   {(
                     [
@@ -480,7 +500,7 @@ export default function AssessmentForm() {
 
               {/* GIT Section */}
               <div className="space-y-4">
-                <FormLabel className="text-base">GIT</FormLabel>
+                <FormLabel className="text-base font-semibold">GIT</FormLabel>
                 <div className="grid grid-cols-2 gap-4">
                   {(
                     [
@@ -522,6 +542,9 @@ export default function AssessmentForm() {
               </div>
 
               {/* Additional GIT Conditions */}
+              <p className="text-base font-semibold">
+                Additional GIT Conditions
+              </p>
               <div className="grid grid-cols-2 gap-4">
                 {(
                   [
@@ -588,7 +611,7 @@ export default function AssessmentForm() {
 
               {/* Pain Section */}
               <div className="space-y-4">
-                <FormLabel className="text-base">Pain</FormLabel>
+                <FormLabel className="text-base font-semibold">Pain</FormLabel>
                 <div className="grid grid-cols-2 gap-4">
                   {(
                     [
@@ -633,7 +656,9 @@ export default function AssessmentForm() {
 
               {/* Contractions */}
               <div className="space-y-4">
-                <FormLabel className="text-base">Contractions</FormLabel>
+                <FormLabel className="text-base font-semibold">
+                  Contractions
+                </FormLabel>
                 <div className="grid grid-cols-2 gap-4">
                   {(["mild", "mod", "severe"] as const).map((item) => (
                     <FormField
@@ -649,7 +674,9 @@ export default function AssessmentForm() {
                             />
                           </FormControl>
                           <FormLabel className="font-normal">
-                            {item === "mod" ? "Moderate" : item.charAt(0).toUpperCase() + item.slice(1)}
+                            {item === "mod"
+                              ? "Moderate"
+                              : item.charAt(0).toUpperCase() + item.slice(1)}
                           </FormLabel>
                         </FormItem>
                       )}
@@ -672,7 +699,9 @@ export default function AssessmentForm() {
 
               {/* Pregnancy Related */}
               <div className="space-y-4">
-                <FormLabel className="text-base">Pregnancy Related</FormLabel>
+                <FormLabel className="text-base font-semibold">
+                  Pregnancy Related
+                </FormLabel>
                 <div className="grid grid-cols-2 gap-4">
                   {(
                     [
@@ -989,7 +1018,7 @@ export default function AssessmentForm() {
             <AccordionContent>
               <FormField
                 control={form.control}
-                name="cardiacRiskFactors"
+                name="riskFactors"
                 render={() => (
                   <FormItem>
                     <div className="grid grid-cols-2 gap-4">
@@ -1007,7 +1036,7 @@ export default function AssessmentForm() {
                         <FormField
                           key={item}
                           control={form.control}
-                          name="cardiacRiskFactors"
+                          name="riskFactors"
                           render={({ field }) => {
                             return (
                               <FormItem
@@ -1059,7 +1088,7 @@ export default function AssessmentForm() {
             <AccordionContent>
               <FormField
                 control={form.control}
-                name="signsOfDehydration"
+                name="dehydrationSigns"
                 render={() => (
                   <FormItem>
                     {/* <div className="mb-4">
@@ -1086,7 +1115,7 @@ export default function AssessmentForm() {
                         <FormField
                           key={item}
                           control={form.control}
-                          name="signsOfDehydration"
+                          name="dehydrationSigns"
                           render={({ field }) => {
                             return (
                               <FormItem
@@ -1144,7 +1173,7 @@ export default function AssessmentForm() {
             <AccordionContent>
               <FormField
                 control={form.control}
-                name="signsOfAcuteCoronarySyndrome"
+                name="acsSigns"
                 render={() => (
                   <FormItem>
                     {/* <div className="mb-4">
@@ -1166,7 +1195,7 @@ export default function AssessmentForm() {
                         <FormField
                           key={item}
                           control={form.control}
-                          name="signsOfAcuteCoronarySyndrome"
+                          name="acsSigns"
                           render={({ field }) => {
                             return (
                               <FormItem

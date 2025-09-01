@@ -106,12 +106,18 @@ export const verifySession = cache(
 );
 
 // Get user data (with session verification)
-export const getUser = cache(
-  async (): Promise<Result<typeEmployee, ApiError>> => {
-    const sessionResult = await verifySession();
-    return sessionResult.map((session) => session.user);
-  },
-);
+export const getUser = cache(async (): Promise<typeEmployee> => {
+  const sessionResult = await verifySession();
+  console.log("sessionResult", sessionResult);
+
+  if (sessionResult.isErr()) {
+    const error = sessionResult.error;
+    console.error(`Error loading user: ${error.detail}`);
+    throw error;
+  }
+
+  return sessionResult.value.user;
+});
 
 // Get session token
 export const getSessionToken = cache(

@@ -33,31 +33,32 @@ import { AlertCircle, Loader2, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
-import { PRF_FORM } from "@/interfaces/prf-form";
+import {
+  ensurePRFResponseSectionByName,
+  useUpdatePrfResponse,
+} from "@/hooks/prf/usePrfForms";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   VitalSignsSchema,
   VitalSignsType,
 } from "@/interfaces/prf-vital-signs-schema";
-import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 const VitalSignsForm: React.FC = () => {
   const prfId = usePathname().split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId,
-  );
+  const qc = useQueryClient();
 
-  const updatePrfQuery = useUpdatePrf();
+  const updatePrfQuery = useUpdatePrfResponse(prfId, "vital_signs");
   const router = useRouter();
-
-  const { zsEmployee } = useZuStandEmployeeStore();
 
   const form = useForm<VitalSignsType>({
     resolver: zodResolver(VitalSignsSchema),
-    defaultValues: {
-      vital_signs:
-        prf_from_store?.prfData?.vital_signs?.data?.vital_signs || undefined,
+    defaultValues: async () => {
+      const section = await ensurePRFResponseSectionByName(
+        qc,
+        prfId,
+        "vital_signs",
+      );
+      return section.data;
     },
   });
 
@@ -67,40 +68,24 @@ const VitalSignsForm: React.FC = () => {
   });
 
   function onSubmit(values: VitalSignsType) {
-    if (!zsEmployee) {
-      // no needed .. just for building
-      return;
-    }
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        ...prf_from_store?.prfData,
-        vital_signs: {
-          data: {
-            vital_signs: values.vital_signs,
-          },
-          isCompleted: true,
-          isOptional: false,
+    updatePrfQuery.mutate(
+      { data: values, isCompleted: true },
+      {
+        onSuccess: () => {
+          toast.success("Vital Signs Updated", {
+            duration: 3000,
+            position: "top-right",
+          });
+          router.push(`/edit-prf/${prfId}`);
+        },
+        onError: () => {
+          toast.error("An error occurred", {
+            duration: 3000,
+            position: "top-right",
+          });
         },
       },
-      EmployeeID: zsEmployee.id || "2", // fallback
-    };
-
-    updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: () => {
-        toast.success("Vital Signs Updated", {
-          duration: 3000,
-          position: "top-right",
-        });
-        router.push(`/edit-prf/${prfId}`);
-      },
-      onError: () => {
-        toast.error("An error occurred", {
-          duration: 3000,
-          position: "top-right",
-        });
-      },
-    });
+    );
   }
 
   // Add this function to handle form errors
