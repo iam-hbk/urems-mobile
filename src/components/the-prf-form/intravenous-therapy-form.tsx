@@ -43,7 +43,7 @@ export default function IntravenousTherapyForm() {
   const prfId = usePathname().split("/")[2];
   const qc = useQueryClient();
   // Using this store until we connect backend stock and inventory
-  const { zsVehicle, zsUpdateFluidStock } = useZuStandCrewStore();
+  const { zsVehicle } = useZuStandCrewStore();
 
   const updatePrfQuery = useUpdatePrfResponse(prfId, "intravenous_therapy");
   const router = useRouter();

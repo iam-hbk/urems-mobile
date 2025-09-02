@@ -1,6 +1,6 @@
 import React from "react";
-import { ProgressRing } from "@/components/response-meta-table/section-progress-ring";
-import { ResponseMetaCard } from "@/components/response-meta-table/response-meta-card";
+// import { ProgressRing } from "@/components/response-meta-table/section-progress-ring";
+// import { ResponseMetaCard } from "@/components/response-meta-table/response-meta-card";
 import { fetchFormTemplateById } from "@/lib/api/dynamic-forms-api";
 import { notFound } from "next/navigation";
 import { ClientFormResponsePage } from "./client-form-response-page";

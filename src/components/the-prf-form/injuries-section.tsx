@@ -9,12 +9,10 @@ import { toast } from "sonner";
 import { InjurySchema, InjuryType } from "@/interfaces/prf-schema";
 import { Loader2, PlusCircleIcon, Trash2, Download } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
 import {
   ensurePRFResponseSectionByName,
   useUpdatePrfResponse,
 } from "@/hooks/prf/usePrfForms";
-import { PRF_FORM } from "@/interfaces/prf-form";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Label } from "../ui/label";
 import { useQueryClient } from "@tanstack/react-query";

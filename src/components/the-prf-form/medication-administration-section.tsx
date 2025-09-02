@@ -28,7 +28,6 @@ import {
   ensurePRFResponseSectionByName,
   useUpdatePrfResponse,
 } from "@/hooks/prf/usePrfForms";
-import { PRF_FORM } from "@/interfaces/prf-form";
 import { toast } from "sonner";
 import {
   MedicationAdministeredSchema,

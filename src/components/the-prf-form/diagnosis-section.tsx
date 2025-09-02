@@ -17,12 +17,10 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
 import {
   ensurePRFResponseSectionByName,
   useUpdatePrfResponse,
 } from "@/hooks/prf/usePrfForms";
-import { PRF_FORM } from "@/interfaces/prf-form";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { DiagnosisSchema, DiagnosisType } from "@/interfaces/prf-schema";

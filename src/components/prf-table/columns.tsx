@@ -71,7 +71,7 @@ export const columns: ColumnDef<FormResponseSummary>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Patient Name" />
     ),
-    cell: ({ row }) => {
+    cell: () => {
       // TODO: Make this function async then useQuery the patient details
       // TODO: Fetch patient details from the API using the Patient ID `patientID`
 

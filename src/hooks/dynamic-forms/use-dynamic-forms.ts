@@ -7,7 +7,7 @@ import {
   apiUpdateFormResponse,
 } from "@/lib/api/dynamic-forms-api";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import {
   CreateFormResponsePayload,
   DetailedFormResponse,
@@ -73,7 +73,7 @@ type CreateFormResponseOptions = {
 
 export const useCreateFormResponse = ({
   formTemplateId,
-  sections,
+  // sections,
 }: CreateFormResponseOptions) => {
   const queryClient = useQueryClient();
 

@@ -171,7 +171,6 @@ const PrimarySurveySchema = z.object({
   circulation: CirculationSchema,
   disability: DisabilitySchema,
 });
-type DisabilitySchemaType = z.infer<typeof DisabilitySchema>;
 export type {
   SpinalSchema as SpinalSchemaType,
   LocationSchema as LocationSchemaType,

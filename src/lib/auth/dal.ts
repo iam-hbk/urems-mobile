@@ -17,14 +17,12 @@ export type UserData = {
   gender: string;
   id: string;
   email: string;
-  userName: string;
-  role: string;
-  employeeType: string;
-  employeeId?: number;
+  userName: string | null;
+  dateOfBirth: string;
 };
 
 export type Session = {
-  user: typeEmployee;
+  user: UserData;
   token: string;
 };
 
@@ -85,8 +83,7 @@ export const verifySession = cache(
         });
       }
 
-      // const userData: UserData = await response.json();
-      const userData: typeEmployee = await response.json();
+      const userData: UserData = await response.json();
 
       // If we get user data, the session is valid
       return ok({
@@ -106,9 +103,8 @@ export const verifySession = cache(
 );
 
 // Get user data (with session verification)
-export const getUser = cache(async (): Promise<typeEmployee> => {
+export const getUser = cache(async (): Promise<UserData> => {
   const sessionResult = await verifySession();
-  console.log("sessionResult", sessionResult);
 
   if (sessionResult.isErr()) {
     const error = sessionResult.error;

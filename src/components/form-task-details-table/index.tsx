@@ -1,10 +1,8 @@
-import { PRF_FORM, PRF_FORM_DATA } from "@/interfaces/prf-form";
-import { PRFFormDataSchema } from "@/interfaces/prf-schema";
+import { PRF_FORM_DATA } from "@/interfaces/prf-form";
 import { PRF_FORM_DATA_DISPLAY_NAMES } from "@/interfaces/prf-form";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
 import { PRF_TABLE_SECTION_DATA } from "./schema";
-import { z } from "zod";
 import { useGetPRFResponseSectionStatus } from "@/hooks/prf/usePrfForms";
 import { usePathname } from "next/navigation";
 

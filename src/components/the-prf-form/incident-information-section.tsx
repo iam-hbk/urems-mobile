@@ -204,10 +204,6 @@ const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
             }
             type="submit"
             className="self-end"
-            onClick={() => {
-              console.log("form.getValues() 🚀", form.getValues());
-              console.log("form.formState.errors 🚀", form.formState.errors);
-            }}
           >
             {form.formState.isSubmitting || updatePrfQuery.isPending ? (
               <>

@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { PRF_FORM } from "@/interfaces/prf-form";
 import { User } from "@/interfaces/user";
 import { FormResponseSummary } from "@/types/form-template";
 

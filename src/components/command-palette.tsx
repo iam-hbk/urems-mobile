@@ -12,7 +12,7 @@ import {
   CommandItem,
   CommandShortcut,
 } from "@/components/ui/command";
-import { PRF_FORM_DATA_DISPLAY_NAMES, PRFormResponseStatus } from "@/interfaces/prf-form";
+import { PRF_FORM_DATA_DISPLAY_NAMES } from "@/interfaces/prf-form";
 import { useRouter, usePathname } from "next/navigation";
 import { iconMap } from "./quick-links";
 import { useGetPRFResponseSectionStatus } from "@/hooks/prf/usePrfForms";
@@ -32,7 +32,11 @@ export function CommandPalette({
 
   const prfID = pathname.split("/")[2]; // Extract prfID from /edit-prf/[prfID]/...
 
-  const { data: statusData, isLoading, error } = useGetPRFResponseSectionStatus(prfID);
+  const {
+    data: statusData,
+    isLoading,
+    error,
+  } = useGetPRFResponseSectionStatus(prfID);
 
   // Handle CMD+K
   useEffect(() => {
@@ -54,21 +58,23 @@ export function CommandPalette({
     }
   }, [open]);
 
-  const sections = statusData?.sections.map((section) => {
-    const sectionKey = section.sectionName as keyof typeof PRF_FORM_DATA_DISPLAY_NAMES;
-    return {
-      title: PRF_FORM_DATA_DISPLAY_NAMES[sectionKey],
-      href:
-        sectionKey === "case_details"
-          ? `/edit-prf/${prfID}/#`
-          : `/edit-prf/${prfID}/${sectionKey.replace(/_/g, "-")}`,
-      icon: iconMap[sectionKey as keyof typeof iconMap],
-      keywords: [
-        sectionKey.replace(/_/g, " "),
-        PRF_FORM_DATA_DISPLAY_NAMES[sectionKey],
-      ],
-    };
-  }) || [];
+  const sections =
+    statusData?.sections.map((section) => {
+      const sectionKey =
+        section.sectionName as keyof typeof PRF_FORM_DATA_DISPLAY_NAMES;
+      return {
+        title: PRF_FORM_DATA_DISPLAY_NAMES[sectionKey],
+        href:
+          sectionKey === "case_details"
+            ? `/edit-prf/${prfID}/#`
+            : `/edit-prf/${prfID}/${sectionKey.replace(/_/g, "-")}`,
+        icon: iconMap[sectionKey as keyof typeof iconMap],
+        keywords: [
+          sectionKey.replace(/_/g, " "),
+          PRF_FORM_DATA_DISPLAY_NAMES[sectionKey],
+        ],
+      };
+    }) || [];
 
   const filteredSections = sections.filter((section) => {
     if (!search) return true;

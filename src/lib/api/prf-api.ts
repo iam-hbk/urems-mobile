@@ -64,7 +64,7 @@ export type SectionData<T extends SectionName> = SectionDataTypeMap[T]["data"];
 
 // Utility types for working with section wrappers
 export type SectionStatus = Pick<
-  SectionWrapper<any>,
+  SectionWrapper<unknown>,
   "isCompleted" | "isOptional"
 >;
 
@@ -107,7 +107,6 @@ export const updatePrfResponseMetadata = (
 ): ApiResult<PRF_FORM_RESPONSE_METADATA> => {
   return api.post<PRF_FORM_RESPONSE_METADATA>(
     `/FormResponses/${prfResponseId}/prf-ingest`,
-    // http://localhost:7089/api/formresponses/0dfeab54-5621-4985-95b9-c1774398836a/prf-ingest
     data,
   );
 };

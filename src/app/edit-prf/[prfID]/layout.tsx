@@ -1,12 +1,10 @@
 "use client";
 import StepperView from "@/components/stepper-view";
-import { useStore } from "@/lib/store";
-import React, { use, useState } from "react";
-import { usePathname } from "next/navigation";
+import React, { useState } from "react";
 import QuickLinks from "@/components/quick-links";
 import { Eye, EyeOffIcon, Menu, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import AssessmentToolsSummary from "@/components/assessment-tools-summary";
+// import AssessmentToolsSummary from "@/components/assessment-tools-summary";
 import { CommandPalette } from "@/components/command-palette";
 import {
   Popover,
@@ -14,19 +12,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import NotesDialog from "@/components/the-prf-form/notes-dialog";
-import { useGetPRFResponseMetadata } from "@/hooks/prf/usePrfForms";
+// import { useGetPRFResponseMetadata } from "@/hooks/prf/usePrfForms";
 
 type Params = Promise<{ prfID: string }>;
 
 function Layout(props: { children: React.ReactNode; params: Params }) {
-  const params = use(props.params);
-  const prfID = params.prfID;
-  const {
-    data: prfResponseMetadata,
-    isLoading,
-    error,
-  } = useGetPRFResponseMetadata(prfID);
-
   // to toggle the quick links
   const [showQuickLinks, setShowQuickLinks] = useState<boolean>(true);
   const [showCommandPalette, setShowCommandPalette] = useState(false);

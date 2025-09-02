@@ -1,12 +1,4 @@
-export type UserData = {
-  firstName: string;
-  lastName: string;
-  initials: string;
-  gender: string;
-  id: string;
-  email: string;
-  userName: string;
-};
+import type { UserData } from "./dal";
 
 export type ClientSession = {
   user: UserData;

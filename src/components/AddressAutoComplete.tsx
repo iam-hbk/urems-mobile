@@ -49,9 +49,20 @@ const AddressAutoComplete: React.FC<AddressAutoCompleteProps> = ({
     null,
   );
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const currentValueRef = useRef<string>("");
+  const isEditingRef = useRef<boolean>(false);
 
   const currentValue = watch(name);
   const [debouncedValue] = useDebounce(currentValue, 300);
+
+  // Keep refs in sync
+  useEffect(() => {
+    currentValueRef.current = currentValue || "";
+  }, [currentValue]);
+
+  useEffect(() => {
+    isEditingRef.current = isEditing;
+  }, [isEditing]);
   const handleInputChange = useCallback((value: string) => {
     if (value.length >= 2 && autocompleteRef.current && isGoogleMapsLoaded) {
       autocompleteRef.current.getPlacePredictions(
@@ -139,7 +150,7 @@ const AddressAutoComplete: React.FC<AddressAutoCompleteProps> = ({
     if (isGoogleMapsLoaded && !loadError) {
       autocompleteRef.current = new google.maps.places.AutocompleteService();
       // Only auto-get location on first load when no value exists and user hasn't started editing
-      if (!currentValue && useCurrentLocation && !isEditing) {
+      if (!currentValueRef.current && useCurrentLocation && !isEditingRef.current) {
         handleUseCurrentLocation();
       }
     }

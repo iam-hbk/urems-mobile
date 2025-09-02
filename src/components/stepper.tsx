@@ -1,15 +1,8 @@
 "use client";
-import {
-  PRF_FORM_DATA,
-  PRF_FORM_DATA_DISPLAY_NAMES,
-  PRFormResponseStatus,
-  SectionName,
-} from "@/interfaces/prf-form";
+import { PRF_FORM_DATA_DISPLAY_NAMES } from "@/interfaces/prf-form";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import React from "react";
-import { PRFFormDataSchema } from "@/interfaces/prf-schema";
-import { z } from "zod";
 import { usePathname } from "next/navigation";
 import { sectionDescriptions } from "@/interfaces/prf-form";
 import { useGetPRFResponseSectionStatus } from "@/hooks/prf/usePrfForms";
@@ -17,7 +10,6 @@ import { useGetPRFResponseSectionStatus } from "@/hooks/prf/usePrfForms";
 type StepStatus = "complete" | "completing";
 
 type SectionDisplayName = (typeof sectionDescriptions)[number];
-type SectionInnerShape = z.ZodRawShape & { isOptional: z.ZodTypeAny };
 type Props = {
   number: number;
   title: string;
@@ -161,7 +153,8 @@ export function Stepper() {
 
   // Map the status data to StepItem format
   const prf_data: StepItem[] = statusData.sections.map((section) => {
-    const sectionKey = section.sectionName as keyof typeof PRF_FORM_DATA_DISPLAY_NAMES;
+    const sectionKey =
+      section.sectionName as keyof typeof PRF_FORM_DATA_DISPLAY_NAMES;
     const route =
       sectionKey === "case_details"
         ? `/edit-prf/${prfID}`

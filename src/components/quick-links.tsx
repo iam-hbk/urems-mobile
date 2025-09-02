@@ -37,7 +37,6 @@ import {
   PRF_FORM_DATA_DISPLAY_NAMES,
   sectionDescriptions,
   PRFormResponseStatus,
-  SectionName,
 } from "@/interfaces/prf-form";
 import { cn } from "@/lib/utils";
 import { Badge } from "./ui/badge";
@@ -162,9 +161,10 @@ export default function QuickLinks() {
           {visibleItems.map((item) => {
             const randomAnimation =
               animations[Math.floor(Math.random() * animations.length)];
-            const optionData = getPrfDataShapedSectionsForQuickLinks(statusData, prfID).find(
-              (section) => section.sectionDescription === item,
-            );
+            const optionData = getPrfDataShapedSectionsForQuickLinks(
+              statusData,
+              prfID,
+            ).find((section) => section.sectionDescription === item);
             // if (!optionData) return null;
 
             const Icon =
@@ -269,9 +269,13 @@ export default function QuickLinks() {
     </nav>
   );
 }
-const getPrfDataShapedSectionsForQuickLinks = (statusData: PRFormResponseStatus, prfID: string) => {
+const getPrfDataShapedSectionsForQuickLinks = (
+  statusData: PRFormResponseStatus,
+  prfID: string,
+) => {
   return statusData.sections.map((section) => {
-    const sectionKey = section.sectionName as keyof typeof PRF_FORM_DATA_DISPLAY_NAMES;
+    const sectionKey =
+      section.sectionName as keyof typeof PRF_FORM_DATA_DISPLAY_NAMES;
     const route =
       sectionKey === "case_details"
         ? `${prfID}`

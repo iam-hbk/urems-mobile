@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   FieldError,
@@ -771,15 +771,10 @@ export default function PrimarySurveyForm() {
                   <div className="space-y-2">
                     <h6 className="font-medium">Motor Function</h6>
                     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                      {Object.entries(
-                        SpinalSchema.shape.motorFunction.shape,
-                      )
+                      {Object.entries(SpinalSchema.shape.motorFunction.shape)
                         .filter(([, schema]) => schema instanceof z.ZodBoolean)
-                        .map(([key]) =>
-                          key,
-                        )
-                        .map(
-                        (key) => {
+                        .map(([key]) => key)
+                        .map((key) => {
                           return (
                             <FormField
                               key={key}
@@ -802,8 +797,7 @@ export default function PrimarySurveyForm() {
                               )}
                             />
                           );
-                        },
-                      )}
+                        })}
                       {form.watch(
                         "disability.spinal.motorFunction.deformity",
                       ) && (
