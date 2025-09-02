@@ -130,10 +130,8 @@ const SpinalSchema = z.object({
     normal: z.boolean(),
     guarding: z.boolean(),
     loss: z.boolean(),
-    deformity: z.object({
-      present: z.boolean(),
-      explanation: z.string().optional(),
-    }),
+    deformity: z.boolean(),
+    deformityExplanation: z.string().optional(),
   }),
   sensation: SpinalSensationSchema,
 });
@@ -145,7 +143,7 @@ const LocationSchema = z.object({
 });
 
 const GCSDisabilitySchema = z.object({
-  assessmentType: z.literal('GCS'),
+  assessmentType: z.literal("GCS"),
   initialGCS: InitialGCSSchema,
   AVPU: z.null(),
   combative: z.boolean(),
@@ -154,7 +152,7 @@ const GCSDisabilitySchema = z.object({
 });
 
 const AVPUDisabilitySchema = z.object({
-  assessmentType: z.literal('AVPU'),
+  assessmentType: z.literal("AVPU"),
   initialGCS: z.null(),
   AVPU: AVPUSchema,
   combative: z.boolean(),
@@ -162,7 +160,7 @@ const AVPUDisabilitySchema = z.object({
   location: LocationSchema,
 });
 
-const DisabilitySchema = z.discriminatedUnion('assessmentType', [
+const DisabilitySchema = z.discriminatedUnion("assessmentType", [
   GCSDisabilitySchema,
   AVPUDisabilitySchema,
 ]);
@@ -173,15 +171,10 @@ const PrimarySurveySchema = z.object({
   circulation: CirculationSchema,
   disability: DisabilitySchema,
 });
-
-export type { 
+type DisabilitySchemaType = z.infer<typeof DisabilitySchema>;
+export type {
   SpinalSchema as SpinalSchemaType,
   LocationSchema as LocationSchemaType,
 };
 
-export { 
-  PrimarySurveySchema,
-  SpinalSchema,
-  LocationSchema,
-  InitialGCSSchema,
-};
+export { PrimarySurveySchema, SpinalSchema, LocationSchema, InitialGCSSchema };

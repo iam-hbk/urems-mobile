@@ -921,18 +921,6 @@ export const PastMedicalHistorySchema = z.object({
       severity: z.enum(["Mild", "Moderate", "Severe"]),
     }),
   ),
-  currentMedications: z.array(
-    z.object({
-      medication: z.string().min(1, "Medication name is required"),
-      dosage: z.string().min(1, "Dosage is required"),
-      frequency: z.string().min(1, "Frequency is required"),
-      lastTaken: z.string().optional(),
-    }),
-  ),
-  lastMeal: z.object({
-    time: z.string().min(1, "Time is required"),
-    description: z.string().optional(),
-  }),
   medicalConditions: z.object({
     cardiovascular: z.object({
       hasCondition: z.boolean(),
@@ -977,6 +965,18 @@ export const PastMedicalHistorySchema = z.object({
       details: z.string().optional(),
     }),
   }),
+  currentMedications: z.array(
+    z.object({
+      medication: z.string().min(1, "Medication name is required"),
+      dosage: z.string().min(1, "Dosage is required"),
+      frequency: z.string().min(1, "Frequency is required"),
+      lastTaken: z.string().optional(),
+    }),
+  ),
+  lastMeal: z.object({
+    time: z.string().min(1, "Time is required"),
+    description: z.string().optional(),
+  }),
   surgicalHistory: z.array(
     z.object({
       procedure: z.string().min(1, "Procedure is required"),
@@ -984,8 +984,8 @@ export const PastMedicalHistorySchema = z.object({
       complications: z.string().optional(),
     }),
   ),
-  // familyHistory: z.array(z.string()).default([]),
-  familyHistory: z.string(), // made it a string for now, TODO: change it to an array
+  familyHistory: z.array(z.string()).default([]),
+  // familyHistory: z.string(), // made it a string for now, TODO: change it to an array
   additionalNotes: z.string().optional(),
 });
 

@@ -89,17 +89,49 @@ export default function PrimarySurveyForm() {
         prfId,
         "primary_survey",
       );
-      return section.data;
+
+      const assessmentType =
+        section.data.disability.assessmentType?.length > 0
+          ? section.data.disability.assessmentType
+          : "GCS";
+
+      const baseDisability: Pick<
+        PrimarySurveyType["disability"],
+        "combative" | "spinal" | "location"
+      > = {
+        combative: section.data.disability.combative,
+        spinal: section.data.disability.spinal,
+        location: section.data.disability.location,
+      };
+
+      const disability =
+        assessmentType === "GCS"
+          ? {
+              ...baseDisability,
+              assessmentType: "GCS" as const,
+              initialGCS: section.data.disability.initialGCS || {
+                total: "",
+                motor: "",
+                verbal: "",
+                eyes: "",
+              },
+              AVPU: null,
+            }
+          : {
+              ...baseDisability,
+              assessmentType: "AVPU" as const,
+              initialGCS: null,
+              AVPU: section.data.disability.AVPU || { value: "A" },
+            };
+
+      return {
+        ...section.data,
+        disability,
+      };
     },
   });
 
   function onSubmit(values: PrimarySurveyType) {
-    console.log("VALUES -> ", values);
-    // remove explain deformity if it is not present
-    if (!form.getValues("disability.spinal.motorFunction.deformity.present")) {
-      values.disability.spinal.motorFunction.deformity.explanation = "";
-    }
-
     updatePrfQuery.mutate(
       { data: values, isCompleted: true },
       {
@@ -159,6 +191,10 @@ export default function PrimarySurveyForm() {
               type="submit"
               disabled={!form.formState.isDirty}
               className="self-end"
+              onClick={() => {
+                console.log("Form Values -> ", form.getValues());
+                console.log("Form Errors -> ", form.formState.errors);
+              }}
             >
               {form.formState.isSubmitting || updatePrfQuery.isPending ? (
                 <>
@@ -487,6 +523,64 @@ export default function PrimarySurveyForm() {
                   ))}
                 </div>
               </div>
+              <div className="space-y-2">
+                <h5 className="font-bold">Mucosa</h5>
+                <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+                  {Object.keys(
+                    PrimarySurveySchema.shape.circulation.shape.mucosa.shape,
+                  ).map((key) => (
+                    <FormField
+                      key={key}
+                      control={form.control}
+                      name={
+                        `circulation.mucosa.${key}` as FieldPath<PrimarySurveyType>
+                      }
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value as boolean}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormLabel className="font-normal capitalize">
+                            {key.split(/(?=[A-Z])/).join(" ")}
+                          </FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <h5 className="font-bold">CRT</h5>
+                <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+                  {Object.keys(
+                    PrimarySurveySchema.shape.circulation.shape.CRT.shape,
+                  ).map((key) => (
+                    <FormField
+                      key={key}
+                      control={form.control}
+                      name={
+                        `circulation.CRT.${key}` as FieldPath<PrimarySurveyType>
+                      }
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value as boolean}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormLabel className="font-normal capitalize">
+                            {key.split(/(?=[A-Z])/).join(" ")}
+                          </FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
             </AccordionContent>
           </AccordionItem>
 
@@ -677,7 +771,14 @@ export default function PrimarySurveyForm() {
                   <div className="space-y-2">
                     <h6 className="font-medium">Motor Function</h6>
                     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                      {Object.keys(SpinalSchema.shape.motorFunction.shape).map(
+                      {Object.entries(
+                        SpinalSchema.shape.motorFunction.shape,
+                      )
+                        .filter(([, schema]) => schema instanceof z.ZodBoolean)
+                        .map(([key]) =>
+                          key,
+                        )
+                        .map(
                         (key) => {
                           return (
                             <FormField
@@ -690,22 +791,8 @@ export default function PrimarySurveyForm() {
                                 <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                                   <FormControl>
                                     <Checkbox
-                                      checked={
-                                        key === "deformity"
-                                          ? form.getValues(
-                                              "disability.spinal.motorFunction.deformity.present",
-                                            )
-                                          : !!field.value
-                                      }
-                                      onCheckedChange={(checked) => {
-                                        field.onChange(checked);
-                                        if (key === "deformity") {
-                                          form.setValue(
-                                            "disability.spinal.motorFunction.deformity.present",
-                                            !!checked,
-                                          );
-                                        }
-                                      }}
+                                      checked={!!field.value}
+                                      onCheckedChange={field.onChange}
                                     />
                                   </FormControl>
                                   <FormLabel className="font-normal capitalize">
@@ -718,13 +805,11 @@ export default function PrimarySurveyForm() {
                         },
                       )}
                       {form.watch(
-                        "disability.spinal.motorFunction.deformity.present",
+                        "disability.spinal.motorFunction.deformity",
                       ) && (
                         <FormField
                           control={form.control}
-                          name={
-                            `disability.spinal.motorFunction.deformity.explanation` as FieldPath<PrimarySurveyType>
-                          }
+                          name={`disability.spinal.motorFunction.deformityExplanation`}
                           render={({ field }) => (
                             <FormItem className="col-span-full">
                               <FormLabel className="font-normal capitalize">
@@ -810,6 +895,10 @@ export default function PrimarySurveyForm() {
             type="submit"
             disabled={!form.formState.isDirty}
             className="self-end"
+            onClick={() => {
+              console.log("Form Values -> ", form.getValues());
+              console.log("Form Errors -> ", form.formState.errors);
+            }}
           >
             {form.formState.isSubmitting || updatePrfQuery.isPending ? (
               <>
