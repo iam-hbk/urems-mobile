@@ -40,13 +40,6 @@ export default function LegacyPrfPage() {
           data={PRFtemplateWithResponses.formResponses}
         />
       )}
-      {/* <div className="flex flex-col bg-green-600 w-full gap-4">
-        {[...new Array(100)].map((_, index) => (
-          <div key={index} className="h-10 w-10 bg-red-500">
-            {index}
-          </div>
-        ))}
-      </div> */}
     </div>
   );
 }

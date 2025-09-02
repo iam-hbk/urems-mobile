@@ -10,6 +10,7 @@ import {
 } from "@/hooks/prf/usePrfForms";
 import { useAuthedUser } from "@/hooks/auth/useSession";
 import { toast } from "sonner";
+import { PrintPRF } from "./PrintPRF";
 
 interface SubmitPrfButtonProps {
   className?: string;
@@ -96,9 +97,12 @@ export function SubmitPrfButton({
 
   if (responseStatus === "completed") {
     return (
-      <div className="flex items-center gap-2 rounded-md border border-green-700 px-2 py-1 text-green-700">
-        <CheckCircleIcon className="mr-2 h-4 w-4" />
-        PRF Saved
+      <div className="flex items-center gap-2">
+        <PrintPRF prfResponseId={prfID} />
+        <div className="flex items-center gap-2 rounded-md border border-green-700 px-2 py-1 text-green-700">
+          <CheckCircleIcon className="mr-2 h-4 w-4" />
+          PRF Saved
+        </div>
       </div>
     );
   }

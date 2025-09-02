@@ -6,6 +6,7 @@ import {
   PRF_FORM_PRIMARY_SURVEY,
   PRF_FORM_SECONDARY_SURVEY,
   PRF_FORM_TRANSPORTATION,
+  PRF_FORM_DATA,
 } from "@/interfaces/prf-form";
 import {
   PatientDetailsSchema,
@@ -136,3 +137,9 @@ export function updatePrfResponse<T extends SectionName>(
     data,
   );
 }
+
+export const getFullPrfResponse = (
+  prfResponseId: string,
+): ApiResult<PRF_FORM_DATA> => {
+  return api.get<PRF_FORM_DATA>(`/FormResponses/${prfResponseId}/prf-data`);
+};
