@@ -12,12 +12,20 @@ import {
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
 import { Ellipsis } from "lucide-react";
+import { Row } from "@tanstack/react-table";
+import { PrintPRF } from "../PrintPRF";
 
-// interface DataTableRowActionsProps<TData> {
-//   row: Row<TData>;
-// }
+interface DataTableRowActionsProps<TData> {
+  row: Row<TData>;
+  responseId: string;
+}
 
-export function DataTableRowActions() {
+export function DataTableRowActions<TData>(
+  {
+    // row,
+    // responseId,
+  }: DataTableRowActionsProps<TData>,
+) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -32,7 +40,6 @@ export function DataTableRowActions() {
       <DropdownMenuContent align="end" className="w-[160px]">
         <DropdownMenuItem>Edit</DropdownMenuItem>
         <DropdownMenuItem>Make a copy</DropdownMenuItem>
-        <DropdownMenuItem>Favorite</DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
           Delete

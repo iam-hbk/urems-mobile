@@ -4,7 +4,6 @@ import { ColumnDef } from "@tanstack/react-table";
 
 import { PRF_TABLE_SECTION_DATA } from "./schema";
 import { DataTableColumnHeader } from "./data-table-column-header";
-import { DataTableRowActions } from "./data-table-row-actions";
 import { Checkbox } from "../ui/checkbox";
 import { priorities, statuses } from "./helper-data";
 import { cn } from "@/lib/utils";
@@ -117,9 +116,5 @@ export const columns: ColumnDef<PRF_TABLE_SECTION_DATA>[] = [
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
     },
-  },
-  {
-    id: "actions",
-    cell: () => <DataTableRowActions />,
   },
 ];

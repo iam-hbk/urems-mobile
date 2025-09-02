@@ -34,6 +34,7 @@ import {
   SectionDataTypeMap,
   getPrfResponseStatus,
   updatePrfResponseMetadata,
+  getFullPrfResponse,
 } from "@/lib/api/prf-api";
 
 export const useGetPrfForms = () => {
@@ -301,6 +302,27 @@ export const useUpdatePrfResponseMetadata = (prfResponseId: string) => {
           console.error(
             `Failed to update PRF response metadata: ${error.detail}`,
           );
+        },
+      );
+    },
+  });
+};
+
+export const useGetFullPrfResponse = (prfResponseId: string) => {
+  return useQuery<PRF_FORM_DATA, ApiError>({
+    queryKey: ["fullPrfResponse", prfResponseId],
+    queryFn: async () => {
+      const result = await getFullPrfResponse(prfResponseId);
+      return result.match(
+        (data) => {
+          // delete the history_taking and interventions sections
+          if ('history_taking' in data) delete data.history_taking;
+          if ('interventions' in data) delete data.interventions;
+          return data;
+        },
+        (error) => {
+          toast.error(`Error fetching full PRF response: ${error.detail}`);
+          throw error;
         },
       );
     },

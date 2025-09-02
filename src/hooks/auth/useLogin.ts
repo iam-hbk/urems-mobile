@@ -1,4 +1,3 @@
-
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -13,6 +12,7 @@ import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 import { cookieNameAccessToken, cookieNameUserId } from "@/utils/constant";
 import { getCookie, setCookie } from "@/utils/cookies";
 import { login } from "@/lib/auth/apis";
+import { ApiError } from "@/types/api";
 
 export const useLoginMutation = () => {
   const router = useRouter();
@@ -27,7 +27,8 @@ export const useLoginMutation = () => {
 
         let token = await getCookie(cookieNameAccessToken);
 
-        if (!token) { // when no access token is founed
+        if (!token) {
+          // when no access token is founed
 
           // set cookie manually. bc cookie might have failed to set, if not available
           await setCookie(cookieNameAccessToken, access_token);
@@ -52,7 +53,8 @@ export const useLoginMutation = () => {
       }
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Login failed");
+      const errorDetails = JSON.parse(error.message) as ApiError;
+      toast.error(errorDetails.detail || "Login failed");
     },
   });
 };

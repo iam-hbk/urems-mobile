@@ -32,7 +32,7 @@ import { X } from "lucide-react";
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { CalendarDate, DateValue, today } from "@internationalized/date";
 import { RangeValue } from "@react-types/shared";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import { FormResponseSummary } from "@/types/form-template";
 
 interface DataTableProps {
@@ -56,7 +56,6 @@ export const dateRangeFilter: FilterFn<FormResponseSummary> = (
 };
 
 export function DataTable({ columns, data }: DataTableProps) {
-  const router = useRouter();
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -179,10 +178,6 @@ export function DataTable({ columns, data }: DataTableProps) {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  onClick={() => {
-                    router.push(`/edit-prf/${row.original.id}`);
-                  }}
-                  className="cursor-pointer"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
