@@ -2,14 +2,13 @@
 import React, { use } from "react";
 import FormFillProgress from "@/components/progress-ring";
 import PRFEditSummary from "@/components/the-prf-form/case-details-section";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, UploadCloudIcon } from "lucide-react";
 import {
   useGetPRFResponseMetadata,
   useGetPRFResponseSectionByName,
 } from "@/hooks/prf/usePrfForms";
 import PRF_DATA_TASKS from "@/components/form-task-details-table";
+import { SubmitPrfButton } from "@/components/submit-prf-button";
 
 type Params = Promise<{ prfID: string }>;
 
@@ -48,19 +47,11 @@ export default function Page(props: { params: Params }) {
           {`Patient Report Form #${prfID.split("-")[0]}`}
         </h2>
         <div className="flex flex-row items-center gap-2">
-          <Button disabled={true} onClick={() => {}}>
-            {false ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Submitting the PRF
-              </>
-            ) : (
-              <>
-                <UploadCloudIcon className="mr-2 h-4 w-4" />
-                Submit PRF
-              </>
-            )}
-          </Button>
+          <SubmitPrfButton
+            responseStatus={
+              prfResponseMetadata.isCompleted ? "completed" : "draft"
+            }
+          />
         </div>
       </section>
       {/* Case Details */}

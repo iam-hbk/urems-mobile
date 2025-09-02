@@ -36,15 +36,15 @@ function Layout(props: { children: React.ReactNode; params: Params }) {
   return (
     <div className="flex w-full flex-col items-center overflow-auto">
       {/* Command Palette */}
-      {/* <CommandPalette
+      <CommandPalette
         open={showCommandPalette}
         onOpenChangeAction={setShowCommandPalette}
-      /> */}
+      />
 
       {/* Header */}
       <div className="sticky top-2 z-10 m-2 flex w-11/12 flex-col items-center justify-between space-y-2 rounded-lg p-2 shadow shadow-slate-200 backdrop-blur">
         {/* showQuickLinks - to show the quick links components */}
-        {/* {showQuickLinks && <QuickLinks />} */}
+        {showQuickLinks && <QuickLinks />}
 
         <div className="flex w-full items-center justify-between">
           <div className="mt-[1rem] flex items-center gap-2 sm:mt-[0rem]">
@@ -74,7 +74,7 @@ function Layout(props: { children: React.ReactNode; params: Params }) {
                 <span className="ml-[0.5rem]">Search (⌘K)</span>
               </Button>
 
-              {/* <StepperView triggerTitle="View Progress"></StepperView> */}
+              <StepperView triggerTitle="View Progress" />
             </div>
 
             {/* Mobile view */}

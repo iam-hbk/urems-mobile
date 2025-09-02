@@ -6,6 +6,8 @@ import { DataTableColumnHeader } from "../form-task-details-table/data-table-col
 import { Button } from "../ui/button";
 import { dateRangeFilter } from "./data-table";
 import Link from "next/link";
+import { Badge } from "../ui/badge";
+import { cn } from "@/lib/utils";
 
 const fuzzyFilter: FilterFn<FormResponseSummary> = (
   row,
@@ -87,7 +89,18 @@ export const columns: ColumnDef<FormResponseSummary>[] = [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => {
-      return row.original.isCompleted ? "Completed" : "Draft";
+      const isCompleted = row.original.isCompleted;
+      const message = isCompleted ? "Completed" : "Draft";
+      return (
+        <Badge
+          className={cn("rounded-md bg-none", {
+            "bg-green-600 hover:bg-green-800": isCompleted,
+            "bg-yellow-600 hover:bg-yellow-800": !isCompleted,
+          })}
+        >
+          {message}
+        </Badge>
+      );
     },
   },
 ];

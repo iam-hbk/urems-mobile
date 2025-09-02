@@ -15,6 +15,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { formsColumns as columns } from "@/components/forms-table/columns";
 
 import { DataTablePagination } from "../form-task-details-table/data-table-pagination";
 import { DataTableViewOptions } from "../form-task-details-table/data-table-view-options";
@@ -32,11 +33,10 @@ import {
 import { FormTemplateSummary } from "@/types/form-template";
 
 interface FormsDataTableProps {
-  columns: ColumnDef<FormTemplateSummary>[];
   data: FormTemplateSummary[];
 }
 
-export function FormsDataTable({ columns, data }: FormsDataTableProps) {
+export function FormsDataTable({ data }: FormsDataTableProps) {
   const [rowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});

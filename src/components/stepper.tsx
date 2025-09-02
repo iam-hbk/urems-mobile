@@ -1,8 +1,9 @@
 "use client";
 import {
-  PRF_FORM,
   PRF_FORM_DATA,
   PRF_FORM_DATA_DISPLAY_NAMES,
+  PRFormResponseStatus,
+  SectionName,
 } from "@/interfaces/prf-form";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -11,6 +12,7 @@ import { PRFFormDataSchema } from "@/interfaces/prf-schema";
 import { z } from "zod";
 import { usePathname } from "next/navigation";
 import { sectionDescriptions } from "@/interfaces/prf-form";
+import { useGetPRFResponseSectionStatus } from "@/hooks/prf/usePrfForms";
 
 type StepStatus = "complete" | "completing";
 
@@ -69,20 +71,20 @@ function Step({
   });
 
   return (
-    <div className="flex flex-col items-center w-full ">
+    <div className="flex w-full flex-col items-center">
       <Link href={sectionUrl ? sectionUrl : "#"}>
         <div
-          className={`flex items-center space-x-2 transition-all rounded-full p-2 px-8 ${hoverBg} !${hoverText} ${isCurrentStepStyle}`}
+          className={`flex items-center space-x-2 rounded-full p-2 px-8 transition-all ${hoverBg} !${hoverText} ${isCurrentStepStyle}`}
         >
           <div
             className={cn(
-              "flex items-center justify-center w-8 h-8 rounded-full",
-              bg
+              "flex h-8 w-8 items-center justify-center rounded-full",
+              bg,
             )}
           >
             {number}
           </div>
-          <div className={`text-sm capitalize `}>
+          <div className={`text-sm capitalize`}>
             <div>{title}</div>
             {optional && (
               <div className="text-xs">
@@ -94,7 +96,7 @@ function Step({
         </div>
       </Link>
       {!isLastStep && (
-        <div className="h-6 w-1 m-1 bg-gray-300" style={{ width: "1px" }} />
+        <div className="m-1 h-6 w-1 bg-gray-300" style={{ width: "1px" }} />
       )}
     </div>
   );
@@ -109,7 +111,7 @@ type StepItem = {
 
 function Steps({ steps }: { steps: StepItem[] }) {
   return (
-    <div className="flex items-start flex-col">
+    <div className="flex flex-col items-start">
       {steps.map((step, index) => (
         <Step
           key={index}
@@ -125,46 +127,50 @@ function Steps({ steps }: { steps: StepItem[] }) {
   );
 }
 
-type StepperProps = {
-  prf: PRF_FORM;
-};
-export function Stepper({ prf }: StepperProps) {
-  const prfDataSections = Object.keys(
-    PRFFormDataSchema.shape
-  ) as Array<keyof PRF_FORM_DATA>;
+export function Stepper() {
+  const pathname = usePathname();
+  const prfID = pathname.split("/")[2]; // Extract prfID from /edit-prf/[prfID]/...
 
-  const prf_data: StepItem[] = prfDataSections.map((sectionKey) => {
-    const sectionSchema = PRFFormDataSchema.shape[sectionKey];
+  const {
+    data: statusData,
+    isLoading,
+    error,
+  } = useGetPRFResponseSectionStatus(prfID);
 
-    // Unwrap the ZodOptional to get the inner ZodObject
-    const innerSchema =
-      sectionSchema instanceof z.ZodOptional
-        ? sectionSchema._def.innerType
-        : sectionSchema;
+  if (isLoading) {
+    return (
+      <div className="p-4">
+        <div className="flex items-center justify-center">
+          <div className="text-sm text-gray-500">Loading progress...</div>
+        </div>
+      </div>
+    );
+  }
 
-    // Check if `isOptional` has a default value set
-    const innerObject = innerSchema as z.ZodObject<SectionInnerShape>;
-    const isOptional = innerObject.shape.isOptional instanceof z.ZodDefault;
+  if (error || !statusData) {
+    return (
+      <div className="p-4">
+        <div className="flex items-center justify-center">
+          <div className="text-sm text-red-500">
+            Error loading progress data
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-    const sectionData = prf.prfData[sectionKey];
-
-    // Determine if the section is optional
-    const priority = sectionData
-      ? sectionData.isOptional
-        ? "optional"
-        : "required"
-      : isOptional
-      ? "required"
-      : "optional";
+  // Map the status data to StepItem format
+  const prf_data: StepItem[] = statusData.sections.map((section) => {
+    const sectionKey = section.sectionName as keyof typeof PRF_FORM_DATA_DISPLAY_NAMES;
     const route =
       sectionKey === "case_details"
-        ? `/edit-prf/${prf.prfFormId}`
-        : `/edit-prf/${prf.prfFormId}/${sectionKey.replace(/_/g, "-")}`;
+        ? `/edit-prf/${prfID}`
+        : `/edit-prf/${prfID}/${sectionKey.replace(/_/g, "-")}`;
 
     return {
       title: PRF_FORM_DATA_DISPLAY_NAMES[sectionKey],
-      isOptional: priority === "optional",
-      status: sectionData?.isCompleted ? "complete" : "completing",
+      isOptional: !section.isRequired, // If not required, then it's optional
+      status: section.isCompleted ? "complete" : "completing",
       route,
     };
   });

@@ -34,15 +34,15 @@ import {
   PersonStanding,
 } from "lucide-react";
 import {
-  PRF_FORM,
-  PRF_FORM_DATA,
   PRF_FORM_DATA_DISPLAY_NAMES,
   sectionDescriptions,
+  PRFormResponseStatus,
+  SectionName,
 } from "@/interfaces/prf-form";
-import { PRFFormDataSchema } from "@/interfaces/prf-schema";
-import { z } from "zod";
 import { cn } from "@/lib/utils";
 import { Badge } from "./ui/badge";
+import { useGetPRFResponseSectionStatus } from "@/hooks/prf/usePrfForms";
+import { usePathname } from "next/navigation";
 
 // utils
 const animations = ["animate-shake1", "animate-shake2", "animate-shake3"];
@@ -71,12 +71,23 @@ export const iconMap = {
 };
 
 // QuickLinks Component
-export default function QuickLinks({ prf }: { prf: PRF_FORM }) {
+export default function QuickLinks() {
   const [visibleItems, setVisibleItems] = useState<string[]>([]);
   const [customizing, setCustomizing] = useState(false);
 
+  const pathname = usePathname();
+  const prfID = pathname.split("/")[2]; // Extract prfID from /edit-prf/[prfID]/...
+
+  const {
+    data: statusData,
+    isLoading,
+    error,
+  } = useGetPRFResponseSectionStatus(prfID);
+
   useEffect(() => {
-    const shapedData = getPrfDataShapedSectionsForQuickLinks(prf);
+    if (!statusData) return;
+
+    const shapedData = getPrfDataShapedSectionsForQuickLinks(statusData, prfID);
     const savedItems = localStorage.getItem("visibleNavItems");
     if (savedItems) {
       setVisibleItems(JSON.parse(savedItems));
@@ -87,7 +98,7 @@ export default function QuickLinks({ prf }: { prf: PRF_FORM }) {
         .map((item) => item.sectionDescription);
       setVisibleItems(initialItems);
     }
-  }, [prf]);
+  }, [statusData, prfID]);
 
   const toggleItem = (item: string) => {
     setVisibleItems((prev) => {
@@ -122,6 +133,28 @@ export default function QuickLinks({ prf }: { prf: PRF_FORM }) {
     });
   };
 
+  if (isLoading) {
+    return (
+      <nav className="w-full rounded-lg border p-4">
+        <div className="flex items-center justify-center">
+          <div className="text-sm text-gray-500">Loading quick links...</div>
+        </div>
+      </nav>
+    );
+  }
+
+  if (error || !statusData) {
+    return (
+      <nav className="w-full rounded-lg border p-4">
+        <div className="flex items-center justify-center">
+          <div className="text-sm text-red-500">
+            Error loading quick links data
+          </div>
+        </div>
+      </nav>
+    );
+  }
+
   return (
     <nav className="w-full rounded-lg border p-4">
       <div className="flex flex-wrap items-start gap-2">
@@ -129,7 +162,7 @@ export default function QuickLinks({ prf }: { prf: PRF_FORM }) {
           {visibleItems.map((item) => {
             const randomAnimation =
               animations[Math.floor(Math.random() * animations.length)];
-            const optionData = getPrfDataShapedSectionsForQuickLinks(prf).find(
+            const optionData = getPrfDataShapedSectionsForQuickLinks(statusData, prfID).find(
               (section) => section.sectionDescription === item,
             );
             // if (!optionData) return null;
@@ -236,40 +269,18 @@ export default function QuickLinks({ prf }: { prf: PRF_FORM }) {
     </nav>
   );
 }
-const getPrfDataShapedSectionsForQuickLinks = (prf: PRF_FORM) => {
-  return Object.entries(PRFFormDataSchema.shape).map(([sectionKey]) => {
-    const sectionSchema =
-      PRFFormDataSchema.shape[sectionKey as keyof PRF_FORM_DATA];
-
-    // Unwrap the ZodOptional to get the inner ZodObject
-    const innerSchema =
-      sectionSchema instanceof z.ZodOptional
-        ? sectionSchema._def.innerType
-        : sectionSchema;
-
-    // Check if `isOptional` has a default value set
-    const isOptional = innerSchema.shape.isOptional instanceof z.ZodDefault;
-
-    const sectionData = prf.prfData[sectionKey as keyof PRF_FORM_DATA];
-
-    // Determine if the section is optional
-    const priority = sectionData
-      ? sectionData.isOptional
-        ? "optional"
-        : "required"
-      : isOptional
-        ? "required"
-        : "optional";
+const getPrfDataShapedSectionsForQuickLinks = (statusData: PRFormResponseStatus, prfID: string) => {
+  return statusData.sections.map((section) => {
+    const sectionKey = section.sectionName as keyof typeof PRF_FORM_DATA_DISPLAY_NAMES;
     const route =
       sectionKey === "case_details"
-        ? `${prf.prfFormId}/#`
-        : `${prf.prfFormId}/${sectionKey.replace(/_/g, "-")}`;
+        ? `${prfID}`
+        : `${prfID}/${sectionKey.replace(/_/g, "-")}`;
 
     return {
-      sectionDescription:
-        PRF_FORM_DATA_DISPLAY_NAMES[sectionKey as keyof PRF_FORM_DATA],
-      priority,
-      status: sectionData?.isCompleted ? "completed" : "incomplete",
+      sectionDescription: PRF_FORM_DATA_DISPLAY_NAMES[sectionKey],
+      priority: section.isRequired ? "required" : "optional",
+      status: section.isCompleted ? "completed" : "incomplete",
       route,
       icon: iconMap[sectionKey as keyof typeof iconMap],
     };

@@ -33,6 +33,7 @@ import {
   updatePrfResponse,
   SectionDataTypeMap,
   getPrfResponseStatus,
+  updatePrfResponseMetadata,
 } from "@/lib/api/prf-api";
 
 export const useGetPrfForms = () => {
@@ -280,6 +281,26 @@ export const useGetPRFResponseSectionStatus = (prfResponseId: string) => {
         (error) => {
           toast.error(`Error fetching PRF response status: ${error.detail}`);
           throw error;
+        },
+      );
+    },
+  });
+};
+
+export const useUpdatePrfResponseMetadata = (prfResponseId: string) => {
+  return useMutation({
+    mutationFn: (data: PRF_FORM_RESPONSE_METADATA) => {
+      return updatePrfResponseMetadata(prfResponseId, data);
+    },
+    onSuccess: (result) => {
+      result.match(
+        () => {
+          console.log("PRF response metadata updated successfully!");
+        },
+        (error) => {
+          console.error(
+            `Failed to update PRF response metadata: ${error.detail}`,
+          );
         },
       );
     },

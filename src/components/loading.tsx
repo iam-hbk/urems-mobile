@@ -15,8 +15,8 @@ export default function LoadingComponent({
       <Image
         src="/urems-erp.png"
         alt="UREMS ERP"
-        width={100}
-        height={100}
+        width={30}
+        height={30}
         className="animate-ping"
       />
       <p className="mt-[0.7rem] text-xl text-black">{message}</p>

@@ -101,6 +101,17 @@ export const getPrfResponseMetadata = (
   );
 };
 
+export const updatePrfResponseMetadata = (
+  prfResponseId: string,
+  data: PRF_FORM_RESPONSE_METADATA,
+): ApiResult<PRF_FORM_RESPONSE_METADATA> => {
+  return api.post<PRF_FORM_RESPONSE_METADATA>(
+    `/FormResponses/${prfResponseId}/prf-ingest`,
+    // http://localhost:7089/api/formresponses/0dfeab54-5621-4985-95b9-c1774398836a/prf-ingest
+    data,
+  );
+};
+
 export const getPrfResponseStatus = (
   prfResponseId: string,
 ): ApiResult<PRFormResponseStatus> => {
