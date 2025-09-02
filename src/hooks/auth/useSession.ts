@@ -46,16 +46,19 @@ export const useSessionQuery = () => {
 export function useGetUser() {
   return useQuery({
     queryKey: ["getUser"],
-    queryFn: async () => {
-      const data = await getUser();
-      console.log("user-data", data);
-      return data.match(
-        (data) => data,
-        (e) => {
-          toast.error(`Error loading user: ${e.detail}`);
-          throw e;
-        },
-      );
+    queryFn: async (): Promise<Session["user"]> => {
+      try {
+        const data = await getUser();
+        return data;
+      } catch (error) {
+        console.error("Error loading user:", error);
+        if (error instanceof Error) {
+          toast.error(`Error loading user: ${error.message}`);
+        } else {
+          toast.error("Error loading user");
+        }
+        throw error;
+      }
     },
   });
 }

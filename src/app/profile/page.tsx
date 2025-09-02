@@ -1,5 +1,4 @@
 import { MailIcon } from "lucide-react";
-import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { getUser, UserData } from "@/lib/auth/dal";
 import ChangePasswordForm from "@/components/changePasswordForm";
@@ -31,8 +30,8 @@ export default async function EmployeeProfilePage() {
             <AvatarFallback>
               {getInitials(
                 userData.initials ||
-                `${userData.firstName || ''}${userData.lastName?.[0] || ''}` ||
-                'U'
+                  `${userData.firstName || ""}${userData.lastName?.[0] || ""}` ||
+                  "U",
               )}
             </AvatarFallback>
           </Avatar>
@@ -40,9 +39,7 @@ export default async function EmployeeProfilePage() {
             <CardTitle className="capitalize">
               {`${userData.firstName} ${userData.lastName}`}
             </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {userData.userName}
-            </p>
+            <p className="text-sm text-muted-foreground">{userData.userName}</p>
             <Badge variant="secondary" className="mr-2 mt-2">
               Role
             </Badge>

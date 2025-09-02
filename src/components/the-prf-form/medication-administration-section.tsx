@@ -130,9 +130,9 @@ export default function MedicationAdministeredForm() {
         }),
         unknown: false,
       },
-      hpcsa: user?.hpcsaNumber || "",
-      name: user?.person?.firstName + " " + user?.person?.lastName || "",
-      signature: user?.signature || "",
+      hpcsa: "", // HPCSA number not available in current user data
+      name: user ? `${user.firstName} ${user.lastName}` : "",
+      signature: "", // Signature not available in current user data
     });
   }, [append, user]);
 
@@ -220,10 +220,7 @@ export default function MedicationAdministeredForm() {
               Medication Administered
             </h3>
           </div>
-          <pre>
-            user
-            {JSON.stringify(user, null, 2)}
-          </pre>
+
           <AccordionItem value="medication-administered">
             <AccordionTrigger
               className={cn({

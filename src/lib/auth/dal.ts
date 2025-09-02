@@ -8,7 +8,7 @@ import type { ApiError } from "@/types/api";
 import { UserTokenCookieName } from "./config";
 import { API_BASE_URL } from "../wretch";
 import { cookieNameUserId } from "@/utils/constant";
-import { typeEmployee } from "@/types/person";
+// import { typeEmployee } from "@/types/person";
 
 export type UserData = {
   firstName: string;
@@ -75,6 +75,26 @@ export const verifySession = cache(
         const errorJson = (await response
           .json()
           .catch(() => ({}))) as Partial<ApiError>;
+
+        // Treat 401/404 as authentication errors: clear cookies and signal auth failure
+        if (response.status === 401 || response.status === 404) {
+          const store = await cookies();
+          try {
+            store.delete(UserTokenCookieName);
+            store.delete(cookieNameUserId);
+            store.delete("user_id");
+          } catch {
+            // ignore cookie delete issues
+          }
+
+          return err({
+            type: "AuthenticationError",
+            title: errorJson.title || "Not authenticated",
+            status: response.status,
+            detail: errorJson.detail || "User not found or session expired.",
+          });
+        }
+
         return err({
           type: errorJson.type || "ApiError",
           title: errorJson.title || "Session verification failed",
