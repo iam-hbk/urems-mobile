@@ -1,6 +1,6 @@
 import React from "react";
-import { ProgressRing } from "@/components/response-meta-table/section-progress-ring";
-import { ResponseMetaCard } from "@/components/response-meta-table/response-meta-card";
+// import { ProgressRing } from "@/components/response-meta-table/section-progress-ring";
+// import { ResponseMetaCard } from "@/components/response-meta-table/response-meta-card";
 import { fetchFormTemplateById } from "@/lib/api/dynamic-forms-api";
 import { notFound } from "next/navigation";
 import { ClientFormResponsePage } from "./client-form-response-page";
@@ -32,7 +32,7 @@ export default async function RootFormResponseSectionPage({
 
   return (
     <div className="container mx-auto space-y-8 px-2 py-4 md:px-0">
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+      {/* <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <div className="md:col-span-2">
           <ResponseMetaCard response={undefined} template={formTemplate} />
         </div>
@@ -43,7 +43,7 @@ export default async function RootFormResponseSectionPage({
             <ProgressRing progress={0} className="scale-110 transform" />
           </div>
         </div>
-      </div>
+      </div> */}
 
       <div>
         <h2 className="mb-4 text-xl font-semibold">Form Sections</h2>

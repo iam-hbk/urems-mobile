@@ -1,4 +1,3 @@
-
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -13,6 +12,7 @@ import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 import { cookieNameAccessToken, cookieNameUserId } from "@/utils/constant";
 import { getCookie, setCookie } from "@/utils/cookies";
 import { login } from "@/lib/auth/apis";
+import { ApiError } from "@/types/api";
 
 export const useLoginMutation = () => {
   const router = useRouter();
@@ -22,13 +22,13 @@ export const useLoginMutation = () => {
   return useMutation({
     mutationFn: login,
     onSuccess: async (result) => {
-
       if (result.isOk()) {
         const { access_token, user_id } = result.value;
 
         let token = await getCookie(cookieNameAccessToken);
 
-        if (!token) { // when no access token is founed
+        if (!token) {
+          // when no access token is founed
 
           // set cookie manually. bc cookie might have failed to set, if not available
           await setCookie(cookieNameAccessToken, access_token);
@@ -53,7 +53,8 @@ export const useLoginMutation = () => {
       }
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Login failed");
+      const errorDetails = JSON.parse(error.message) as ApiError;
+      toast.error(errorDetails.detail || "Login failed");
     },
   });
 };
@@ -66,7 +67,7 @@ export const useSendPasswordResetCodeMutation = () => {
         toast.success("Password reset code sent! Please check your email.");
         // In development, show the code for testing
         if (result.value.code) {
-          console.log("Development reset code:", result.value.code);
+          // console.log("Development reset code:", result.value.code);
         }
       } else {
         toast.error(result.error.detail);
@@ -107,7 +108,7 @@ export const useSendConfirmationCodeMutation = () => {
         toast.success("Confirmation code sent! Please check your email.");
         // In development, show the code for testing
         if (result.value.code) {
-          console.log("Development confirmation code:", result.value.code);
+          // console.log("Development confirmation code:", result.value.code);
         }
       } else {
         toast.error(result.error.detail);

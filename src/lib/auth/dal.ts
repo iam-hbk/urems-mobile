@@ -1,4 +1,4 @@
-'use server'
+"use server";
 
 import "server-only";
 import { cookies } from "next/headers";
@@ -8,7 +8,7 @@ import type { ApiError } from "@/types/api";
 import { UserTokenCookieName } from "./config";
 import { API_BASE_URL } from "../wretch";
 import { cookieNameUserId } from "@/utils/constant";
-import { typeEmployee } from "@/types/person";
+// import { typeEmployee } from "@/types/person";
 
 export type UserData = {
   firstName: string;
@@ -17,14 +17,12 @@ export type UserData = {
   gender: string;
   id: string;
   email: string;
-  userName: string;
-  role: string;
-  employeeType: string;
-  employeeId?: number;
+  userName: string | null;
+  dateOfBirth: string;
 };
 
 export type Session = {
-  user: typeEmployee;
+  user: UserData;
   token: string;
 };
 
@@ -33,7 +31,7 @@ export const verifySession = cache(
   async (): Promise<Result<Session, ApiError>> => {
     const cookieStore = await cookies();
     const token = cookieStore.get(UserTokenCookieName)?.value;
-    const userId = cookieStore.get(cookieNameUserId)?.value
+    const userId = cookieStore.get(cookieNameUserId)?.value;
 
     // console.log(' ... api url ... ', API_BASE_URL, token, userId);
 
@@ -60,30 +58,52 @@ export const verifySession = cache(
       // Get all cookies to forward to the backend
       const cookieStore = await cookies();
       const allCookies = cookieStore.getAll();
-      const cookieHeader = allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; ');
+      const cookieHeader = allCookies
+        .map((cookie) => `${cookie.name}=${cookie.value}`)
+        .join("; ");
 
-      const response = await fetch(`${API_BASE_URL}/api/auth/get-employee`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
         headers: {
           "Content-Type": "application/json",
-          "Cookie": cookieHeader,
+          Cookie: cookieHeader,
         },
-        credentials: 'include',
+        credentials: "include",
       });
+      // console.log(" ... response ... ", response);
 
       if (!response.ok) {
         const errorJson = (await response
           .json()
           .catch(() => ({}))) as Partial<ApiError>;
+
+        // Treat 401/404 as authentication errors: clear cookies and signal auth failure
+        if (response.status === 401 || response.status === 404) {
+          const store = await cookies();
+          try {
+            store.delete(UserTokenCookieName);
+            store.delete(cookieNameUserId);
+            store.delete("user_id");
+          } catch {
+            // ignore cookie delete issues
+          }
+
+          return err({
+            type: "AuthenticationError",
+            title: errorJson.title || "Not authenticated",
+            status: response.status,
+            detail: errorJson.detail || "User not found or session expired.",
+          });
+        }
+
         return err({
           type: errorJson.type || "ApiError",
           title: errorJson.title || "Session verification failed",
           status: response.status,
-          detail: errorJson.detail || "The /me endpoint returned an error.",
+          detail: errorJson.detail || "The endpoint returned an error.",
         });
       }
 
-      // const userData: UserData = await response.json();
-      const userData: typeEmployee = await response.json();
+      const userData: UserData = await response.json();
 
       // If we get user data, the session is valid
       return ok({
@@ -103,9 +123,16 @@ export const verifySession = cache(
 );
 
 // Get user data (with session verification)
-export const getUser = cache(async (): Promise<Result<typeEmployee, ApiError>> => {
+export const getUser = cache(async (): Promise<UserData> => {
   const sessionResult = await verifySession();
-  return sessionResult.map((session) => session.user);
+
+  if (sessionResult.isErr()) {
+    const error = sessionResult.error;
+    console.error(`Error loading user: ${error.detail}`);
+    throw error;
+  }
+
+  return sessionResult.value.user;
 });
 
 // Get session token

@@ -17,9 +17,11 @@ import { Accordion } from "@/components/ui/accordion";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Trash2, AlertCircle } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
-import { PRF_FORM } from "@/interfaces/prf-form";
+import {
+  ensurePRFResponseSectionByName,
+  useUpdatePrfResponse,
+} from "@/hooks/prf/usePrfForms";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { InventorySchema, InventoryType } from "@/interfaces/prf-schema";
 import { useZuStandCrewStore } from "@/lib/zuStand/crew";
@@ -34,12 +36,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function InventorySection() {
   const prfId = usePathname().split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find((prf) => {
-    return prf.prfFormId?.toString() === prfId;
-  });
+  const qc = useQueryClient();
 
   const inputRef = React.useRef<HTMLInputElement>(null);
-  //   console.log("PRF From Store -> ", prf_from_store);
   const {
     zsVehicle,
     zsUpdateFluidStock,
@@ -49,7 +48,7 @@ export default function InventorySection() {
   } = useZuStandCrewStore();
   const [activeTab, setActiveTab] = useState("medications");
 
-  const updatePrfQuery = useUpdatePrf();
+  const updatePrfQuery = useUpdatePrfResponse(prfId, "inventory");
   const router = useRouter();
 
   // Create a combined inventory array for the form
@@ -97,20 +96,23 @@ export default function InventorySection() {
 
   const form = useForm<InventoryType>({
     resolver: zodResolver(InventorySchema),
-    values: prf_from_store?.prfData.inventory?.data,
-    defaultValues: prf_from_store?.prfData?.inventory?.data || {
-      items: [],
-      additionalNotes: "",
+    defaultValues: async () => {
+      const section = await ensurePRFResponseSectionByName(
+        qc,
+        prfId,
+        "inventory",
+      );
+      return section.data;
     },
   });
 
   // Initialize form with inventory items that have been used
   useEffect(() => {
     const existingItems = form.getValues().items;
-    console.log("Existing Items -> ", existingItems);
+    // console.log("Existing Items -> ", existingItems);
 
     // If no items have been added yet, initialize with empty array
-    if (existingItems.length === 0) {
+    if ((existingItems && existingItems.length === 0) || !existingItems) {
       form.setValue("items", []);
     }
   }, [form, allInventoryItems]);
@@ -178,34 +180,24 @@ export default function InventorySection() {
       }
     });
 
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        ...prf_from_store?.prfData,
-        inventory: {
-          data: values,
-          isCompleted: true,
-          isOptional: false,
+    updatePrfQuery.mutate(
+      { data: values, isCompleted: true },
+      {
+        onSuccess: () => {
+          toast.success("Inventory Information Updated", {
+            duration: 3000,
+            position: "top-right",
+          });
+          router.push(`/edit-prf/${prfId}`);
+        },
+        onError: () => {
+          toast.error("An error occurred", {
+            duration: 3000,
+            position: "top-right",
+          });
         },
       },
-      EmployeeID: prf_from_store?.EmployeeID || "2",
-    };
-
-    updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: () => {
-        toast.success("Inventory Information Updated", {
-          duration: 3000,
-          position: "top-right",
-        });
-        router.push(`/edit-prf/${prfId}`);
-      },
-      onError: () => {
-        toast.error("An error occurred", {
-          duration: 3000,
-          position: "top-right",
-        });
-      },
-    });
+    );
   }
 
   // Filter inventory items by category for the tabs

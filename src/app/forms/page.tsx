@@ -6,7 +6,6 @@ import { fetchFormTemplates } from "@/lib/api/dynamic-forms-api";
 import LegacyPrfPage from "@/components/legacy-prf-page";
 import { Separator } from "@/components/ui/separator";
 import { FormsDataTable } from "@/components/forms-table/forms-data-table";
-import { formsColumns } from "@/components/forms-table/columns";
 
 export default function FormsListPage() {
   const {
@@ -42,22 +41,20 @@ export default function FormsListPage() {
   return (
     <div className="container mx-auto p-4">
       <div className="space-y-6 p-4">
-        <h2 className="text-2xl font-bold">Available Forms</h2>
+        <div>
+          <h2 className="mb-4 text-2xl font-bold">Patient Report Forms</h2>
+          <LegacyPrfPage />
+        </div>
+        <Separator />
+        <h2 className="text-2xl font-bold">Other Forms</h2>
 
         {formTemplates && !formTemplates.isErr() ? (
-          <FormsDataTable columns={formsColumns} data={formTemplates.value} />
+          <FormsDataTable data={formTemplates.value} />
         ) : (
           <div className="py-8 text-center">
             <p className="text-muted-foreground">No form templates found.</p>
           </div>
         )}
-
-        <Separator />
-
-        <div>
-          <h2 className="mb-4 text-2xl font-bold">Legacy PRF Forms</h2>
-          <LegacyPrfPage />
-        </div>
       </div>
     </div>
   );

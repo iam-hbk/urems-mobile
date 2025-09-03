@@ -9,6 +9,8 @@ export interface typeEmployee {
   employeeType?: EmployeeType;
   certificates?: [];
   stockTransfers?: [];
+  hpcsaNumber?: string;
+  signature?: string;
 }
 
 // / meeds to change this to person

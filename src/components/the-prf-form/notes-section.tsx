@@ -12,65 +12,39 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
-import { PRF_FORM } from "@/interfaces/prf-form";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader } from "lucide-react";
 import { NotesType, NotesSchema } from "@/interfaces/prf-schema";
 import { Textarea } from "../ui/textarea";
+import {
+  ensurePRFResponseSectionByName,
+  useUpdatePrfResponse,
+} from "@/hooks/prf/usePrfForms";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function NotesForm() {
   const prfId = usePathname().split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId,
-  );
-
-  const updatePrfQuery = useUpdatePrf();
+  const qc = useQueryClient();
+  const updatePrfQuery = useUpdatePrfResponse(prfId, "notes");
   const router = useRouter();
-
-  // Get notes from store
-  const { notesByPrfId, updateNotes, clearNotes } = useStore();
-  const savedNotes = notesByPrfId[prfId]?.notes || "";
-
-  // Get the original notes from PRF data
-  const originalNotes = prf_from_store?.prfData?.notes?.data?.notes || "";
 
   const form = useForm<NotesType>({
     resolver: zodResolver(NotesSchema),
-    values: {
-      notes: savedNotes || originalNotes,
+    defaultValues: async () => {
+      const notes = await ensurePRFResponseSectionByName(qc, prfId, "notes");
+      return { notes: notes?.data?.notes || "" };
     },
   });
 
-  // Watch notes changes and update store
-  const notes = form.watch("notes");
-  React.useEffect(() => {
-    if (notes) {
-      updateNotes(prfId, notes);
-    }
-  }, [notes, prfId, updateNotes]);
-
-  // Check if current notes are different from original PRF data
-  const hasChanges = notes !== originalNotes;
-
   function onSubmit(values: NotesType) {
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        ...prf_from_store?.prfData,
-        notes: {
-          data: values,
-          isCompleted: true,
-          isOptional: true,
-        },
-      },
-      EmployeeID: prf_from_store?.EmployeeID || "2",
+    const prfUpdateValue = {
+      data: { notes: values.notes },
+      isCompleted: true,
+      isOptional: true,
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
       onSuccess: () => {
-        clearNotes(prfId);
         toast.success("Notes Updated", {
           duration: 3000,
           position: "top-right",
@@ -139,7 +113,7 @@ export default function NotesForm() {
         <Button
           type="submit"
           disabled={
-            !hasChanges ||
+            !form.formState.isDirty ||
             form.formState.isSubmitting ||
             updatePrfQuery.isPending
           }
@@ -160,7 +134,7 @@ export default function NotesForm() {
         >
           {form.formState.isSubmitting || updatePrfQuery.isPending ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving
+              <Loader className="mr-2 h-4 w-4 animate-spin" /> Saving
             </>
           ) : (
             "Save Notes"

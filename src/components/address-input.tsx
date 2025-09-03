@@ -1,7 +1,12 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { Control, useController, FieldPath, FieldValues } from "react-hook-form";
+import {
+  Control,
+  useController,
+  FieldPath,
+  FieldValues,
+} from "react-hook-form";
 import { Autocomplete } from "@react-google-maps/api";
 import { MapPin, X, Loader } from "lucide-react";
 import { Button } from "./ui/button";
@@ -9,6 +14,7 @@ import { Input } from "./ui/input";
 import { FormLabel } from "./ui/form";
 import { toast } from "sonner";
 import { useGoogleMaps } from "./GoogleMapsProvider";
+import { cn } from "@/lib/utils";
 
 export interface AddressData {
   street: string;
@@ -25,26 +31,30 @@ export interface AddressData {
 
 interface AddressInputProps<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > {
   name: TName;
   control: Control<TFieldValues>;
   label?: string;
+  useFullAddressAsValueOnly?: boolean;
   isRequired?: boolean;
   placeholder?: string;
   disabled?: boolean;
+  className?: string;
 }
 
 export function AddressInput<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({
   name,
   control,
   label = "Address",
+  useFullAddressAsValueOnly = false,
   isRequired = false,
   placeholder = "Enter address",
   disabled = false,
+  className,
 }: AddressInputProps<TFieldValues, TName>) {
   const { isLoaded: isGoogleMapsLoaded, loadError } = useGoogleMaps();
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
@@ -101,9 +111,9 @@ export function AddressInput<
       fullAddress: place.formatted_address || "",
       coordinates: place.geometry?.location
         ? {
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng(),
-        }
+            lat: place.geometry.location.lat(),
+            lng: place.geometry.location.lng(),
+          }
         : undefined,
     };
 
@@ -134,7 +144,9 @@ export function AddressInput<
     const place = autocompleteRef.current?.getPlace();
     if (place) {
       const addressData = parseAddressComponents(place);
-      onChange(addressData);
+      onChange(
+        useFullAddressAsValueOnly ? addressData.fullAddress : addressData,
+      );
       switchToSummaryView();
     }
   };
@@ -171,7 +183,9 @@ export function AddressInput<
           if (response.results && response.results[0]) {
             const addressData = parseAddressComponents(response.results[0]);
             addressData.coordinates = { lat: latitude, lng: longitude };
-            onChange(addressData);
+            onChange(
+              useFullAddressAsValueOnly ? addressData.fullAddress : addressData,
+            );
             toast.success("Location detected successfully", {
               position: "top-center",
               richColors: true,
@@ -254,20 +268,28 @@ export function AddressInput<
       [field]: newValue,
     };
 
-    onChange(updatedAddressData);
+    onChange(
+      useFullAddressAsValueOnly
+        ? updatedAddressData.fullAddress
+        : updatedAddressData,
+    );
   };
 
   const clearAddress = () => {
     setCommittedValueForCancel(value);
-    onChange({
-      street: "",
-      city: "",
-      state: "",
-      zipCode: "",
-      country: "",
-      fullAddress: "",
-      coordinates: undefined,
-    });
+    onChange(
+      useFullAddressAsValueOnly
+        ? ""
+        : {
+            street: "",
+            city: "",
+            state: "",
+            zipCode: "",
+            country: "",
+            fullAddress: "",
+            coordinates: undefined,
+          },
+    );
     setUserExplicitlyWantsDetailed(true);
   };
 
@@ -276,10 +298,13 @@ export function AddressInput<
     setUserExplicitlyWantsDetailed(true);
   };
 
-
   const handleCancelDetailedEdit = () => {
     if (committedValueForCancel !== null) {
-      onChange(committedValueForCancel);
+      onChange(
+        useFullAddressAsValueOnly
+          ? (committedValueForCancel as AddressData).fullAddress
+          : committedValueForCancel,
+      );
     }
     setUserExplicitlyWantsDetailed(false);
     setCommittedValueForCancel(null);
@@ -295,7 +320,7 @@ export function AddressInput<
         (value as AddressData).country));
 
   return (
-    <div className="space-y-4">
+    <div className={cn("space-y-4", className)}>
       <div className="flex items-center justify-between">
         <FormLabel>
           {label}
@@ -318,7 +343,11 @@ export function AddressInput<
               <MapPin className="h-4 w-4" />
             )}
             <span className="ml-2">
-              {isLoadingLocation ? "Getting Location..." : !isGoogleMapsLoaded ? "Loading Maps..." : "Use Current Location"}
+              {isLoadingLocation
+                ? "Getting Location..."
+                : !isGoogleMapsLoaded
+                  ? "Loading Maps..."
+                  : "Use Current Location"}
             </span>
           </Button>
           {hasValue && (
@@ -366,7 +395,11 @@ export function AddressInput<
             ) : (
               <div className="relative">
                 <Input
-                  placeholder={loadError ? "Google Maps failed to load" : "Loading Google Maps..."}
+                  placeholder={
+                    loadError
+                      ? "Google Maps failed to load"
+                      : "Loading Google Maps..."
+                  }
                   value={currentFullAddress}
                   onChange={(e) =>
                     handleInputChange("fullAddress", e.target.value)
@@ -415,9 +448,7 @@ export function AddressInput<
               <Input
                 placeholder="ZIP/Postal Code"
                 value={
-                  isValueStructuredAddress
-                    ? (value as AddressData).zipCode
-                    : ""
+                  isValueStructuredAddress ? (value as AddressData).zipCode : ""
                 }
                 onChange={(e) => handleInputChange("zipCode", e.target.value)}
                 disabled={disabled}
@@ -425,9 +456,7 @@ export function AddressInput<
               <Input
                 placeholder="Country"
                 value={
-                  isValueStructuredAddress
-                    ? (value as AddressData).country
-                    : ""
+                  isValueStructuredAddress ? (value as AddressData).country : ""
                 }
                 onChange={(e) => handleInputChange("country", e.target.value)}
                 disabled={disabled}

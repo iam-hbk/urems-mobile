@@ -37,7 +37,9 @@ export const getSession = async (): Promise<
   Result<Pick<Session, "user"> | null, ApiError>
 > => {
   try {
-    const res = await fetch("/api/auth/session");
+    const res = await fetch("/api/auth/session", {
+      credentials: "include",
+    });
 
     if (!res.ok) {
       return err({

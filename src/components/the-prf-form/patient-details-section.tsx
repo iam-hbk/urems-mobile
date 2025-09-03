@@ -19,9 +19,11 @@ import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { PRF_FORM } from "@/interfaces/prf-form";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
+import {
+  ensurePRFResponseSectionByName,
+  useUpdatePrfResponse,
+} from "@/hooks/prf/usePrfForms";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
 import {
   Accordion,
   AccordionContent,
@@ -29,7 +31,10 @@ import {
   AccordionTrigger,
 } from "../ui/accordion";
 import { cn } from "@/lib/utils";
-import { PatientDetailsSchema } from "@/interfaces/prf-schema";
+import {
+  PatientDetailsSchema,
+  PatientDetailsType,
+} from "@/interfaces/prf-schema";
 import {
   Select,
   SelectContent,
@@ -46,10 +51,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 import AddressAutoComplete from "../AddressAutoComplete";
-
-export type PatientDetailsType = z.infer<typeof PatientDetailsSchema>;
+import { useQueryClient } from "@tanstack/react-query";
 
 type PatientDetailsFormProps = {
   initialData?: PRF_FORM;
@@ -58,28 +61,105 @@ type PatientDetailsFormProps = {
 type AgeUnit = "years" | "months" | "days";
 
 const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
-  const { zsEmployee } = useZuStandEmployeeStore();
   const prfId = usePathname().split("/")[2];
-
-  const prf_from_store = useStore((state) => {
-    return state.prfForms.find(
-      (prf) => String(prf.prfFormId) === String(prfId),
-    );
-  });
-
-  console.log("Found PRF from store:", prf_from_store); // Debug log
-
-  const updatePrfQuery = useUpdatePrf();
+  const qc = useQueryClient();
+  const updatePrfQuery = useUpdatePrfResponse(prfId, "patient_details");
   const router = useRouter();
   const form = useForm<z.infer<typeof PatientDetailsSchema>>({
     resolver: zodResolver(PatientDetailsSchema),
-    values: prf_from_store?.prfData.patient_details?.data,
-    // mode: "onBlur",
+    mode: "all",
+    defaultValues: async () => {
+      const section = await ensurePRFResponseSectionByName(
+        qc,
+        prfId,
+        "patient_details",
+      );
+      const data = {
+        ...section.data,
+        ageUnit:
+          section.data.ageUnit.length > 0 ? section.data.ageUnit : "years",
+      };
+
+      const defaultValuesObj = {
+        patientName: "",
+        patientSurname: "",
+        age: 0,
+        ageUnit: "years",
+        gender: undefined,
+        id: "",
+        passport: "",
+        unableToObtainInformation: {
+          status: false,
+          estimatedAge: 0,
+          notes: "",
+        },
+        nextOfKin: {
+          name: "",
+          relationToPatient: "",
+          email: "",
+          physicalAddress: "",
+          phoneNo: "",
+          alternatePhoneNo: "",
+          otherNOKPhoneNo: "",
+        },
+        medicalAid: {
+          name: "",
+          number: "",
+          principalMember: "",
+          authNo: "",
+        },
+        employer: {
+          name: "",
+          workPhoneNo: "",
+          workAddress: "",
+        },
+        pastHistory: {
+          allergies: "",
+          medication: "",
+          medicalHx: "",
+          lastMeal: "",
+          cva: false,
+          epilepsy: false,
+          cardiac: false,
+          byPass: false,
+          dmOneOrTwo: false,
+          HPT: false,
+          asthma: false,
+          copd: false,
+        },
+      };
+
+      const mergedData = { ...defaultValuesObj, ...data };
+      mergedData.unableToObtainInformation = {
+        ...defaultValuesObj.unableToObtainInformation,
+        ...(data?.unableToObtainInformation || {}),
+      };
+      mergedData.nextOfKin = {
+        ...defaultValuesObj.nextOfKin,
+        ...(data?.nextOfKin || {}),
+        physicalAddress: data?.nextOfKin?.physicalAddress ?? "",
+      };
+      mergedData.medicalAid = {
+        ...defaultValuesObj.medicalAid,
+        ...(data?.medicalAid || {}),
+      };
+      mergedData.employer = {
+        ...defaultValuesObj.employer,
+        ...(data?.employer || {}),
+        workAddress: data?.employer?.workAddress ?? "",
+      };
+      mergedData.pastHistory = {
+        ...defaultValuesObj.pastHistory,
+        ...(data?.pastHistory || {}),
+      };
+
+      return mergedData;
+    },
   });
 
   // Watch the unableToObtainInformation.status field
   const unableToObtainInfo = form.watch("unableToObtainInformation.status");
-  // Add this state for the toggle
+
   const [useDateOfBirth, setUseDateOfBirth] = useState(false);
 
   // Function to calculate age from DOB
@@ -281,44 +361,27 @@ const PatientDetailsForm = ({}: PatientDetailsFormProps) => {
   };
 
   function onSubmit(values: z.infer<typeof PatientDetailsSchema>) {
-    // if there is valid employee info
-    if (!zsEmployee) {
-      toast.error("No Employee Information Found", {
-        duration: 3000,
-        position: "top-right",
-      });
-      return;
-    }
+    const patientDetails: PatientDetailsType = { ...values };
 
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        patient_details: {
-          data: values,
-          isCompleted: true,
-          isOptional: false,
+    updatePrfQuery.mutate(
+      { data: patientDetails, isCompleted: true },
+      {
+        onSuccess: () => {
+          toast.success("Patient Details Updated", {
+            duration: 3000,
+            position: "top-right",
+          });
+
+          router.push(`/edit-prf/${prfId}`);
         },
-        ...prf_from_store?.prfData,
+        onError: () => {
+          toast.error("An error occurred", {
+            duration: 3000,
+            position: "top-right",
+          });
+        },
       },
-      EmployeeID: zsEmployee.id, // employeeID is required.
-    };
-
-    updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: () => {
-        toast.success("Form Summary Updated", {
-          duration: 3000,
-          position: "top-right",
-        });
-
-        router.push(`/edit-prf/${prfId}`);
-      },
-      onError: () => {
-        toast.error("An error occurred", {
-          duration: 3000,
-          position: "top-right",
-        });
-      },
-    });
+    );
   }
 
   return (

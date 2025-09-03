@@ -69,7 +69,7 @@ export function TimePicker({
                   value={customValue || value?.value || ""}
                   onChange={(e) => {
                     if (onCustomChange) {
-                      console.log("onCustomChange:", e.target.value);
+                      // console.log("onCustomChange:", e.target.value);
                       onCustomChange(e.target.value);
                     } else {
                       onChange({
@@ -94,9 +94,9 @@ export function TimePicker({
                           value: checked
                             ? ""
                             : new Date().toLocaleTimeString("en-GB", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              }),
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            }),
                           unknown: checked as boolean,
                         });
                       }}

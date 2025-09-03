@@ -10,10 +10,11 @@ import { getCookie } from "@/utils/cookies";
 import { cookieNameUserId } from "@/utils/constant";
 import { UserTokenCookieName } from "@/lib/auth/config";
 import { typeCrew, typeCrewInfoV1 } from "@/types/crew";
+import { ApiError } from "@/types/api";
 
 export function useGetCrewEmployeeID() {
   // returns -> typeCrewInfoV1[]
-  return useQuery({
+  return useQuery<typeCrewInfoV1[], ApiError>({
     queryKey: ["crewEmployeeID"],
     queryFn: async () => {
       try {
@@ -27,6 +28,7 @@ export function useGetCrewEmployeeID() {
         const { data, error } = await apiCrewGetEmployee(userId, token);
 
         if (error) throw new Error(error);
+        // console.log("[][][][][]crew", data);
 
         return data;
         //

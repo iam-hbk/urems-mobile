@@ -14,9 +14,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
-import { PRF_FORM } from "@/interfaces/prf-form";
+import {
+  ensurePRFResponseSectionByName,
+  useUpdatePrfResponse,
+} from "@/hooks/prf/usePrfForms";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { ProceduresSchema, ProceduresType } from "@/interfaces/prf-schema";
@@ -30,134 +32,45 @@ import { DatePicker, Group } from "react-aria-components";
 import { CalendarDate } from "@internationalized/date";
 import { DateInput } from "../ui/datefield-rac";
 import { cn } from "@/lib/utils";
-import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 export default function ProceduresForm() {
   const prfId = usePathname().split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId,
-  );
+  const qc = useQueryClient();
 
-  const updatePrfQuery = useUpdatePrf();
+  const updatePrfQuery = useUpdatePrfResponse(prfId, "procedures");
   const router = useRouter();
-
-  const { zsEmployee } = useZuStandEmployeeStore();
 
   const form = useForm<ProceduresType>({
     resolver: zodResolver(ProceduresSchema),
-    values: prf_from_store?.prfData?.procedures?.data,
-    defaultValues: prf_from_store?.prfData?.procedures?.data || {
-      airway: {
-        ett: false,
-        ettSize: undefined,
-        depth: undefined,
-        ettCuffPressure: "Not Measured",
-        gastricTube: false,
-        iGel: false,
-        lma: false,
-        lta: false,
-        lateral: false,
-        needleAirway: false,
-        opa: false,
-        rsi: false,
-        suction: false,
-        surgicalCric: false,
-      },
-      alignment: {
-        extrication: false,
-        headblocks: false,
-        ked: false,
-        logroll: false,
-        mils: false,
-        scoop: false,
-        spiderHarness: false,
-        spineboard: false,
-        splint: false,
-        tracIii: false,
-      },
-      breathing: {
-        bvm: false,
-        chestDecompression: false,
-        cpap: false,
-        etco2: false,
-        icd: false,
-        l: false,
-        r: false,
-        date: new Date(),
-        oxygen: false,
-        spo2: false,
-        ventilation: false,
-        ventilator: undefined,
-        mode: undefined,
-        peep: undefined,
-        pip: undefined,
-        fio2: undefined,
-        ie: undefined,
-        tv: undefined,
-        rate: undefined,
-      },
-      circulation: {
-        blood: false,
-        bolus: false,
-        buretrol: false,
-        cpr: false,
-        cardioversion: false,
-        centralIv: false,
-        defib: false,
-        dialAFlow: false,
-        ecg: false,
-        lead12: false,
-        fluidWarmer: false,
-        hiCapLine: false,
-        infusionPump: false,
-        infusion: false,
-        io: false,
-        pacing: false,
-        peripheralIv: false,
-        plasma: false,
-        syringeDriver: false,
-      },
+    defaultValues: async () => {
+      const section = await ensurePRFResponseSectionByName(
+        qc,
+        prfId,
+        "procedures",
+      );
+      return section.data;
     },
   });
 
   function onSubmit(values: ProceduresType) {
-
-    if (!zsEmployee) {
-      toast.error("No Employee Information Found", {
-        duration: 3000,
-        position: "top-right",
-      });
-      return;
-    }
-
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        ...prf_from_store?.prfData,
-        procedures: {
-          data: values,
-          isCompleted: true,
-          isOptional: false,
+    updatePrfQuery.mutate(
+      { data: values, isCompleted: true },
+      {
+        onSuccess: () => {
+          toast.success("Procedures Information Updated", {
+            duration: 3000,
+            position: "top-right",
+          });
+          router.push(`/edit-prf/${prfId}`);
+        },
+        onError: () => {
+          toast.error("An error occurred", {
+            duration: 3000,
+            position: "top-right",
+          });
         },
       },
-      EmployeeID: zsEmployee.id,
-    };
-
-    updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: () => {
-        toast.success("Procedures Information Updated", {
-          duration: 3000,
-          position: "top-right",
-        });
-        router.push(`/edit-prf/${prfId}`);
-      },
-      onError: () => {
-        toast.error("An error occurred", {
-          duration: 3000,
-          position: "top-right",
-        });
-      },
-    });
+    );
   }
 
   // Add this function to handle form errors
@@ -201,17 +114,21 @@ export default function ProceduresForm() {
           <AccordionItem
             value="airway"
             className={cn(
-              Object.keys(form.formState.errors).some(key => key.startsWith('airway'))
+              Object.keys(form.formState.errors).some((key) =>
+                key.startsWith("airway"),
+              )
                 ? "border-destructive"
-                : ""
+                : "",
             )}
           >
             <AccordionTrigger
               className={cn(
                 "text-lg font-semibold",
-                Object.keys(form.formState.errors).some(key => key.startsWith('airway'))
+                Object.keys(form.formState.errors).some((key) =>
+                  key.startsWith("airway"),
+                )
                   ? "text-destructive"
-                  : ""
+                  : "",
               )}
             >
               Airway
@@ -334,17 +251,21 @@ export default function ProceduresForm() {
           <AccordionItem
             value="alignment"
             className={cn(
-              Object.keys(form.formState.errors).some(key => key.startsWith('alignment'))
+              Object.keys(form.formState.errors).some((key) =>
+                key.startsWith("alignment"),
+              )
                 ? "border-destructive"
-                : ""
+                : "",
             )}
           >
             <AccordionTrigger
               className={cn(
                 "text-lg font-semibold",
-                Object.keys(form.formState.errors).some(key => key.startsWith('alignment'))
+                Object.keys(form.formState.errors).some((key) =>
+                  key.startsWith("alignment"),
+                )
                   ? "text-destructive"
-                  : ""
+                  : "",
               )}
             >
               Alignment
@@ -388,17 +309,21 @@ export default function ProceduresForm() {
           <AccordionItem
             value="breathing"
             className={cn(
-              Object.keys(form.formState.errors).some(key => key.startsWith('breathing'))
+              Object.keys(form.formState.errors).some((key) =>
+                key.startsWith("breathing"),
+              )
                 ? "border-destructive"
-                : ""
+                : "",
             )}
           >
             <AccordionTrigger
               className={cn(
                 "text-lg font-semibold",
-                Object.keys(form.formState.errors).some(key => key.startsWith('breathing'))
+                Object.keys(form.formState.errors).some((key) =>
+                  key.startsWith("breathing"),
+                )
                   ? "text-destructive"
-                  : ""
+                  : "",
               )}
             >
               Breathing
@@ -453,16 +378,20 @@ export default function ProceduresForm() {
                             field.value
                               ? typeof field.value === "string"
                                 ? new CalendarDate(
-                                  new Date(field.value).getFullYear(),
-                                  new Date(field.value).getMonth() + 1,
-                                  new Date(field.value).getDate(),
-                                )
+                                    new Date(field.value).getFullYear(),
+                                    new Date(field.value).getMonth() + 1,
+                                    new Date(field.value).getDate(),
+                                  )
                                 : new CalendarDate(
-                                  field.value.getFullYear(),
-                                  field.value.getMonth() + 1,
-                                  field.value.getDate(),
+                                    field.value.getFullYear(),
+                                    field.value.getMonth() + 1,
+                                    field.value.getDate(),
+                                  )
+                              : new CalendarDate(
+                                  new Date().getFullYear(),
+                                  new Date().getMonth() + 1,
+                                  new Date().getDate(),
                                 )
-                              : null
                           }
                           onChange={(date) => {
                             if (date) {
@@ -477,9 +406,7 @@ export default function ProceduresForm() {
                         >
                           <div className="flex">
                             <Group className="w-full">
-                              <DateInput
-                                className="pe-9"
-                              />
+                              <DateInput className="pe-9" />
                             </Group>
                           </div>
                         </DatePicker>
@@ -521,17 +448,21 @@ export default function ProceduresForm() {
           <AccordionItem
             value="circulation"
             className={cn(
-              Object.keys(form.formState.errors).some(key => key.startsWith('circulation'))
+              Object.keys(form.formState.errors).some((key) =>
+                key.startsWith("circulation"),
+              )
                 ? "border-destructive"
-                : ""
+                : "",
             )}
           >
             <AccordionTrigger
               className={cn(
                 "text-lg font-semibold",
-                Object.keys(form.formState.errors).some(key => key.startsWith('circulation'))
+                Object.keys(form.formState.errors).some((key) =>
+                  key.startsWith("circulation"),
+                )
                   ? "text-destructive"
-                  : ""
+                  : "",
               )}
             >
               Circulation

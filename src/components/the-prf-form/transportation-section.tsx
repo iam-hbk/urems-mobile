@@ -24,32 +24,31 @@ import { cn } from "@/lib/utils";
 import { Loader2, UserRoundPlus, X } from "lucide-react";
 import { TransportationSchema } from "@/interfaces/prf-schema";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
-import { PRF_FORM } from "@/interfaces/prf-form";
+import {
+  ensurePRFResponseSectionByName,
+  useUpdatePrfResponse,
+} from "@/hooks/prf/usePrfForms";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import AddressAutoComplete from "../AddressAutoComplete";
-import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 export type TransportationType = z.infer<typeof TransportationSchema>;
 
 const TransportationForm: React.FC = () => {
   const prfId = usePathname().split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId,
-  );
-  const { zsEmployee } = useZuStandEmployeeStore();
+  const qc = useQueryClient();
 
-  const updatePrfQuery = useUpdatePrf();
+  const updatePrfQuery = useUpdatePrfResponse(prfId, "transportation");
   const router = useRouter();
   const form = useForm<TransportationType>({
     resolver: zodResolver(TransportationSchema),
-    values: prf_from_store?.prfData?.transportation?.data,
-    defaultValues: prf_from_store?.prfData?.transportation?.data || {
-      fromSuburbTown: "",
-      by: "",
-      to: "",
-      crewDetails: [],
+    defaultValues: async () => {
+      const section = await ensurePRFResponseSectionByName(
+        qc,
+        prfId,
+        "transportation",
+      );
+      return section.data;
     },
   });
 
@@ -59,42 +58,24 @@ const TransportationForm: React.FC = () => {
   });
 
   function onSubmit(values: TransportationType) {
-    if (!zsEmployee) {
-      toast.error("No Employee Information Found", {
-        duration: 3000,
-        position: "top-right",
-      });
-      return;
-    }
-
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        ...prf_from_store?.prfData,
-        transportation: {
-          data: values,
-          isCompleted: true,
-          isOptional: false,
+    updatePrfQuery.mutate(
+      { data: values, isCompleted: true },
+      {
+        onSuccess: () => {
+          toast.success("Transportation Information Updated", {
+            duration: 3000,
+            position: "top-right",
+          });
+          router.push(`/edit-prf/${prfId}`);
+        },
+        onError: () => {
+          toast.error("An error occurred", {
+            duration: 3000,
+            position: "top-right",
+          });
         },
       },
-      EmployeeID: zsEmployee.id,
-    };
-
-    updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: () => {
-        toast.success("Incident Information Updated", {
-          duration: 3000,
-          position: "top-right",
-        });
-        router.push(`/edit-prf/${prfId}`);
-      },
-      onError: () => {
-        toast.error("An error occurred", {
-          duration: 3000,
-          position: "top-right",
-        });
-      },
-    });
+    );
   }
 
   // Add this function to handle form errors
@@ -113,24 +94,6 @@ const TransportationForm: React.FC = () => {
       position: "top-right",
     });
   };
-
-  // useEffect(() => {
-  // add current user to the list of crew by default.
-  // run this only once, because there is only one logged in user
-  // console.log("employee here...", zsEmployee)
-  if (zsEmployee && zsEmployee.id && fields.length === 0) {
-    // since i don't know what is the HPCSANo, by default, i'll just add 1 of the fields
-    const initialSurname: string = `${zsEmployee.initials} ${zsEmployee.lastName}`;
-    const hpcsano: string = `${zsEmployee.initials}-blah`;
-    // don't add twice
-    if (!fields.some((fields) => fields.HPCSANo === hpcsano)) {
-      append({ initialAndSurname: initialSurname, HPCSANo: hpcsano });
-    }
-
-    // const { data, error } = useGetCrewEmployeeID(zsEmployee.id);
-    // console.log("crew information...", data)
-  }
-  // }, [])
 
   return (
     <Accordion

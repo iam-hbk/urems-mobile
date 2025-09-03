@@ -2,9 +2,13 @@
 
 import { useRef, useEffect } from "react";
 import { useStore } from "@/lib/store";
-import { PRF_FORM } from "@/interfaces/prf-form";
+import { FormResponseSummary } from "@/types/form-template";
 
-export function StoreInitializer({ prfForms }: { prfForms: PRF_FORM[] }) {
+export function StoreInitializer({
+  prfForms,
+}: {
+  prfForms: FormResponseSummary[];
+}) {
   const initialized = useRef(false);
 
   useEffect(() => {

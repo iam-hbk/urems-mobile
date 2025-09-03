@@ -9,11 +9,13 @@ import { toast } from "sonner";
 import { InjurySchema, InjuryType } from "@/interfaces/prf-schema";
 import { Loader2, PlusCircleIcon, Trash2, Download } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
-import { PRF_FORM } from "@/interfaces/prf-form";
+import {
+  ensurePRFResponseSectionByName,
+  useUpdatePrfResponse,
+} from "@/hooks/prf/usePrfForms";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Label } from "../ui/label";
+import { useQueryClient } from "@tanstack/react-query";
 
 type Mark = InjuryType["injuries"][0];
 const SYMBOLS = {
@@ -36,11 +38,9 @@ const SYMBOLS = {
 
 export default function BodyDiagram() {
   const prfId = usePathname().split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId,
-  );
+  const qc = useQueryClient();
 
-  const updatePrfQuery = useUpdatePrf();
+  const updatePrfQuery = useUpdatePrfResponse(prfId, "injuries");
   const router = useRouter();
 
   const anteriorSvgRef = useRef<SVGSVGElement>(null);
@@ -52,14 +52,30 @@ export default function BodyDiagram() {
   );
   const form = useForm<InjuryType>({
     resolver: zodResolver(InjurySchema),
-    defaultValues: {
-      injuries: prf_from_store?.prfData?.injuries?.data.injuries || [],
-      anteriorImage:
-        prf_from_store?.prfData?.injuries?.data.anteriorImage || undefined,
-      posteriorImage:
-        prf_from_store?.prfData?.injuries?.data.posteriorImage || undefined,
+    defaultValues: async () => {
+      const injuries = await ensurePRFResponseSectionByName(
+        qc,
+        prfId,
+        "injuries",
+      );
+      return (
+        injuries?.data || {
+          injuries: [],
+          anteriorImage:
+            injuries?.data?.anteriorImage &&
+              injuries?.data?.anteriorImage?.length > 0
+              ? injuries?.data?.anteriorImage[0]
+              : undefined,
+          posteriorImage:
+            injuries?.data?.posteriorImage &&
+              injuries?.data?.posteriorImage?.length > 0
+              ? injuries?.data?.posteriorImage[0]
+              : undefined,
+        }
+      );
     },
   });
+
   const {
     fields: injuries,
     append: addInjury,
@@ -70,19 +86,12 @@ export default function BodyDiagram() {
   });
 
   const onSubmit = (values: InjuryType) => {
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        ...prf_from_store?.prfData,
-        injuries: {
-          data: values,
-          isCompleted: true,
-          isOptional: false,
-        },
-      },
-      EmployeeID: prf_from_store?.EmployeeID || "2",
+    const prfUpdateValue = {
+      data: values,
+      isCompleted: true,
+      isOptional: false,
     };
-    console.log("Submitting ->", prfUpdateValue);
+    // console.log("Submitting ->", prfUpdateValue);
 
     updatePrfQuery.mutate(prfUpdateValue, {
       onSuccess: () => {
@@ -112,7 +121,7 @@ export default function BodyDiagram() {
     event: React.MouseEvent<SVGSVGElement>,
     side: "anterior" | "posterior",
   ) => {
-    console.log("SVG Clicked ->", currentInjurySymbol);
+    // console.log("SVG Clicked ->", currentInjurySymbol);
     const svg = event.currentTarget;
     const point = svg.createSVGPoint();
     point.x = event.clientX;
@@ -670,7 +679,7 @@ export default function BodyDiagram() {
           <Button
             onClick={() => {
               if (Object.keys(form.formState.errors).length > 0) {
-                console.log(form.formState.errors);
+                // console.log(form.formState.errors);
                 toast.error(
                   "You may have not filled in all the required filleds, please check again",
                   {

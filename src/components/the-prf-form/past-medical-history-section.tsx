@@ -27,9 +27,11 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
-import { PRF_FORM } from "@/interfaces/prf-form";
+import {
+  ensurePRFResponseSectionByName,
+  useUpdatePrfResponse,
+} from "@/hooks/prf/usePrfForms";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import {
@@ -40,48 +42,23 @@ import { cn } from "@/lib/utils";
 
 export default function PastMedicalHistoryForm() {
   const prfId = usePathname().split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId,
-  );
+  const qc = useQueryClient();
 
-  const updatePrfQuery = useUpdatePrf();
+  const updatePrfQuery = useUpdatePrfResponse(prfId, "past_medical_history");
   const router = useRouter();
 
   const form = useForm<PastMedicalHistoryType>({
     resolver: zodResolver(PastMedicalHistorySchema),
-    values: prf_from_store?.prfData?.past_medical_history?.data,
-    defaultValues: prf_from_store?.prfData?.past_medical_history?.data || {
-      allergies: [],
-      currentMedications: [],
-      lastMeal: {
-        time: "",
-        description: "",
-      },
-      medicalConditions: {
-        cardiovascular: {
-          hasCondition: false,
-          conditions: [],
-          details: "",
-        },
-        respiratory: {
-          hasCondition: false,
-          conditions: [],
-          details: "",
-        },
-        neurological: {
-          hasCondition: false,
-          conditions: [],
-          details: "",
-        },
-        endocrine: {
-          hasCondition: false,
-          conditions: [],
-          details: "",
-        },
-      },
-      surgicalHistory: [],
-      familyHistory: [] as string[],
-      additionalNotes: "",
+    defaultValues: async () => {
+      const section = await ensurePRFResponseSectionByName(
+        qc,
+        prfId,
+        "past_medical_history",
+      );
+      return {
+        ...section.data,
+        familyHistory: section.data.familyHistory || [],
+      };
     },
   });
 
@@ -117,34 +94,24 @@ export default function PastMedicalHistoryForm() {
   const familyHistory = form.watch("familyHistory") || [];
 
   function onSubmit(values: PastMedicalHistoryType) {
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        ...prf_from_store?.prfData,
-        past_medical_history: {
-          data: values,
-          isCompleted: true,
-          isOptional: false,
+    updatePrfQuery.mutate(
+      { data: values, isCompleted: true },
+      {
+        onSuccess: () => {
+          toast.success("Past Medical History Updated", {
+            duration: 3000,
+            position: "top-right",
+          });
+          router.push(`/edit-prf/${prfId}`);
+        },
+        onError: () => {
+          toast.error("An error occurred", {
+            duration: 3000,
+            position: "top-right",
+          });
         },
       },
-      EmployeeID: prf_from_store?.EmployeeID || "2",
-    };
-
-    updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: () => {
-        toast.success("Past Medical History Updated", {
-          duration: 3000,
-          position: "top-right",
-        });
-        router.push(`/edit-prf/${prfId}`);
-      },
-      onError: () => {
-        toast.error("An error occurred", {
-          duration: 3000,
-          position: "top-right",
-        });
-      },
-    });
+    );
   }
 
   const onError: SubmitErrorHandler<PastMedicalHistoryType> = (errors) => {
@@ -234,7 +201,7 @@ export default function PastMedicalHistoryForm() {
                     },
                   )}
                 >
-                  <div className="flex flex-row items-center justify-between mb-3">
+                  <div className="mb-3 flex flex-row items-center justify-between">
                     <h5 className="font-bold">Allergy {index + 1}</h5>
                     <Button
                       type="button"
@@ -267,7 +234,10 @@ export default function PastMedicalHistoryForm() {
                         <FormItem>
                           <FormLabel>Reaction *</FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="e.g., Rash, Swelling" />
+                            <Input
+                              {...field}
+                              placeholder="e.g., Rash, Swelling"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -279,7 +249,10 @@ export default function PastMedicalHistoryForm() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Severity *</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select severity" />
@@ -330,7 +303,7 @@ export default function PastMedicalHistoryForm() {
                     },
                   )}
                 >
-                  <div className="flex flex-row items-center justify-between mb-3">
+                  <div className="mb-3 flex flex-row items-center justify-between">
                     <h5 className="font-bold">Medication {index + 1}</h5>
                     <Button
                       type="button"
@@ -389,7 +362,10 @@ export default function PastMedicalHistoryForm() {
                         <FormItem>
                           <FormLabel>Last Taken</FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="e.g., This morning" />
+                            <Input
+                              {...field}
+                              placeholder="e.g., This morning"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -428,7 +404,10 @@ export default function PastMedicalHistoryForm() {
                     <FormItem>
                       <FormLabel>Time *</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="e.g., 2 hours ago, 12:00 PM" />
+                        <Input
+                          {...field}
+                          placeholder="e.g., 2 hours ago, 12:00 PM"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -468,8 +447,14 @@ export default function PastMedicalHistoryForm() {
                           onCheckedChange={(checked) => {
                             field.onChange(checked);
                             if (!checked) {
-                              form.setValue("medicalConditions.cardiovascular.conditions", []);
-                              form.setValue("medicalConditions.cardiovascular.details", "");
+                              form.setValue(
+                                "medicalConditions.cardiovascular.conditions",
+                                [],
+                              );
+                              form.setValue(
+                                "medicalConditions.cardiovascular.details",
+                                "",
+                              );
                             }
                           }}
                         />
@@ -480,53 +465,62 @@ export default function PastMedicalHistoryForm() {
                     </FormItem>
                   )}
                 />
-                {form.watch("medicalConditions.cardiovascular.hasCondition") && (
-                  <div className="ml-6 space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      {cardiovascularConditions.map((condition) => (
-                        <FormField
-                          key={condition}
-                          control={form.control}
-                          name="medicalConditions.cardiovascular.conditions"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value?.includes(condition)}
-                                  onCheckedChange={(checked) => {
-                                    return checked
-                                      ? field.onChange([...(field.value || []), condition])
-                                      : field.onChange(
-                                          field.value?.filter((value) => value !== condition) || [],
+                {form.watch(
+                  "medicalConditions.cardiovascular.hasCondition",
+                ) && (
+                    <div className="ml-6 space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        {cardiovascularConditions.map((condition) => (
+                          <FormField
+                            key={condition}
+                            control={form.control}
+                            name="medicalConditions.cardiovascular.conditions"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value?.includes(condition)}
+                                    onCheckedChange={(checked) => {
+                                      return checked
+                                        ? field.onChange([
+                                          ...(field.value || []),
+                                          condition,
+                                        ])
+                                        : field.onChange(
+                                          field.value?.filter(
+                                            (value) => value !== condition,
+                                          ) || [],
                                         );
-                                  }}
-                                />
-                              </FormControl>
-                              <FormLabel className="font-normal">{condition}</FormLabel>
-                            </FormItem>
-                          )}
-                        />
-                      ))}
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormLabel className="font-normal">
+                                  {condition}
+                                </FormLabel>
+                              </FormItem>
+                            )}
+                          />
+                        ))}
+                      </div>
+                      <FormField
+                        control={form.control}
+                        name="medicalConditions.cardiovascular.details"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Additional Details</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                {...field}
+                                placeholder="Provide additional details about cardiovascular conditions"
+                                className="min-h-[80px]"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
-                    <FormField
-                      control={form.control}
-                      name="medicalConditions.cardiovascular.details"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Additional Details</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              {...field}
-                              placeholder="Provide additional details about cardiovascular conditions"
-                              className="min-h-[80px]"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                )}
+                  )}
               </div>
 
               {/* Respiratory */}
@@ -542,8 +536,14 @@ export default function PastMedicalHistoryForm() {
                           onCheckedChange={(checked) => {
                             field.onChange(checked);
                             if (!checked) {
-                              form.setValue("medicalConditions.respiratory.conditions", []);
-                              form.setValue("medicalConditions.respiratory.details", "");
+                              form.setValue(
+                                "medicalConditions.respiratory.conditions",
+                                [],
+                              );
+                              form.setValue(
+                                "medicalConditions.respiratory.details",
+                                "",
+                              );
                             }
                           }}
                         />
@@ -569,14 +569,21 @@ export default function PastMedicalHistoryForm() {
                                   checked={field.value?.includes(condition)}
                                   onCheckedChange={(checked) => {
                                     return checked
-                                      ? field.onChange([...(field.value || []), condition])
+                                      ? field.onChange([
+                                        ...(field.value || []),
+                                        condition,
+                                      ])
                                       : field.onChange(
-                                          field.value?.filter((value) => value !== condition) || [],
-                                        );
+                                        field.value?.filter(
+                                          (value) => value !== condition,
+                                        ) || [],
+                                      );
                                   }}
                                 />
                               </FormControl>
-                              <FormLabel className="font-normal">{condition}</FormLabel>
+                              <FormLabel className="font-normal">
+                                {condition}
+                              </FormLabel>
                             </FormItem>
                           )}
                         />
@@ -616,8 +623,14 @@ export default function PastMedicalHistoryForm() {
                           onCheckedChange={(checked) => {
                             field.onChange(checked);
                             if (!checked) {
-                              form.setValue("medicalConditions.neurological.conditions", []);
-                              form.setValue("medicalConditions.neurological.details", "");
+                              form.setValue(
+                                "medicalConditions.neurological.conditions",
+                                [],
+                              );
+                              form.setValue(
+                                "medicalConditions.neurological.details",
+                                "",
+                              );
                             }
                           }}
                         />
@@ -643,14 +656,21 @@ export default function PastMedicalHistoryForm() {
                                   checked={field.value?.includes(condition)}
                                   onCheckedChange={(checked) => {
                                     return checked
-                                      ? field.onChange([...(field.value || []), condition])
+                                      ? field.onChange([
+                                        ...(field.value || []),
+                                        condition,
+                                      ])
                                       : field.onChange(
-                                          field.value?.filter((value) => value !== condition) || [],
-                                        );
+                                        field.value?.filter(
+                                          (value) => value !== condition,
+                                        ) || [],
+                                      );
                                   }}
                                 />
                               </FormControl>
-                              <FormLabel className="font-normal">{condition}</FormLabel>
+                              <FormLabel className="font-normal">
+                                {condition}
+                              </FormLabel>
                             </FormItem>
                           )}
                         />
@@ -690,8 +710,14 @@ export default function PastMedicalHistoryForm() {
                           onCheckedChange={(checked) => {
                             field.onChange(checked);
                             if (!checked) {
-                              form.setValue("medicalConditions.endocrine.conditions", []);
-                              form.setValue("medicalConditions.endocrine.details", "");
+                              form.setValue(
+                                "medicalConditions.endocrine.conditions",
+                                [],
+                              );
+                              form.setValue(
+                                "medicalConditions.endocrine.details",
+                                "",
+                              );
                             }
                           }}
                         />
@@ -717,14 +743,21 @@ export default function PastMedicalHistoryForm() {
                                   checked={field.value?.includes(condition)}
                                   onCheckedChange={(checked) => {
                                     return checked
-                                      ? field.onChange([...(field.value || []), condition])
+                                      ? field.onChange([
+                                        ...(field.value || []),
+                                        condition,
+                                      ])
                                       : field.onChange(
-                                          field.value?.filter((value) => value !== condition) || [],
-                                        );
+                                        field.value?.filter(
+                                          (value) => value !== condition,
+                                        ) || [],
+                                      );
                                   }}
                                 />
                               </FormControl>
-                              <FormLabel className="font-normal">{condition}</FormLabel>
+                              <FormLabel className="font-normal">
+                                {condition}
+                              </FormLabel>
                             </FormItem>
                           )}
                         />
@@ -768,7 +801,7 @@ export default function PastMedicalHistoryForm() {
                     },
                   )}
                 >
-                  <div className="flex flex-row items-center justify-between mb-3">
+                  <div className="mb-3 flex flex-row items-center justify-between">
                     <h5 className="font-bold">Surgery {index + 1}</h5>
                     <Button
                       type="button"
@@ -788,7 +821,10 @@ export default function PastMedicalHistoryForm() {
                         <FormItem>
                           <FormLabel>Procedure *</FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="e.g., Appendectomy" />
+                            <Input
+                              {...field}
+                              placeholder="e.g., Appendectomy"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -801,7 +837,10 @@ export default function PastMedicalHistoryForm() {
                         <FormItem>
                           <FormLabel>Date</FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="e.g., 2020, January 2020" />
+                            <Input
+                              {...field}
+                              placeholder="e.g., 2020, January 2020"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -844,40 +883,40 @@ export default function PastMedicalHistoryForm() {
           <AccordionItem value="family-history">
             <AccordionTrigger>Family History</AccordionTrigger>
             <AccordionContent className="space-y-4 p-3">
-              {familyHistory.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex items-center space-x-2"
-                >
-                  <FormField
-                    control={form.control}
-                    name={`familyHistory.${index}`}
-                    render={({ field }) => (
-                      <FormItem className="flex-1">
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="e.g., Father - Heart Disease, Mother - Diabetes"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      const newHistory = familyHistory.filter((_, i) => i !== index);
-                      form.setValue("familyHistory", newHistory);
-                    }}
-                    className="hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
+              {familyHistory.length > 0 &&
+                familyHistory.map((_item, index) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    <FormField
+                      control={form.control}
+                      name={`familyHistory.${index}`}
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="e.g., Father - Heart Disease, Mother - Diabetes"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        const newHistory = familyHistory.filter(
+                          (_, i) => i !== index,
+                        );
+                        form.setValue("familyHistory", newHistory);
+                      }}
+                      className="hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
               <Button
                 type="button"
                 variant="secondary"
@@ -921,6 +960,10 @@ export default function PastMedicalHistoryForm() {
           type="submit"
           disabled={!form.formState.isDirty}
           className="w-full self-end sm:w-auto"
+          onClick={() => {
+            // console.log("Form Values -> ", form.getValues());
+            // console.log("Form Errors -> ", form.formState.errors);
+          }}
         >
           {form.formState.isSubmitting || updatePrfQuery.isPending ? (
             <>

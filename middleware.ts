@@ -1,30 +1,35 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
-import { UserTokenCookieName } from './src/lib/auth/config'
-
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { UserTokenCookieName } from "./src/lib/auth/config";
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
+  const { pathname } = request.nextUrl;
   const token = request.cookies.get(UserTokenCookieName)?.value;
 
-  const isLoginPage = pathname.startsWith('/login')
+  const isLoginPage = pathname.startsWith("/login");
+  const isEditPrfPage = pathname.endsWith("/edit-prf");
+
+  if (isEditPrfPage) {
+    //redirect to the /forms
+    return NextResponse.redirect(new URL("/forms", request.url));
+  }
 
   // If the user is authenticated and tries to access the login page,
   // redirect them to the dashboard.
   if (token && isLoginPage) {
-    return NextResponse.redirect(new URL('/', request.url))
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   // If the user is not authenticated and is trying to access any page
   // other than the login page, redirect them to the login page.
   if (!token && !isLoginPage) {
-    const loginUrl = new URL('/login', request.url)
-    loginUrl.searchParams.set('from', pathname) // Remember where they were going
-    return NextResponse.redirect(loginUrl)
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("from", pathname); // Remember where they were going
+    return NextResponse.redirect(loginUrl);
   }
 
   // Otherwise, allow the request to proceed.
-  return NextResponse.next()
+  return NextResponse.next();
 }
 
 // Configure which routes the middleware should run on
@@ -37,6 +42,6 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
-} 
+};

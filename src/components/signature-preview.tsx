@@ -4,7 +4,7 @@ import Image from "next/image";
 
 type SignaturePreviewProps = {
   label: string;
-  value: string;
+  value: string | undefined;
   onEdit: (event: React.MouseEvent) => void;
 };
 
@@ -21,7 +21,7 @@ export const SignaturePreview: React.FC<SignaturePreviewProps> = ({
           Edit
         </Button>
       </div>
-      {value ? (
+      {value && value.trim() !== "" ? (
         <div className="rounded-md border p-2">
           <Image src={value} alt={label} width={400} height={200} />
         </div>

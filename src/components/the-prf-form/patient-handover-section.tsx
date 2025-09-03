@@ -13,11 +13,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
-import { PRF_FORM } from "@/interfaces/prf-form";
+import {
+  ensurePRFResponseSectionByName,
+  useUpdatePrfResponse,
+} from "@/hooks/prf/usePrfForms";
 import { toast } from "sonner";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon, Loader } from "lucide-react";
 import {
   PatientHandoverSchema,
   PatientHandoverType,
@@ -39,18 +40,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function PatientHandoverForm() {
   const path = usePathname();
   const prfId = path.split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId,
-  );
-  const { zsEmployee } = useZuStandEmployeeStore();
-  const updatePrfQuery = useUpdatePrf();
+  const qc = useQueryClient();
+  const updatePrfQuery = useUpdatePrfResponse(prfId, "patient_handover");
   const router = useRouter();
-  // const user = useStore((state) => state.user);
   const [signatureModalOpen, setSignatureModalOpen] = useState(false);
   const [currentSignatureField, setCurrentSignatureField] = useState<
     "patientSignature" | "witnessSignature" | null
@@ -58,55 +55,45 @@ export default function PatientHandoverForm() {
 
   const form = useForm<PatientHandoverType>({
     resolver: zodResolver(PatientHandoverSchema),
-    defaultValues: {
-      fullName: prf_from_store?.prfData?.patient_handover?.data?.fullName || "",
-      date: prf_from_store?.prfData?.patient_handover?.data?.date
-        ? new Date(prf_from_store.prfData.patient_handover.data.date)
-        : new Date(),
-      patientSignature:
-        prf_from_store?.prfData?.patient_handover?.data?.patientSignature || "",
-      witnessSignature:
-        prf_from_store?.prfData?.patient_handover?.data?.witnessSignature || "",
+    mode: "all",
+    defaultValues: async () => {
+      const section = await ensurePRFResponseSectionByName(
+        qc,
+        prfId,
+        "patient_handover",
+      );
+      return {
+        fullName: section.data?.fullName || "",
+        date: section.data?.date ? new Date(section.data.date) : new Date(),
+        patientSignature: section.data?.patientSignature || "",
+        witnessSignature: section.data?.witnessSignature || "",
+      };
     },
   });
 
   function onSubmit(values: PatientHandoverType) {
-    if (!zsEmployee) {
-      // no needed .. just for building
-      return;
-    }
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        ...prf_from_store?.prfData,
-        patient_handover: {
-          data: values,
-          isCompleted: true,
-          isOptional: false,
+    updatePrfQuery.mutate(
+      { data: values, isCompleted: true },
+      {
+        onSuccess: () => {
+          toast.success("Patient Handover Information Updated", {
+            duration: 3000,
+            position: "bottom-right",
+            action: {
+              label: "View",
+              onClick: () => router.push(path),
+            },
+          });
+          router.push(`/edit-prf/${prfId}`);
+        },
+        onError: () => {
+          toast.error("An error occurred", {
+            duration: 3000,
+            position: "bottom-right",
+          });
         },
       },
-      EmployeeID: zsEmployee.id || "2", // fallback
-    };
-
-    updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: () => {
-        toast.success("Patient Handover Information Updated", {
-          duration: 3000,
-          position: "bottom-right",
-          action: {
-            label: "View",
-            onClick: () => router.push(path),
-          },
-        });
-        router.push(`/edit-prf/${prfId}`);
-      },
-      onError: () => {
-        toast.error("An error occurred", {
-          duration: 3000,
-          position: "bottom-right",
-        });
-      },
-    });
+    );
   }
 
   const handleEditSignature =
@@ -150,7 +137,7 @@ export default function PatientHandoverForm() {
               <FormItem className="flex flex-col">
                 <FormLabel>Full Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter the full name" {...field} />
+                  <Input placeholder="Enter the full name" {...field} value={field.value || ""} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -239,11 +226,11 @@ export default function PatientHandoverForm() {
         <Button
           type="submit"
           disabled={!form.formState.isDirty}
-          className="w-full sm:w-auto min-[1197px]:self-end"
+          className="w-full self-end sm:w-auto min-[1197px]:self-end"
         >
           {form.formState.isSubmitting || updatePrfQuery.isPending ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving
+              <Loader className="mr-2 h-4 w-4 animate-spin" /> Saving
             </>
           ) : (
             "Save Patient Handover"
