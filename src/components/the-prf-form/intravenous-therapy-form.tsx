@@ -332,8 +332,8 @@ export default function IntravenousTherapyForm() {
                             value={
                               field.value
                                 ? zsVehicle?.inventory.fluids.find(
-                                    (f) => f.name === field.value,
-                                  )?.id || "custom"
+                                  (f) => f.name === field.value,
+                                )?.id || "custom"
                                 : ""
                             }
                           >
@@ -552,7 +552,7 @@ export default function IntravenousTherapyForm() {
             disabled={!form.formState.isDirty}
             className="self-end"
             onClick={() => {
-              console.log("form.getValues() 🚀", form.getValues());
+              // console.log("form.getValues() 🚀", form.getValues());
             }}
           >
             {form.formState.isSubmitting || updatePrfQuery.isPending ? (

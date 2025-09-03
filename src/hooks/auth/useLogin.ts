@@ -67,7 +67,7 @@ export const useSendPasswordResetCodeMutation = () => {
         toast.success("Password reset code sent! Please check your email.");
         // In development, show the code for testing
         if (result.value.code) {
-          console.log("Development reset code:", result.value.code);
+          // console.log("Development reset code:", result.value.code);
         }
       } else {
         toast.error(result.error.detail);
@@ -108,7 +108,7 @@ export const useSendConfirmationCodeMutation = () => {
         toast.success("Confirmation code sent! Please check your email.");
         // In development, show the code for testing
         if (result.value.code) {
-          console.log("Development confirmation code:", result.value.code);
+          // console.log("Development confirmation code:", result.value.code);
         }
       } else {
         toast.error(result.error.detail);

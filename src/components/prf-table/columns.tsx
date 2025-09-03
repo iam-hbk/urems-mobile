@@ -8,7 +8,7 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 import { Badge } from "../ui/badge";
 import { cn } from "@/lib/utils";
-import { DataTableRowActions } from "../form-task-details-table/data-table-row-actions";
+// import { DataTableRowActions } from "../form-task-details-table/data-table-row-actions";
 import { PrintPRF } from "../PrintPRF";
 
 const fuzzyFilter: FilterFn<FormResponseSummary> = (
@@ -24,7 +24,8 @@ const fuzzyFilter: FilterFn<FormResponseSummary> = (
 const dateRangeFilter: FilterFn<FormResponseSummary> = (
   row,
   columnId,
-  filterValue: any,
+  // filterValue: any,
+  filterValue,
 ) => {
   if (!filterValue?.start || !filterValue?.end) return true;
 

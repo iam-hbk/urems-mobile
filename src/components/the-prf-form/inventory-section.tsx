@@ -109,7 +109,7 @@ export default function InventorySection() {
   // Initialize form with inventory items that have been used
   useEffect(() => {
     const existingItems = form.getValues().items;
-    console.log("Existing Items -> ", existingItems);
+    // console.log("Existing Items -> ", existingItems);
 
     // If no items have been added yet, initialize with empty array
     if ((existingItems && existingItems.length === 0) || !existingItems) {

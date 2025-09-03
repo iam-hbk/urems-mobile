@@ -12,10 +12,10 @@ import { useGetFullPrfResponse } from "@/hooks/prf/usePrfForms";
 type PrintablePRF = Record<
   string,
   | {
-      isCompleted?: boolean;
-      isOptional?: boolean;
-      data?: Record<string, unknown>;
-    }
+    isCompleted?: boolean;
+    isOptional?: boolean;
+    data?: Record<string, unknown>;
+  }
   | null
   | undefined
 >;
@@ -39,7 +39,7 @@ function renderValue(value: unknown): HTMLElement {
     img.alt = "embedded";
     img.style.maxWidth = "100%";
     img.style.maxHeight = "180px";
-    (img.style as any).pageBreakInside = "avoid";
+    (img.style).pageBreakInside = "avoid";
     return img;
   }
   if (Array.isArray(value)) {
@@ -150,9 +150,9 @@ function buildPrintable(
     Object.entries(fullPrf).forEach(([sectionKey, sectionVal]) => {
       const section = sectionVal as
         | {
-            isCompleted?: boolean;
-            data?: Record<string, unknown>;
-          }
+          isCompleted?: boolean;
+          data?: Record<string, unknown>;
+        }
         | null
         | undefined;
 
@@ -165,7 +165,7 @@ function buildPrintable(
       block.style.breakAfter = "page";
       block.style.marginBottom = "1.5rem";
       const card = document.createElement("div");
-      (card.style as any).pageBreakInside = "avoid";
+      (card.style).pageBreakInside = "avoid";
       card.style.border = "1px solid #e5e7eb";
       card.style.borderRadius = "0.5rem";
       const header = document.createElement("div");
@@ -274,6 +274,7 @@ export function usePrintPRF(prfResponseId: string) {
     try {
       await printPrfById(prfResponseId);
     } catch (error) {
+      if (error) { }
       // Error already handled in printPrfById
     } finally {
       setIsLoading(false);
@@ -428,10 +429,10 @@ export function PrintPRF({
               .map(([sectionKey, sectionVal]) => {
                 const section = sectionVal as
                   | {
-                      isOptional?: boolean;
-                      isCompleted?: boolean;
-                      data?: Record<string, unknown>;
-                    }
+                    isOptional?: boolean;
+                    isCompleted?: boolean;
+                    data?: Record<string, unknown>;
+                  }
                   | null
                   | undefined;
 

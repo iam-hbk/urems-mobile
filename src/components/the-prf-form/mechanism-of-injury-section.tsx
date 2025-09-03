@@ -50,7 +50,7 @@ export default function MechanismOfInjuryForm() {
         ...section.data,
         extractionMethod:
           section.data.extractionMethod &&
-          section.data.extractionMethod.length > 0
+            section.data.extractionMethod.length > 0
             ? section.data.extractionMethod
             : undefined,
         helmetRemoval:
@@ -73,7 +73,7 @@ export default function MechanismOfInjuryForm() {
           ...section.data.vehicleType,
           vehicleTypesSelection:
             section.data.vehicleType?.vehicleTypesSelection &&
-            section.data.vehicleType.vehicleTypesSelection.length > 0
+              section.data.vehicleType.vehicleTypesSelection.length > 0
               ? section.data.vehicleType.vehicleTypesSelection
               : undefined,
         },
@@ -224,11 +224,11 @@ export default function MechanismOfInjuryForm() {
                                   <Checkbox
                                     checked={field.value?.includes(
                                       item as
-                                        | "Frontal Impact"
-                                        | "Rear"
-                                        | "Rollover"
-                                        | "T - Boned"
-                                        | "Vehicle Spun",
+                                      | "Frontal Impact"
+                                      | "Rear"
+                                      | "Rollover"
+                                      | "T - Boned"
+                                      | "Vehicle Spun",
                                     )}
                                     onCheckedChange={(checked) => {
                                       // make it an empty array if field value is undefined
@@ -244,21 +244,21 @@ export default function MechanismOfInjuryForm() {
                                         if (
                                           !currentValue.includes(
                                             item as
-                                              | "Frontal Impact"
-                                              | "Rear"
-                                              | "Rollover"
-                                              | "T - Boned"
-                                              | "Vehicle Spun",
+                                            | "Frontal Impact"
+                                            | "Rear"
+                                            | "Rollover"
+                                            | "T - Boned"
+                                            | "Vehicle Spun",
                                           )
                                         ) {
                                           field.onChange([
                                             ...currentValue,
                                             item as
-                                              | "Frontal Impact"
-                                              | "Rear"
-                                              | "Rollover"
-                                              | "T - Boned"
-                                              | "Vehicle Spun",
+                                            | "Frontal Impact"
+                                            | "Rear"
+                                            | "Rollover"
+                                            | "T - Boned"
+                                            | "Vehicle Spun",
                                           ]);
                                         }
                                       } else {
@@ -451,19 +451,19 @@ export default function MechanismOfInjuryForm() {
                                   if (
                                     !currentValue.includes(
                                       item as
-                                        | "Bed"
-                                        | "Same Level"
-                                        | ">3m"
-                                        | ">10m",
+                                      | "Bed"
+                                      | "Same Level"
+                                      | ">3m"
+                                      | ">10m",
                                     )
                                   ) {
                                     field.onChange([
                                       ...currentValue,
                                       item as
-                                        | "Bed"
-                                        | "Same Level"
-                                        | ">3m"
-                                        | ">10m",
+                                      | "Bed"
+                                      | "Same Level"
+                                      | ">3m"
+                                      | ">10m",
                                     ]);
                                   }
                                 } else {
@@ -506,10 +506,10 @@ export default function MechanismOfInjuryForm() {
                             <Checkbox
                               checked={field.value?.includes(
                                 item as
-                                  | "Gun Shot Wound"
-                                  | "AR"
-                                  | "Handgun"
-                                  | "Rifle",
+                                | "Gun Shot Wound"
+                                | "AR"
+                                | "Handgun"
+                                | "Rifle",
                               )}
                               onCheckedChange={(checked) => {
                                 // make it an empty array if field value is undefined
@@ -523,19 +523,19 @@ export default function MechanismOfInjuryForm() {
                                   if (
                                     !currentValue.includes(
                                       item as
-                                        | "Gun Shot Wound"
-                                        | "AR"
-                                        | "Handgun"
-                                        | "Rifle",
+                                      | "Gun Shot Wound"
+                                      | "AR"
+                                      | "Handgun"
+                                      | "Rifle",
                                     )
                                   ) {
                                     field.onChange([
                                       ...currentValue,
                                       item as
-                                        | "Gun Shot Wound"
-                                        | "AR"
-                                        | "Handgun"
-                                        | "Rifle",
+                                      | "Gun Shot Wound"
+                                      | "AR"
+                                      | "Handgun"
+                                      | "Rifle",
                                     ]);
                                   }
                                 } else {
@@ -584,11 +584,11 @@ export default function MechanismOfInjuryForm() {
                             <Checkbox
                               checked={field.value?.includes(
                                 item as
-                                  | "Assault"
-                                  | "Stabbing"
-                                  | "Rape"
-                                  | "Strangulation"
-                                  | "Armed Robbery",
+                                | "Assault"
+                                | "Stabbing"
+                                | "Rape"
+                                | "Strangulation"
+                                | "Armed Robbery",
                               )}
                               onCheckedChange={(checked) => {
                                 // make it an empty array if field value is undefined
@@ -602,21 +602,21 @@ export default function MechanismOfInjuryForm() {
                                   if (
                                     !currentValue.includes(
                                       item as
-                                        | "Assault"
-                                        | "Stabbing"
-                                        | "Rape"
-                                        | "Strangulation"
-                                        | "Armed Robbery",
+                                      | "Assault"
+                                      | "Stabbing"
+                                      | "Rape"
+                                      | "Strangulation"
+                                      | "Armed Robbery",
                                     )
                                   ) {
                                     field.onChange([
                                       ...currentValue,
                                       item as
-                                        | "Assault"
-                                        | "Stabbing"
-                                        | "Rape"
-                                        | "Strangulation"
-                                        | "Armed Robbery",
+                                      | "Assault"
+                                      | "Stabbing"
+                                      | "Rape"
+                                      | "Strangulation"
+                                      | "Armed Robbery",
                                     ]);
                                   }
                                 } else {
@@ -665,11 +665,11 @@ export default function MechanismOfInjuryForm() {
                             <Checkbox
                               checked={field.value?.includes(
                                 item as
-                                  | "Industrial Accident"
-                                  | "Sports Injury"
-                                  | "Limited Patient Access"
-                                  | "Self-Inflicted Wounds"
-                                  | "Suicidal Tendencies",
+                                | "Industrial Accident"
+                                | "Sports Injury"
+                                | "Limited Patient Access"
+                                | "Self-Inflicted Wounds"
+                                | "Suicidal Tendencies",
                               )}
                               onCheckedChange={(checked) => {
                                 const currentValue = Array.isArray(field.value)
@@ -682,21 +682,21 @@ export default function MechanismOfInjuryForm() {
                                   if (
                                     !currentValue.includes(
                                       item as
-                                        | "Industrial Accident"
-                                        | "Sports Injury"
-                                        | "Limited Patient Access"
-                                        | "Self-Inflicted Wounds"
-                                        | "Suicidal Tendencies",
+                                      | "Industrial Accident"
+                                      | "Sports Injury"
+                                      | "Limited Patient Access"
+                                      | "Self-Inflicted Wounds"
+                                      | "Suicidal Tendencies",
                                     )
                                   ) {
                                     field.onChange([
                                       ...currentValue,
                                       item as
-                                        | "Industrial Accident"
-                                        | "Sports Injury"
-                                        | "Limited Patient Access"
-                                        | "Self-Inflicted Wounds"
-                                        | "Suicidal Tendencies",
+                                      | "Industrial Accident"
+                                      | "Sports Injury"
+                                      | "Limited Patient Access"
+                                      | "Self-Inflicted Wounds"
+                                      | "Suicidal Tendencies",
                                     ]);
                                   }
                                 } else {
@@ -883,10 +883,10 @@ export default function MechanismOfInjuryForm() {
                                   <Checkbox
                                     checked={field.value?.includes(
                                       item as
-                                        | "Cold Water"
-                                        | "River / Dam"
-                                        | "Flood"
-                                        | "Pool",
+                                      | "Cold Water"
+                                      | "River / Dam"
+                                      | "Flood"
+                                      | "Pool",
                                     )}
                                     onCheckedChange={(checked) => {
                                       // make it an empty array if field value is undefined
@@ -902,19 +902,19 @@ export default function MechanismOfInjuryForm() {
                                         if (
                                           !currentValue.includes(
                                             item as
-                                              | "Cold Water"
-                                              | "River / Dam"
-                                              | "Flood"
-                                              | "Pool",
+                                            | "Cold Water"
+                                            | "River / Dam"
+                                            | "Flood"
+                                            | "Pool",
                                           )
                                         ) {
                                           field.onChange([
                                             ...currentValue,
                                             item as
-                                              | "Cold Water"
-                                              | "River / Dam"
-                                              | "Flood"
-                                              | "Pool",
+                                            | "Cold Water"
+                                            | "River / Dam"
+                                            | "Flood"
+                                            | "Pool",
                                           ]);
                                         }
                                       } else {
@@ -1077,13 +1077,13 @@ export default function MechanismOfInjuryForm() {
                                 <Checkbox
                                   checked={field.value?.includes(
                                     item as
-                                      | "Chemical"
-                                      | "Electrical"
-                                      | "Flash"
-                                      | "Lightning"
-                                      | "Steam"
-                                      | "Smoke Inhalation"
-                                      | "Thermal",
+                                    | "Chemical"
+                                    | "Electrical"
+                                    | "Flash"
+                                    | "Lightning"
+                                    | "Steam"
+                                    | "Smoke Inhalation"
+                                    | "Thermal",
                                   )}
                                   onCheckedChange={(checked) => {
                                     // make it an empty array if field value is undefined
@@ -1099,25 +1099,25 @@ export default function MechanismOfInjuryForm() {
                                       if (
                                         !currentValue.includes(
                                           item as
-                                            | "Chemical"
-                                            | "Electrical"
-                                            | "Flash"
-                                            | "Lightning"
-                                            | "Steam"
-                                            | "Smoke Inhalation"
-                                            | "Thermal",
+                                          | "Chemical"
+                                          | "Electrical"
+                                          | "Flash"
+                                          | "Lightning"
+                                          | "Steam"
+                                          | "Smoke Inhalation"
+                                          | "Thermal",
                                         )
                                       ) {
                                         field.onChange([
                                           ...currentValue,
                                           item as
-                                            | "Chemical"
-                                            | "Electrical"
-                                            | "Flash"
-                                            | "Lightning"
-                                            | "Steam"
-                                            | "Smoke Inhalation"
-                                            | "Thermal",
+                                          | "Chemical"
+                                          | "Electrical"
+                                          | "Flash"
+                                          | "Lightning"
+                                          | "Steam"
+                                          | "Smoke Inhalation"
+                                          | "Thermal",
                                         ]);
                                       }
                                     } else {
@@ -1151,8 +1151,8 @@ export default function MechanismOfInjuryForm() {
           disabled={!form.formState.isDirty}
           className="w-full self-end sm:w-auto"
           onClick={() => {
-            console.log("form values", form.getValues());
-            console.log("form errors", form.formState.errors);
+            // console.log("form values", form.getValues());
+            // console.log("form errors", form.formState.errors);
           }}
         >
           {form.formState.isSubmitting || updatePrfQuery.isPending ? (

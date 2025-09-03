@@ -107,22 +107,22 @@ export default function PrimarySurveyForm() {
       const disability =
         assessmentType === "GCS"
           ? {
-              ...baseDisability,
-              assessmentType: "GCS" as const,
-              initialGCS: section.data.disability.initialGCS || {
-                total: "",
-                motor: "",
-                verbal: "",
-                eyes: "",
-              },
-              AVPU: null,
-            }
+            ...baseDisability,
+            assessmentType: "GCS" as const,
+            initialGCS: section.data.disability.initialGCS || {
+              total: "",
+              motor: "",
+              verbal: "",
+              eyes: "",
+            },
+            AVPU: null,
+          }
           : {
-              ...baseDisability,
-              assessmentType: "AVPU" as const,
-              initialGCS: null,
-              AVPU: section.data.disability.AVPU || { value: "A" },
-            };
+            ...baseDisability,
+            assessmentType: "AVPU" as const,
+            initialGCS: null,
+            AVPU: section.data.disability.AVPU || { value: "A" },
+          };
 
       return {
         ...section.data,
@@ -192,8 +192,8 @@ export default function PrimarySurveyForm() {
               disabled={!form.formState.isDirty}
               className="self-end"
               onClick={() => {
-                console.log("Form Values -> ", form.getValues());
-                console.log("Form Errors -> ", form.formState.errors);
+                // console.log("Form Values -> ", form.getValues());
+                // console.log("Form Errors -> ", form.formState.errors);
               }}
             >
               {form.formState.isSubmitting || updatePrfQuery.isPending ? (
@@ -230,9 +230,9 @@ export default function PrimarySurveyForm() {
                             checked={field.value as boolean}
                             onCheckedChange={() => {
                               field.onChange(!field.value);
-                              console.log(
-                                `field.value OLD ${field.value} ** NEW ${!field.value}`,
-                              );
+                              // console.log(
+                              //   `field.value OLD ${field.value} ** NEW ${!field.value}`,
+                              // );
                             }}
                           />
                         </FormControl>
@@ -700,16 +700,16 @@ export default function PrimarySurveyForm() {
                                 value={
                                   key === "total"
                                     ? calculateTotal(
-                                        form.watch(
-                                          "disability.initialGCS.motor",
-                                        ),
-                                        form.watch(
-                                          "disability.initialGCS.verbal",
-                                        ),
-                                        form.watch(
-                                          "disability.initialGCS.eyes",
-                                        ),
-                                      )
+                                      form.watch(
+                                        "disability.initialGCS.motor",
+                                      ),
+                                      form.watch(
+                                        "disability.initialGCS.verbal",
+                                      ),
+                                      form.watch(
+                                        "disability.initialGCS.eyes",
+                                      ),
+                                    )
                                     : (field.value as string)
                                 }
                                 type={
@@ -731,17 +731,17 @@ export default function PrimarySurveyForm() {
                             {form.formState.errors.disability?.initialGCS?.[
                               key as keyof typeof form.formState.errors.disability.initialGCS
                             ] && (
-                              <p className="text-sm text-destructive">
-                                {
-                                  (
-                                    form.formState.errors.disability
-                                      ?.initialGCS?.[
+                                <p className="text-sm text-destructive">
+                                  {
+                                    (
+                                      form.formState.errors.disability
+                                        ?.initialGCS?.[
                                       key as keyof typeof form.formState.errors.disability.initialGCS
-                                    ] as FieldError
-                                  )?.message
-                                }
-                              </p>
-                            )}
+                                      ] as FieldError
+                                    )?.message
+                                  }
+                                </p>
+                              )}
                           </FormItem>
                         )}
                       />
@@ -801,25 +801,25 @@ export default function PrimarySurveyForm() {
                       {form.watch(
                         "disability.spinal.motorFunction.deformity",
                       ) && (
-                        <FormField
-                          control={form.control}
-                          name={`disability.spinal.motorFunction.deformityExplanation`}
-                          render={({ field }) => (
-                            <FormItem className="col-span-full">
-                              <FormLabel className="font-normal capitalize">
-                                Deformity Explanation
-                              </FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  placeholder="Explain deformity"
-                                  {...field}
-                                  value={(field.value as string) ?? ""}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                      )}
+                          <FormField
+                            control={form.control}
+                            name={`disability.spinal.motorFunction.deformityExplanation`}
+                            render={({ field }) => (
+                              <FormItem className="col-span-full">
+                                <FormLabel className="font-normal capitalize">
+                                  Deformity Explanation
+                                </FormLabel>
+                                <FormControl>
+                                  <Textarea
+                                    placeholder="Explain deformity"
+                                    {...field}
+                                    value={(field.value as string) ?? ""}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                        )}
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -890,8 +890,8 @@ export default function PrimarySurveyForm() {
             disabled={!form.formState.isDirty}
             className="self-end"
             onClick={() => {
-              console.log("Form Values -> ", form.getValues());
-              console.log("Form Errors -> ", form.formState.errors);
+              // console.log("Form Values -> ", form.getValues());
+              // console.log("Form Errors -> ", form.formState.errors);
             }}
           >
             {form.formState.isSubmitting || updatePrfQuery.isPending ? (

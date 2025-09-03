@@ -57,7 +57,7 @@ export default function SecondarySurveyForm() {
   });
 
   function onSubmit(values: SecondarySurveyType) {
-    console.log("VALUES -> ", values);
+    // console.log("VALUES -> ", values);
 
     updatePrfQuery.mutate(
       { data: values, isCompleted: true },
@@ -151,9 +151,9 @@ export default function SecondarySurveyForm() {
                             checked={field.value as boolean}
                             onCheckedChange={() => {
                               field.onChange(!field.value);
-                              console.log(
-                                `field.value OLD ${field.value} ** NEW ${!field.value}`,
-                              );
+                              // console.log(
+                              //   `field.value OLD ${field.value} ** NEW ${!field.value}`,
+                              // );
                             }}
                           />
                         </FormControl>
