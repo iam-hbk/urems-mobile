@@ -33,13 +33,6 @@ export async function RoleProtectedPage({ children }: RoleProtectedPageProps) {
     redirect("/login");
   }
 
-  // If roles are specified and user doesn't have required role
-  // if (allowedRoles.length > 0) {
-  //   const userRole = (session.user as any)?.role // Adjust based on your user object structure
-  //   if (!userRole || !allowedRoles.includes(userRole)) {
-  //     redirect(fallbackUrl)
-  //   }
-  // }
 
   return <>{children}</>;
 }

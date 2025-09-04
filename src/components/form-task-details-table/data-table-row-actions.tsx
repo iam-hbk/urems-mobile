@@ -13,7 +13,6 @@ import {
 import { Button } from "../ui/button";
 import { Ellipsis } from "lucide-react";
 import { Row } from "@tanstack/react-table";
-import { PrintPRF } from "../PrintPRF";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
