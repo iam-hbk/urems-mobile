@@ -63,12 +63,12 @@ export default function BodyDiagram() {
           injuries: [],
           anteriorImage:
             injuries?.data?.anteriorImage &&
-            injuries?.data?.anteriorImage?.length > 0
+              injuries?.data?.anteriorImage?.length > 0
               ? injuries?.data?.anteriorImage[0]
               : undefined,
           posteriorImage:
             injuries?.data?.posteriorImage &&
-            injuries?.data?.posteriorImage?.length > 0
+              injuries?.data?.posteriorImage?.length > 0
               ? injuries?.data?.posteriorImage[0]
               : undefined,
         }
@@ -91,7 +91,7 @@ export default function BodyDiagram() {
       isCompleted: true,
       isOptional: false,
     };
-    console.log("Submitting ->", prfUpdateValue);
+    // console.log("Submitting ->", prfUpdateValue);
 
     updatePrfQuery.mutate(prfUpdateValue, {
       onSuccess: () => {
@@ -121,7 +121,7 @@ export default function BodyDiagram() {
     event: React.MouseEvent<SVGSVGElement>,
     side: "anterior" | "posterior",
   ) => {
-    console.log("SVG Clicked ->", currentInjurySymbol);
+    // console.log("SVG Clicked ->", currentInjurySymbol);
     const svg = event.currentTarget;
     const point = svg.createSVGPoint();
     point.x = event.clientX;
@@ -679,7 +679,7 @@ export default function BodyDiagram() {
           <Button
             onClick={() => {
               if (Object.keys(form.formState.errors).length > 0) {
-                console.log(form.formState.errors);
+                // console.log(form.formState.errors);
                 toast.error(
                   "You may have not filled in all the required filleds, please check again",
                   {

@@ -12,10 +12,10 @@ import { useGetFullPrfResponse } from "@/hooks/prf/usePrfForms";
 type PrintablePRF = Record<
   string,
   | {
-      isCompleted?: boolean;
-      isOptional?: boolean;
-      data?: Record<string, unknown>;
-    }
+    isCompleted?: boolean;
+    isOptional?: boolean;
+    data?: Record<string, unknown>;
+  }
   | null
   | undefined
 >;
@@ -155,9 +155,9 @@ function buildPrintable(
     Object.entries(fullPrf).forEach(([sectionKey, sectionVal]) => {
       const section = sectionVal as
         | {
-            isCompleted?: boolean;
-            data?: Record<string, unknown>;
-          }
+          isCompleted?: boolean;
+          data?: Record<string, unknown>;
+        }
         | null
         | undefined;
 
@@ -431,10 +431,10 @@ export function PrintPRF({
               .map(([sectionKey, sectionVal]) => {
                 const section = sectionVal as
                   | {
-                      isOptional?: boolean;
-                      isCompleted?: boolean;
-                      data?: Record<string, unknown>;
-                    }
+                    isOptional?: boolean;
+                    isCompleted?: boolean;
+                    data?: Record<string, unknown>;
+                  }
                   | null
                   | undefined;
 

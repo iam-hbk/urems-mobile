@@ -167,18 +167,18 @@ const VitalSignsForm: React.FC = () => {
                           <FormLabel>Time</FormLabel>
                           <FormControl>
                             <Input
-                              onFocus={(e) => console.log(e.target.value)}
+                              // onFocus={(e) => console.log(e.target.value)}
                               type="time"
                               {...field}
                               value={
                                 field.value !== null &&
-                                field.value !== undefined
+                                  field.value !== undefined
                                   ? field.value?.toString()
                                   : new Date().toLocaleTimeString("en-US", {
-                                      hour12: false,
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })
+                                    hour12: false,
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })
                               }
                             />
                           </FormControl>
@@ -353,7 +353,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                field.value !== undefined
+                                  field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }
@@ -398,7 +398,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                field.value !== undefined
+                                  field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }
@@ -421,7 +421,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                field.value !== undefined
+                                  field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }
@@ -630,7 +630,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                field.value !== undefined
+                                  field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }
@@ -653,7 +653,7 @@ const VitalSignsForm: React.FC = () => {
                               {...field}
                               value={
                                 field.value !== null ||
-                                field.value !== undefined
+                                  field.value !== undefined
                                   ? field.value?.toString()
                                   : ""
                               }

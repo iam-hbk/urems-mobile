@@ -129,14 +129,14 @@ export default function RespiratoryDistressAssessmentForm() {
                                 <Checkbox
                                   checked={field.value?.includes(
                                     item as
-                                      | "Asthma"
-                                      | "COPD"
-                                      | "Emphysema"
-                                      | "Hx of Pulmonary Emboli"
-                                      | "Lung Cancer"
-                                      | "Prone to Chest Infections / Pneumonia"
-                                      | "Pulmonary TB"
-                                      | "COVID +",
+                                    | "Asthma"
+                                    | "COPD"
+                                    | "Emphysema"
+                                    | "Hx of Pulmonary Emboli"
+                                    | "Lung Cancer"
+                                    | "Prone to Chest Infections / Pneumonia"
+                                    | "Pulmonary TB"
+                                    | "COVID +",
                                   )}
                                   onCheckedChange={(checked) => {
                                     const currentValue = Array.isArray(
@@ -149,14 +149,14 @@ export default function RespiratoryDistressAssessmentForm() {
                                       if (
                                         !currentValue.includes(
                                           item as
-                                            | "Asthma"
-                                            | "COPD"
-                                            | "Emphysema"
-                                            | "Hx of Pulmonary Emboli"
-                                            | "Lung Cancer"
-                                            | "Prone to Chest Infections / Pneumonia"
-                                            | "Pulmonary TB"
-                                            | "COVID +",
+                                          | "Asthma"
+                                          | "COPD"
+                                          | "Emphysema"
+                                          | "Hx of Pulmonary Emboli"
+                                          | "Lung Cancer"
+                                          | "Prone to Chest Infections / Pneumonia"
+                                          | "Pulmonary TB"
+                                          | "COVID +",
                                         )
                                       ) {
                                         field.onChange([...currentValue, item]);
@@ -222,11 +222,11 @@ export default function RespiratoryDistressAssessmentForm() {
                                   <Checkbox
                                     checked={field.value?.includes(
                                       item as
-                                        | "Taking Contraceptives"
-                                        | "Hx of DVTs"
-                                        | "Recent: Long Distance Travel"
-                                        | "Fracture"
-                                        | "Recently given birth",
+                                      | "Taking Contraceptives"
+                                      | "Hx of DVTs"
+                                      | "Recent: Long Distance Travel"
+                                      | "Fracture"
+                                      | "Recently given birth",
                                     )}
                                     onCheckedChange={(checked) => {
                                       const currentValue = Array.isArray(
@@ -239,11 +239,11 @@ export default function RespiratoryDistressAssessmentForm() {
                                         if (
                                           !currentValue.includes(
                                             item as
-                                              | "Taking Contraceptives"
-                                              | "Hx of DVTs"
-                                              | "Recent: Long Distance Travel"
-                                              | "Fracture"
-                                              | "Recently given birth",
+                                            | "Taking Contraceptives"
+                                            | "Hx of DVTs"
+                                            | "Recent: Long Distance Travel"
+                                            | "Fracture"
+                                            | "Recently given birth",
                                           )
                                         ) {
                                           field.onChange([
@@ -411,12 +411,12 @@ export default function RespiratoryDistressAssessmentForm() {
                                   <Checkbox
                                     checked={field.value?.includes(
                                       item as
-                                        | "Chest Recession"
-                                        | "Grunting"
-                                        | "Irritable"
-                                        | "Prem Baby: Respiratory Distress Syndrome"
-                                        | "Congenital Abnormality"
-                                        | "Hyaline Membrane Disease",
+                                      | "Chest Recession"
+                                      | "Grunting"
+                                      | "Irritable"
+                                      | "Prem Baby: Respiratory Distress Syndrome"
+                                      | "Congenital Abnormality"
+                                      | "Hyaline Membrane Disease",
                                     )}
                                     onCheckedChange={(checked) => {
                                       const currentValue = Array.isArray(
@@ -429,12 +429,12 @@ export default function RespiratoryDistressAssessmentForm() {
                                         if (
                                           !currentValue.includes(
                                             item as
-                                              | "Chest Recession"
-                                              | "Grunting"
-                                              | "Irritable"
-                                              | "Prem Baby: Respiratory Distress Syndrome"
-                                              | "Congenital Abnormality"
-                                              | "Hyaline Membrane Disease",
+                                            | "Chest Recession"
+                                            | "Grunting"
+                                            | "Irritable"
+                                            | "Prem Baby: Respiratory Distress Syndrome"
+                                            | "Congenital Abnormality"
+                                            | "Hyaline Membrane Disease",
                                           )
                                         ) {
                                           field.onChange([
@@ -470,8 +470,8 @@ export default function RespiratoryDistressAssessmentForm() {
           <Button
             // type="submit"
             onClick={() => {
-              console.log("FORM ERRORS -> ", form.formState.errors);
-              console.log("FORM VALUES -> ", form.getValues());
+              // console.log("FORM ERRORS -> ", form.formState.errors);
+              // console.log("FORM VALUES -> ", form.getValues());
             }}
             disabled={!form.formState.isDirty}
             className="w-full self-end sm:w-auto"

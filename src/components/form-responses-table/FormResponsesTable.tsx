@@ -32,7 +32,7 @@ import { ArrowUpDown, ChevronDown, ChevronUp } from "lucide-react";
 const fetchPatientDetails = async (
   patientId: number,
 ): Promise<{ id: number; firstName: string; lastName: string } | null> => {
-  console.log(`Fetching patient details for ID: ${patientId}`);
+  // console.log(`Fetching patient details for ID: ${patientId}`);
   // Simulate API call
   await new Promise((resolve) => setTimeout(resolve, 300)); // Shorter delay
   // Example data - replace with actual API logic
@@ -228,9 +228,9 @@ export const FormResponsesTable: React.FC<FormResponsesTableProps> = ({
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
                   </TableHead>
                 ))}
               </TableRow>

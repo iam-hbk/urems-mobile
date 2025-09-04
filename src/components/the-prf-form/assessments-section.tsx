@@ -352,30 +352,30 @@ export default function AssessmentForm() {
                                   <Checkbox
                                     checked={field.value?.includes(
                                       item as
-                                        | "Brain tumour"
-                                        | "Bipolar"
-                                        | "Dementia"
-                                        | "Depression"
-                                        | "Epilepsy"
-                                        | "Hydrocephalus"
-                                        | "Multiple Sclerosis"
-                                        | "Parkinson's"
-                                        | "Previous: TBI"
-                                        | "Previous: TIA"
-                                        | "Previous: Stroke"
-                                        | "Quadriplegia"
-                                        | "Paraplegia"
-                                        | "Schizophrenia"
-                                        | "Syndrome",
+                                      | "Brain tumour"
+                                      | "Bipolar"
+                                      | "Dementia"
+                                      | "Depression"
+                                      | "Epilepsy"
+                                      | "Hydrocephalus"
+                                      | "Multiple Sclerosis"
+                                      | "Parkinson's"
+                                      | "Previous: TBI"
+                                      | "Previous: TIA"
+                                      | "Previous: Stroke"
+                                      | "Quadriplegia"
+                                      | "Paraplegia"
+                                      | "Schizophrenia"
+                                      | "Syndrome",
                                     )}
                                     onCheckedChange={(checked) => {
                                       return checked
                                         ? field.onChange([...field.value, item])
                                         : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== item,
-                                            ),
-                                          );
+                                          field.value?.filter(
+                                            (value) => value !== item,
+                                          ),
+                                        );
                                     }}
                                   />
                                 </FormControl>
@@ -478,14 +478,14 @@ export default function AssessmentForm() {
                               onCheckedChange={(checked) => {
                                 return checked
                                   ? field.onChange([
-                                      ...(field.value || []),
-                                      item,
-                                    ])
+                                    ...(field.value || []),
+                                    item,
+                                  ])
                                   : field.onChange(
-                                      field.value?.filter(
-                                        (value) => value !== item,
-                                      ) || [],
-                                    );
+                                    field.value?.filter(
+                                      (value) => value !== item,
+                                    ) || [],
+                                  );
                               }}
                             />
                           </FormControl>
@@ -521,14 +521,14 @@ export default function AssessmentForm() {
                               onCheckedChange={(checked) => {
                                 return checked
                                   ? field.onChange([
-                                      ...(field.value || []),
-                                      item,
-                                    ])
+                                    ...(field.value || []),
+                                    item,
+                                  ])
                                   : field.onChange(
-                                      field.value?.filter(
-                                        (value) => value !== item,
-                                      ) || [],
-                                    );
+                                    field.value?.filter(
+                                      (value) => value !== item,
+                                    ) || [],
+                                  );
                               }}
                             />
                           </FormControl>
@@ -634,14 +634,14 @@ export default function AssessmentForm() {
                               onCheckedChange={(checked) => {
                                 return checked
                                   ? field.onChange([
-                                      ...(field.value || []),
-                                      item,
-                                    ])
+                                    ...(field.value || []),
+                                    item,
+                                  ])
                                   : field.onChange(
-                                      field.value?.filter(
-                                        (value) => value !== item,
-                                      ) || [],
-                                    );
+                                    field.value?.filter(
+                                      (value) => value !== item,
+                                    ) || [],
+                                  );
                               }}
                             />
                           </FormControl>
@@ -765,15 +765,15 @@ export default function AssessmentForm() {
                               field.value
                                 ? typeof field.value === "string"
                                   ? new CalendarDate(
-                                      new Date(field.value).getFullYear(),
-                                      new Date(field.value).getMonth() + 1,
-                                      new Date(field.value).getDate(),
-                                    )
+                                    new Date(field.value).getFullYear(),
+                                    new Date(field.value).getMonth() + 1,
+                                    new Date(field.value).getDate(),
+                                  )
                                   : new CalendarDate(
-                                      field.value.getFullYear(),
-                                      field.value.getMonth() + 1,
-                                      field.value.getDate(),
-                                    )
+                                    field.value.getFullYear(),
+                                    field.value.getMonth() + 1,
+                                    field.value.getDate(),
+                                  )
                                 : null
                             }
                             onChange={(date) => {
@@ -888,14 +888,14 @@ export default function AssessmentForm() {
                               onCheckedChange={(checked) => {
                                 return checked
                                   ? field.onChange([
-                                      ...(field.value || []),
-                                      item,
-                                    ])
+                                    ...(field.value || []),
+                                    item,
+                                  ])
                                   : field.onChange(
-                                      field.value?.filter(
-                                        (value) => value !== item,
-                                      ) || [],
-                                    );
+                                    field.value?.filter(
+                                      (value) => value !== item,
+                                    ) || [],
+                                  );
                               }}
                             />
                           </FormControl>
@@ -980,7 +980,7 @@ export default function AssessmentForm() {
                         name="painAssessment.timeOfOnset"
                         // className="w-full"
                         onChange={(value) => {
-                          console.log("TimePicker Value set:", value);
+                          // console.log("TimePicker Value set:", value);
                           field.onChange(value);
                         }}
                         value={field.value}
@@ -1046,24 +1046,24 @@ export default function AssessmentForm() {
                                   <Checkbox
                                     checked={field.value?.includes(
                                       item as
-                                        | "Age"
-                                        | "↑BMI"
-                                        | "Diabetes"
-                                        | "Family Cardiac Hx"
-                                        | "Hypertension"
-                                        | "↑Cholesterol"
-                                        | "Previous Cardiac Event"
-                                        | "Smoker"
-                                        | "Stress",
+                                      | "Age"
+                                      | "↑BMI"
+                                      | "Diabetes"
+                                      | "Family Cardiac Hx"
+                                      | "Hypertension"
+                                      | "↑Cholesterol"
+                                      | "Previous Cardiac Event"
+                                      | "Smoker"
+                                      | "Stress",
                                     )}
                                     onCheckedChange={(checked) => {
                                       return checked
                                         ? field.onChange([...field.value, item])
                                         : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== item,
-                                            ),
-                                          );
+                                          field.value?.filter(
+                                            (value) => value !== item,
+                                          ),
+                                        );
                                     }}
                                   />
                                 </FormControl>
@@ -1125,28 +1125,28 @@ export default function AssessmentForm() {
                                   <Checkbox
                                     checked={field.value?.includes(
                                       item as
-                                        | "Cramping"
-                                        | "Cold Peripheries"
-                                        | "Confused"
-                                        | "Dysphagia"
-                                        | "Dizziness"
-                                        | "Dry Mucosa"
-                                        | "Hypotension"
-                                        | "Poor Skin Turgor"
-                                        | "Sunken Eyes"
-                                        | "Sunken Fontanelles"
-                                        | "Syncope"
-                                        | "Tachycardia"
-                                        | "Weak",
+                                      | "Cramping"
+                                      | "Cold Peripheries"
+                                      | "Confused"
+                                      | "Dysphagia"
+                                      | "Dizziness"
+                                      | "Dry Mucosa"
+                                      | "Hypotension"
+                                      | "Poor Skin Turgor"
+                                      | "Sunken Eyes"
+                                      | "Sunken Fontanelles"
+                                      | "Syncope"
+                                      | "Tachycardia"
+                                      | "Weak",
                                     )}
                                     onCheckedChange={(checked) => {
                                       return checked
                                         ? field.onChange([...field.value, item])
                                         : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== item,
-                                            ),
-                                          );
+                                          field.value?.filter(
+                                            (value) => value !== item,
+                                          ),
+                                        );
                                     }}
                                   />
                                 </FormControl>
@@ -1205,23 +1205,23 @@ export default function AssessmentForm() {
                                   <Checkbox
                                     checked={field.value?.includes(
                                       item as
-                                        | "Diaphoresis"
-                                        | "Chest Pain Not Increased by Deep Breathing"
-                                        | "Crushing Pain"
-                                        | "Radiating Pain"
-                                        | "Nausea"
-                                        | "Pale"
-                                        | "ECG Changes"
-                                        | "ST Elevation",
+                                      | "Diaphoresis"
+                                      | "Chest Pain Not Increased by Deep Breathing"
+                                      | "Crushing Pain"
+                                      | "Radiating Pain"
+                                      | "Nausea"
+                                      | "Pale"
+                                      | "ECG Changes"
+                                      | "ST Elevation",
                                     )}
                                     onCheckedChange={(checked) => {
                                       return checked
                                         ? field.onChange([...field.value, item])
                                         : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== item,
-                                            ),
-                                          );
+                                          field.value?.filter(
+                                            (value) => value !== item,
+                                          ),
+                                        );
                                     }}
                                   />
                                 </FormControl>

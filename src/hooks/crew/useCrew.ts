@@ -28,7 +28,7 @@ export function useGetCrewEmployeeID() {
         const { data, error } = await apiCrewGetEmployee(userId, token);
 
         if (error) throw new Error(error);
-        console.log("[][][][][]crew", data);
+        // console.log("[][][][][]crew", data);
 
         return data;
         //

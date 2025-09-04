@@ -86,7 +86,8 @@ export const useCreateFormResponse = ({
     onSuccess: (result) => {
       result.match(
         (newResponseData) => {
-          console.log("🚀 newResponseData:", newResponseData);
+          if (newResponseData) { }
+          // console.log("🚀 newResponseData:", newResponseData);
           toast.success("New form response created successfully!");
           queryClient.invalidateQueries({
             queryKey: ["formTemplateWithResponses", formTemplateId],
@@ -99,7 +100,7 @@ export const useCreateFormResponse = ({
     },
     onError: (error) => {
       // This will only be called for unexpected errors, not API errors wrapped in Result
-      console.log("🚀 Unexpected error:", error);
+      // console.log("🚀 Unexpected error:", error);
       toast.error(`An unexpected error occurred: ${error.detail}`);
     },
   });

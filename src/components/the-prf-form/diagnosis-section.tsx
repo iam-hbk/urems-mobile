@@ -194,11 +194,10 @@ export default function DiagnosisForm() {
                       {["1", "2", "3", "4"].map((priority) => (
                         <FormItem
                           key={priority}
-                          className={`flex items-center justify-center rounded-lg border-2 p-4 ${
-                            field.value === priority
+                          className={`flex items-center justify-center rounded-lg border-2 p-4 ${field.value === priority
                               ? "border-primary"
                               : "border-muted"
-                          } cursor-pointer hover:bg-accent`}
+                            } cursor-pointer hover:bg-accent`}
                           onClick={() => field.onChange(priority)}
                         >
                           <FormControl>
@@ -315,11 +314,11 @@ export default function DiagnosisForm() {
                                 checked={
                                   field.value?.includes(
                                     item as
-                                      | "stridor"
-                                      | "wheezes"
-                                      | "erythema"
-                                      | "pruritus"
-                                      | "urticaria",
+                                    | "stridor"
+                                    | "wheezes"
+                                    | "erythema"
+                                    | "pruritus"
+                                    | "urticaria",
                                   ) || false
                                 }
                                 onCheckedChange={(checked) => {
@@ -327,10 +326,10 @@ export default function DiagnosisForm() {
                                   return checked
                                     ? field.onChange([...currentValue, item])
                                     : field.onChange(
-                                        currentValue.filter(
-                                          (value) => value !== item,
-                                        ),
-                                      );
+                                      currentValue.filter(
+                                        (value) => value !== item,
+                                      ),
+                                    );
                                 }}
                               />
                             </FormControl>
@@ -372,10 +371,10 @@ export default function DiagnosisForm() {
                                   return checked
                                     ? field.onChange([...currentValue, item])
                                     : field.onChange(
-                                        currentValue.filter(
-                                          (value) => value !== item,
-                                        ),
-                                      );
+                                      currentValue.filter(
+                                        (value) => value !== item,
+                                      ),
+                                    );
                                 }}
                               />
                             </FormControl>
@@ -443,25 +442,25 @@ export default function DiagnosisForm() {
                           <Checkbox
                             checked={field.value?.includes(
                               item as
-                                | "Abdominal Pain"
-                                | "Altered LOC"
-                                | "Bradycardia"
-                                | "Secretions"
-                                | "Diaphoresis"
-                                | "Hypotension"
-                                | "Incontinence"
-                                | "Miosis"
-                                | "Seizures"
-                                | "Vomiting",
+                              | "Abdominal Pain"
+                              | "Altered LOC"
+                              | "Bradycardia"
+                              | "Secretions"
+                              | "Diaphoresis"
+                              | "Hypotension"
+                              | "Incontinence"
+                              | "Miosis"
+                              | "Seizures"
+                              | "Vomiting",
                             )}
                             onCheckedChange={(checked) => {
                               return field.value && checked
                                 ? field.onChange([...field.value, item])
                                 : field.onChange(
-                                    field.value?.filter(
-                                      (value) => value !== item,
-                                    ),
-                                  );
+                                  field.value?.filter(
+                                    (value) => value !== item,
+                                  ),
+                                );
                             }}
                           />
                         </FormControl>
@@ -480,8 +479,8 @@ export default function DiagnosisForm() {
           disabled={!form.formState.isDirty}
           className="w-full self-end sm:w-auto"
           onClick={() => {
-            console.log(form.getValues());
-            console.log(form.formState.errors);
+            // console.log(form.getValues());
+            // console.log(form.formState.errors);
           }}
         >
           {form.formState.isSubmitting || updatePrfQuery.isPending ? (

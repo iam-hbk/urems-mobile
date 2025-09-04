@@ -468,59 +468,59 @@ export default function PastMedicalHistoryForm() {
                 {form.watch(
                   "medicalConditions.cardiovascular.hasCondition",
                 ) && (
-                  <div className="ml-6 space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      {cardiovascularConditions.map((condition) => (
-                        <FormField
-                          key={condition}
-                          control={form.control}
-                          name="medicalConditions.cardiovascular.conditions"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value?.includes(condition)}
-                                  onCheckedChange={(checked) => {
-                                    return checked
-                                      ? field.onChange([
+                    <div className="ml-6 space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        {cardiovascularConditions.map((condition) => (
+                          <FormField
+                            key={condition}
+                            control={form.control}
+                            name="medicalConditions.cardiovascular.conditions"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value?.includes(condition)}
+                                    onCheckedChange={(checked) => {
+                                      return checked
+                                        ? field.onChange([
                                           ...(field.value || []),
                                           condition,
                                         ])
-                                      : field.onChange(
+                                        : field.onChange(
                                           field.value?.filter(
                                             (value) => value !== condition,
                                           ) || [],
                                         );
-                                  }}
-                                />
-                              </FormControl>
-                              <FormLabel className="font-normal">
-                                {condition}
-                              </FormLabel>
-                            </FormItem>
-                          )}
-                        />
-                      ))}
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormLabel className="font-normal">
+                                  {condition}
+                                </FormLabel>
+                              </FormItem>
+                            )}
+                          />
+                        ))}
+                      </div>
+                      <FormField
+                        control={form.control}
+                        name="medicalConditions.cardiovascular.details"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Additional Details</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                {...field}
+                                placeholder="Provide additional details about cardiovascular conditions"
+                                className="min-h-[80px]"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
-                    <FormField
-                      control={form.control}
-                      name="medicalConditions.cardiovascular.details"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Additional Details</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              {...field}
-                              placeholder="Provide additional details about cardiovascular conditions"
-                              className="min-h-[80px]"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                )}
+                  )}
               </div>
 
               {/* Respiratory */}
@@ -570,14 +570,14 @@ export default function PastMedicalHistoryForm() {
                                   onCheckedChange={(checked) => {
                                     return checked
                                       ? field.onChange([
-                                          ...(field.value || []),
-                                          condition,
-                                        ])
+                                        ...(field.value || []),
+                                        condition,
+                                      ])
                                       : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== condition,
-                                          ) || [],
-                                        );
+                                        field.value?.filter(
+                                          (value) => value !== condition,
+                                        ) || [],
+                                      );
                                   }}
                                 />
                               </FormControl>
@@ -657,14 +657,14 @@ export default function PastMedicalHistoryForm() {
                                   onCheckedChange={(checked) => {
                                     return checked
                                       ? field.onChange([
-                                          ...(field.value || []),
-                                          condition,
-                                        ])
+                                        ...(field.value || []),
+                                        condition,
+                                      ])
                                       : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== condition,
-                                          ) || [],
-                                        );
+                                        field.value?.filter(
+                                          (value) => value !== condition,
+                                        ) || [],
+                                      );
                                   }}
                                 />
                               </FormControl>
@@ -744,14 +744,14 @@ export default function PastMedicalHistoryForm() {
                                   onCheckedChange={(checked) => {
                                     return checked
                                       ? field.onChange([
-                                          ...(field.value || []),
-                                          condition,
-                                        ])
+                                        ...(field.value || []),
+                                        condition,
+                                      ])
                                       : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== condition,
-                                          ) || [],
-                                        );
+                                        field.value?.filter(
+                                          (value) => value !== condition,
+                                        ) || [],
+                                      );
                                   }}
                                 />
                               </FormControl>
@@ -961,8 +961,8 @@ export default function PastMedicalHistoryForm() {
           disabled={!form.formState.isDirty}
           className="w-full self-end sm:w-auto"
           onClick={() => {
-            console.log("Form Values -> ", form.getValues());
-            console.log("Form Errors -> ", form.formState.errors);
+            // console.log("Form Values -> ", form.getValues());
+            // console.log("Form Errors -> ", form.formState.errors);
           }}
         >
           {form.formState.isSubmitting || updatePrfQuery.isPending ? (

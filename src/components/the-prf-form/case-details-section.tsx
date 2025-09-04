@@ -120,7 +120,7 @@ const EditCaseDetailsDialog = ({ buttonTitle, prfResponseId }: EditProps) => {
   });
 
   const onSubmit = async (values: z.infer<typeof CaseDetailsSchema>) => {
-    console.log("submitting");
+    // console.log("submitting");
     if (!session?.user.id) {
       toast.error("No Employee Information Found", {
         duration: 3000,
@@ -130,13 +130,13 @@ const EditCaseDetailsDialog = ({ buttonTitle, prfResponseId }: EditProps) => {
     }
 
     const caseDetails: PRF_FORM_CASE_DETAILS = { ...values };
-    console.log(caseDetails);
+    // console.log(caseDetails);
     updatePrfQuery.mutate(
       { data: caseDetails, isCompleted: true },
       {
         onSuccess: () => dialogCloseRef.current?.click(),
         onError: (error) => {
-          console.log(error);
+          if (error) { }
         },
       },
     );
@@ -166,8 +166,8 @@ const EditCaseDetailsDialog = ({ buttonTitle, prfResponseId }: EditProps) => {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              console.log("🌟", form.getValues());
-              console.log("🚀", form.formState.errors);
+              // console.log("🌟", form.getValues());
+              // console.log("🚀", form.formState.errors);
               form.handleSubmit(onSubmit)();
             }}
             className="flex flex-col space-y-8"
@@ -233,19 +233,19 @@ const EditCaseDetailsDialog = ({ buttonTitle, prfResponseId }: EditProps) => {
                         value={
                           field.value
                             ? new CalendarDate(
-                                (field.value instanceof Date
-                                  ? field.value
-                                  : new Date(field.value)
-                                ).getFullYear(),
-                                (field.value instanceof Date
-                                  ? field.value
-                                  : new Date(field.value)
-                                ).getMonth() + 1,
-                                (field.value instanceof Date
-                                  ? field.value
-                                  : new Date(field.value)
-                                ).getDate(),
-                              )
+                              (field.value instanceof Date
+                                ? field.value
+                                : new Date(field.value)
+                              ).getFullYear(),
+                              (field.value instanceof Date
+                                ? field.value
+                                : new Date(field.value)
+                              ).getMonth() + 1,
+                              (field.value instanceof Date
+                                ? field.value
+                                : new Date(field.value)
+                              ).getDate(),
+                            )
                             : null
                         }
                         onChange={(date) => {

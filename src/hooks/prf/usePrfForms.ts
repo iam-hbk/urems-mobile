@@ -151,7 +151,7 @@ export const useGetPRFTemplate = () => {
     queryKey: ["PRF_TEMPLATE"],
     queryFn: async () => {
       const result = await getPRFTemplate();
-      console.log("🚀 result:", result);
+      // console.log("🚀 result:", result);
       return result.match(
         (data) => data,
         (error) => {
@@ -222,7 +222,7 @@ export function useUpdatePrfResponse<T extends SectionName>(
 
   return useMutation({
     mutationFn: (data: SectionDataTypeMap[T]) => {
-      console.log(`DATA[${sectionName}] -> `, data);
+      // console.log(`DATA[${sectionName}] -> `, data);
       return updatePrfResponse(prfResponseId, sectionName, data);
     },
     onSuccess: (result) => {
@@ -296,7 +296,7 @@ export const useUpdatePrfResponseMetadata = (prfResponseId: string) => {
     onSuccess: (result) => {
       result.match(
         () => {
-          console.log("PRF response metadata updated successfully!");
+          // console.log("PRF response metadata updated successfully!");
         },
         (error) => {
           console.error(
