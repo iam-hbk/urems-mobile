@@ -20,6 +20,11 @@ type PrintablePRF = Record<
   | undefined
 >;
 
+// Extended CSS style declaration that includes pageBreakInside property
+type ExtendedCSSStyleDeclaration = CSSStyleDeclaration & {
+  pageBreakInside?: string;
+};
+
 // Utility functions for rendering
 const humanize = (key: string) =>
   key.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
@@ -39,7 +44,7 @@ function renderValue(value: unknown): HTMLElement {
     img.alt = "embedded";
     img.style.maxWidth = "100%";
     img.style.maxHeight = "180px";
-    (img.style).pageBreakInside = "avoid";
+    (img.style as ExtendedCSSStyleDeclaration).pageBreakInside = "avoid";
     return img;
   }
   if (Array.isArray(value)) {
@@ -165,7 +170,7 @@ function buildPrintable(
       block.style.breakAfter = "page";
       block.style.marginBottom = "1.5rem";
       const card = document.createElement("div");
-      (card.style).pageBreakInside = "avoid";
+      (card.style as ExtendedCSSStyleDeclaration).pageBreakInside = "avoid";
       card.style.border = "1px solid #e5e7eb";
       card.style.borderRadius = "0.5rem";
       const header = document.createElement("div");
@@ -273,9 +278,6 @@ export function usePrintPRF(prfResponseId: string) {
     setIsLoading(true);
     try {
       await printPrfById(prfResponseId);
-    } catch (error) {
-      if (error) { }
-      // Error already handled in printPrfById
     } finally {
       setIsLoading(false);
     }

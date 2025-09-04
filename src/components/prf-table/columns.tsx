@@ -4,6 +4,8 @@ import { ColumnDef, FilterFn } from "@tanstack/react-table";
 import { FormResponseSummary } from "@/types/form-template";
 import { DataTableColumnHeader } from "../form-task-details-table/data-table-column-header";
 import { Button } from "../ui/button";
+import { RangeValue } from "@react-types/shared";
+import { DateValue } from "@internationalized/date";
 
 import Link from "next/link";
 import { Badge } from "../ui/badge";
@@ -24,8 +26,7 @@ const fuzzyFilter: FilterFn<FormResponseSummary> = (
 const dateRangeFilter: FilterFn<FormResponseSummary> = (
   row,
   columnId,
-  // filterValue: any,
-  filterValue,
+  filterValue: RangeValue<DateValue>,
 ) => {
   if (!filterValue?.start || !filterValue?.end) return true;
 
