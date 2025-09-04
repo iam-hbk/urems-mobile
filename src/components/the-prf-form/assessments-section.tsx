@@ -2,7 +2,7 @@
 
 import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FieldPath, useForm } from "react-hook-form";
+import { FieldPath, SubmitErrorHandler, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -21,144 +21,90 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
-import { PRF_FORM } from "@/interfaces/prf-form";
+import { useUpdatePrfResponse } from "@/hooks/prf/usePrfForms";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { z } from "zod";
 import { AssessmentsSchema, AssessmentsType } from "@/interfaces/prf-schema";
 import { TimePicker } from "@/components/ui/time-picker";
 import { DatePicker, Group } from "react-aria-components";
 import { CalendarDate } from "@internationalized/date";
 import { DateInput } from "../ui/datefield-rac";
+import { useQueryClient } from "@tanstack/react-query";
+import { ensurePRFResponseSectionByName } from "@/hooks/prf/usePrfForms";
 
 export default function AssessmentForm() {
   const prfId = usePathname().split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId,
-  );
+  const qc = useQueryClient();
 
-  const updatePrfQuery = useUpdatePrf();
+  const updatePrfQuery = useUpdatePrfResponse(prfId, "assessments");
   const router = useRouter();
 
   const form = useForm<AssessmentsType>({
     resolver: zodResolver(AssessmentsSchema),
-    values: prf_from_store?.prfData?.assessments?.data,
-    defaultValues: prf_from_store?.prfData?.assessments?.data || {
-      neuroAssessment: {
-        cincinnatiScale: {
-          armDrift: false,
-          facialDroop: false,
-          slurredSpeech: false,
+    defaultValues: async () => {
+      const assessments = await ensurePRFResponseSectionByName(
+        qc,
+        prfId,
+        "assessments",
+      );
+      return {
+        ...assessments.data,
+        abdominalAssessment: {
+          ...assessments.data.abdominalAssessment,
+          lastDrVisit: assessments.data.abdominalAssessment.lastDrVisit
+            ? new Date(assessments.data.abdominalAssessment.lastDrVisit)
+            : new Date(),
         },
-        seizure: { tonic: false, clonic: false, petite: false },
-        acuteDelirium: false,
-        aphasia: false,
-        incontinence: { urine: false, stool: false },
-        stupor: false,
-        syncopeEvents: false,
-      },
-      neuroConditions: [],
-      abdominalAssessment: {
-        urineOutput: {
-          burning: false,
-          darkYellow: false,
-          normal: false,
-          blood: false,
-          poly: false,
-          noOutput: false,
-          ihtFoleyCath: false,
-          uo: "",
-        },
-        hx: [],
-        git: [],
-        gastroenteritis: false,
-        hematemesis: false,
-        melaenaStool: false,
-        pegTube: false,
-        diarrhoea: false,
-        emesis: false,
-        emesisAmount: "",
-        emesisDays: "",
-        pain: [],
-        contractions: { mild: false, mod: false, severe: false, amount: "" },
-        pregnant: false,
-        twinPregnancy: false,
-        paraGravida: "",
-        discharge: false,
-        pvBleeding: false,
-        lastDrVisit: new Date(),
-        gestation: "",
-      },
-      painAssessment: {
-        provocation: {
-          onsetDuringExertion: false,
-          duringRest: false,
-          wokenByPain: false,
-          onsetDuringMild: false,
-          onsetDuringMod: false,
-          onsetDuringActivity: false,
-        },
-        quality: [],
-        radiating: {
-          yes: false,
-          lArm: false,
-          rArm: false,
-          face: false,
-          back: false,
-          leg: false,
-        },
-        severity: { atOnset: "", current: "" },
-        timeOfOnset: "",
-        negativeMurphysSign: false,
-      },
-      cardiacRiskFactors: [],
-      signsOfDehydration: [],
-      signsOfAcuteCoronarySyndrome: [],
+      };
     },
   });
 
   function onSubmit(values: AssessmentsType) {
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        ...prf_from_store?.prfData,
-        assessments: {
-          data: values,
-          isCompleted: true,
-          isOptional: false,
+    updatePrfQuery.mutate(
+      {
+        data: values,
+        isCompleted: true,
+        isOptional: false,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Assessment Information Updated", {
+            duration: 3000,
+            position: "top-right",
+          });
+          router.push(`/edit-prf/${prfId}`);
+        },
+        onError: () => {
+          toast.error("An error occurred", {
+            duration: 3000,
+            position: "top-right",
+          });
         },
       },
-      EmployeeID: prf_from_store?.EmployeeID || "2",
-    };
-
-    updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: (data) => {
-        toast.success("Assessment Information Updated", {
-          duration: 3000,
-          position: "top-right",
-        });
-        router.push(`/edit-prf/${data?.prfFormId}`);
-      },
-      onError: (error) => {
-        toast.error("An error occurred", {
-          duration: 3000,
-          position: "top-right",
-        });
-      },
-    });
+    );
   }
 
   // Add this function to handle form errors
-  const onError = (errors: any) => {
-    const errorMessages = Object.entries(errors)
-      .map(([_, error]: [string, any]) => error?.message)
-      .filter(Boolean);
-    
-    const errorMessage = errorMessages[0] || "Please fill in all required fields";
-    
-    toast.error(errorMessage, {
+  const onError: SubmitErrorHandler<AssessmentsType> = (errors) => {
+    const extractFirstMessage = (err: unknown): string | null => {
+      if (!err) return null;
+      if (typeof err === "object") {
+        if ("message" in (err as Record<string, unknown>)) {
+          const maybe = (err as { message?: unknown }).message;
+          if (typeof maybe === "string") return maybe;
+        }
+        for (const value of Object.values(err as Record<string, unknown>)) {
+          const found = extractFirstMessage(value);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+
+    const firstMessage =
+      extractFirstMessage(errors) || "Please fill in all required fields";
+
+    toast.error(firstMessage, {
       duration: 3000,
       position: "top-right",
     });
@@ -183,7 +129,7 @@ export default function AssessmentForm() {
               <FormField
                 control={form.control}
                 name="neuroAssessment.cincinnatiScale"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <FormLabel>Cincinnati Scale</FormLabel>
                     <div className="flex flex-wrap gap-4">
@@ -217,7 +163,147 @@ export default function AssessmentForm() {
                 )}
               />
 
-              {/* Add more fields for Neuro Assessment here */}
+              {/* Seizure Assessment */}
+              <FormField
+                control={form.control}
+                name="neuroAssessment.seizure"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Seizure Assessment</FormLabel>
+                    <div className="flex flex-wrap gap-4">
+                      {["tonic", "clonic", "petite"].map((item) => (
+                        <FormField
+                          key={item}
+                          control={form.control}
+                          name={
+                            `neuroAssessment.seizure.${item}` as FieldPath<AssessmentsType>
+                          }
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                              <FormControl>
+                                <Checkbox
+                                  checked={!!field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal">
+                                {item.charAt(0).toUpperCase() + item.slice(1)}
+                              </FormLabel>
+                            </FormItem>
+                          )}
+                        />
+                      ))}
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              {/* Acute Delirium */}
+              <FormField
+                control={form.control}
+                name="neuroAssessment.acuteDelirium"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={!!field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal">
+                      Acute Delirium
+                    </FormLabel>
+                  </FormItem>
+                )}
+              />
+
+              {/* Aphasia */}
+              <FormField
+                control={form.control}
+                name="neuroAssessment.aphasia"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={!!field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal">Aphasia</FormLabel>
+                  </FormItem>
+                )}
+              />
+
+              {/* Incontinence */}
+              <FormField
+                control={form.control}
+                name="neuroAssessment.incontinence"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Incontinence</FormLabel>
+                    <div className="flex flex-wrap gap-4">
+                      {["urine", "stool"].map((item) => (
+                        <FormField
+                          key={item}
+                          control={form.control}
+                          name={
+                            `neuroAssessment.incontinence.${item}` as FieldPath<AssessmentsType>
+                          }
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                              <FormControl>
+                                <Checkbox
+                                  checked={!!field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal">
+                                {item.charAt(0).toUpperCase() + item.slice(1)}
+                              </FormLabel>
+                            </FormItem>
+                          )}
+                        />
+                      ))}
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              {/* Stupor */}
+              <FormField
+                control={form.control}
+                name="neuroAssessment.stupor"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={!!field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal">Stupor</FormLabel>
+                  </FormItem>
+                )}
+              />
+
+              {/* Syncope Events */}
+              <FormField
+                control={form.control}
+                name="neuroAssessment.syncopeEvents"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={!!field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal">
+                      Syncope Events
+                    </FormLabel>
+                  </FormItem>
+                )}
+              />
             </AccordionContent>
           </AccordionItem>
 
@@ -266,30 +352,30 @@ export default function AssessmentForm() {
                                   <Checkbox
                                     checked={field.value?.includes(
                                       item as
-                                        | "Brain tumour"
-                                        | "Bipolar"
-                                        | "Dementia"
-                                        | "Depression"
-                                        | "Epilepsy"
-                                        | "Hydrocephalus"
-                                        | "Multiple Sclerosis"
-                                        | "Parkinson's"
-                                        | "Previous: TBI"
-                                        | "Previous: TIA"
-                                        | "Previous: Stroke"
-                                        | "Quadriplegia"
-                                        | "Paraplegia"
-                                        | "Schizophrenia"
-                                        | "Syndrome",
+                                      | "Brain tumour"
+                                      | "Bipolar"
+                                      | "Dementia"
+                                      | "Depression"
+                                      | "Epilepsy"
+                                      | "Hydrocephalus"
+                                      | "Multiple Sclerosis"
+                                      | "Parkinson's"
+                                      | "Previous: TBI"
+                                      | "Previous: TIA"
+                                      | "Previous: Stroke"
+                                      | "Quadriplegia"
+                                      | "Paraplegia"
+                                      | "Schizophrenia"
+                                      | "Syndrome",
                                     )}
                                     onCheckedChange={(checked) => {
                                       return checked
                                         ? field.onChange([...field.value, item])
                                         : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== item,
-                                            ),
-                                          );
+                                          field.value?.filter(
+                                            (value) => value !== item,
+                                          ),
+                                        );
                                     }}
                                   />
                                 </FormControl>
@@ -313,7 +399,9 @@ export default function AssessmentForm() {
             <AccordionContent className="space-y-4 p-3">
               {/* Urine Output Section */}
               <div className="space-y-4">
-                <FormLabel className="text-base">Urine Output</FormLabel>
+                <FormLabel className="text-base font-semibold">
+                  Urine Output
+                </FormLabel>
                 <div className="grid grid-cols-2 gap-4">
                   {(
                     [
@@ -366,7 +454,9 @@ export default function AssessmentForm() {
 
               {/* History Section */}
               <div className="space-y-4">
-                <FormLabel className="text-base">History</FormLabel>
+                <FormLabel className="text-base font-semibold">
+                  History
+                </FormLabel>
                 <div className="grid grid-cols-2 gap-4">
                   {(
                     [
@@ -388,14 +478,14 @@ export default function AssessmentForm() {
                               onCheckedChange={(checked) => {
                                 return checked
                                   ? field.onChange([
-                                      ...(field.value || []),
-                                      item,
-                                    ])
+                                    ...(field.value || []),
+                                    item,
+                                  ])
                                   : field.onChange(
-                                      field.value?.filter(
-                                        (value) => value !== item,
-                                      ) || [],
-                                    );
+                                    field.value?.filter(
+                                      (value) => value !== item,
+                                    ) || [],
+                                  );
                               }}
                             />
                           </FormControl>
@@ -409,7 +499,7 @@ export default function AssessmentForm() {
 
               {/* GIT Section */}
               <div className="space-y-4">
-                <FormLabel className="text-base">GIT</FormLabel>
+                <FormLabel className="text-base font-semibold">GIT</FormLabel>
                 <div className="grid grid-cols-2 gap-4">
                   {(
                     [
@@ -431,14 +521,14 @@ export default function AssessmentForm() {
                               onCheckedChange={(checked) => {
                                 return checked
                                   ? field.onChange([
-                                      ...(field.value || []),
-                                      item,
-                                    ])
+                                    ...(field.value || []),
+                                    item,
+                                  ])
                                   : field.onChange(
-                                      field.value?.filter(
-                                        (value) => value !== item,
-                                      ) || [],
-                                    );
+                                    field.value?.filter(
+                                      (value) => value !== item,
+                                    ) || [],
+                                  );
                               }}
                             />
                           </FormControl>
@@ -451,6 +541,9 @@ export default function AssessmentForm() {
               </div>
 
               {/* Additional GIT Conditions */}
+              <p className="text-base font-semibold">
+                Additional GIT Conditions
+              </p>
               <div className="grid grid-cols-2 gap-4">
                 {(
                   [
@@ -517,7 +610,7 @@ export default function AssessmentForm() {
 
               {/* Pain Section */}
               <div className="space-y-4">
-                <FormLabel className="text-base">Pain</FormLabel>
+                <FormLabel className="text-base font-semibold">Pain</FormLabel>
                 <div className="grid grid-cols-2 gap-4">
                   {(
                     [
@@ -541,14 +634,14 @@ export default function AssessmentForm() {
                               onCheckedChange={(checked) => {
                                 return checked
                                   ? field.onChange([
-                                      ...(field.value || []),
-                                      item,
-                                    ])
+                                    ...(field.value || []),
+                                    item,
+                                  ])
                                   : field.onChange(
-                                      field.value?.filter(
-                                        (value) => value !== item,
-                                      ) || [],
-                                    );
+                                    field.value?.filter(
+                                      (value) => value !== item,
+                                    ) || [],
+                                  );
                               }}
                             />
                           </FormControl>
@@ -560,9 +653,54 @@ export default function AssessmentForm() {
                 </div>
               </div>
 
+              {/* Contractions */}
+              <div className="space-y-4">
+                <FormLabel className="text-base font-semibold">
+                  Contractions
+                </FormLabel>
+                <div className="grid grid-cols-2 gap-4">
+                  {(["mild", "mod", "severe"] as const).map((item) => (
+                    <FormField
+                      key={item}
+                      control={form.control}
+                      name={`abdominalAssessment.contractions.${item}` as const}
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={!!field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormLabel className="font-normal">
+                            {item === "mod"
+                              ? "Moderate"
+                              : item.charAt(0).toUpperCase() + item.slice(1)}
+                          </FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                </div>
+                <FormField
+                  control={form.control}
+                  name="abdominalAssessment.contractions.amount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Amount</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="text" />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               {/* Pregnancy Related */}
               <div className="space-y-4">
-                <FormLabel className="text-base">Pregnancy Related</FormLabel>
+                <FormLabel className="text-base font-semibold">
+                  Pregnancy Related
+                </FormLabel>
                 <div className="grid grid-cols-2 gap-4">
                   {(
                     [
@@ -627,15 +765,15 @@ export default function AssessmentForm() {
                               field.value
                                 ? typeof field.value === "string"
                                   ? new CalendarDate(
-                                      new Date(field.value).getFullYear(),
-                                      new Date(field.value).getMonth() + 1,
-                                      new Date(field.value).getDate(),
-                                    )
+                                    new Date(field.value).getFullYear(),
+                                    new Date(field.value).getMonth() + 1,
+                                    new Date(field.value).getDate(),
+                                  )
                                   : new CalendarDate(
-                                      field.value.getFullYear(),
-                                      field.value.getMonth() + 1,
-                                      field.value.getDate(),
-                                    )
+                                    field.value.getFullYear(),
+                                    field.value.getMonth() + 1,
+                                    field.value.getDate(),
+                                  )
                                 : null
                             }
                             onChange={(date) => {
@@ -652,7 +790,7 @@ export default function AssessmentForm() {
                             <div className="flex">
                               <Group className="w-full">
                                 <DateInput
-                                  label="Last Dr Visit"
+                                  // label="Last Dr Visit"
                                   className="pe-9"
                                 />
                               </Group>
@@ -750,14 +888,14 @@ export default function AssessmentForm() {
                               onCheckedChange={(checked) => {
                                 return checked
                                   ? field.onChange([
-                                      ...(field.value || []),
-                                      item,
-                                    ])
+                                    ...(field.value || []),
+                                    item,
+                                  ])
                                   : field.onChange(
-                                      field.value?.filter(
-                                        (value) => value !== item,
-                                      ) || [],
-                                    );
+                                    field.value?.filter(
+                                      (value) => value !== item,
+                                    ) || [],
+                                  );
                               }}
                             />
                           </FormControl>
@@ -842,7 +980,7 @@ export default function AssessmentForm() {
                         name="painAssessment.timeOfOnset"
                         // className="w-full"
                         onChange={(value) => {
-                          console.log("TimePicker Value set:", value);
+                          // console.log("TimePicker Value set:", value);
                           field.onChange(value);
                         }}
                         value={field.value}
@@ -866,7 +1004,7 @@ export default function AssessmentForm() {
                       />
                     </FormControl>
                     <FormLabel className="font-normal">
-                      Negative Murphy's Sign
+                      Negative Murphy&apos;s Sign
                     </FormLabel>
                   </FormItem>
                 )}
@@ -879,7 +1017,7 @@ export default function AssessmentForm() {
             <AccordionContent>
               <FormField
                 control={form.control}
-                name="cardiacRiskFactors"
+                name="riskFactors"
                 render={() => (
                   <FormItem>
                     <div className="grid grid-cols-2 gap-4">
@@ -897,7 +1035,7 @@ export default function AssessmentForm() {
                         <FormField
                           key={item}
                           control={form.control}
-                          name="cardiacRiskFactors"
+                          name="riskFactors"
                           render={({ field }) => {
                             return (
                               <FormItem
@@ -908,24 +1046,24 @@ export default function AssessmentForm() {
                                   <Checkbox
                                     checked={field.value?.includes(
                                       item as
-                                        | "Age"
-                                        | "↑BMI"
-                                        | "Diabetes"
-                                        | "Family Cardiac Hx"
-                                        | "Hypertension"
-                                        | "↑Cholesterol"
-                                        | "Previous Cardiac Event"
-                                        | "Smoker"
-                                        | "Stress",
+                                      | "Age"
+                                      | "↑BMI"
+                                      | "Diabetes"
+                                      | "Family Cardiac Hx"
+                                      | "Hypertension"
+                                      | "↑Cholesterol"
+                                      | "Previous Cardiac Event"
+                                      | "Smoker"
+                                      | "Stress",
                                     )}
                                     onCheckedChange={(checked) => {
                                       return checked
                                         ? field.onChange([...field.value, item])
                                         : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== item,
-                                            ),
-                                          );
+                                          field.value?.filter(
+                                            (value) => value !== item,
+                                          ),
+                                        );
                                     }}
                                   />
                                 </FormControl>
@@ -949,7 +1087,7 @@ export default function AssessmentForm() {
             <AccordionContent>
               <FormField
                 control={form.control}
-                name="signsOfDehydration"
+                name="dehydrationSigns"
                 render={() => (
                   <FormItem>
                     {/* <div className="mb-4">
@@ -976,7 +1114,7 @@ export default function AssessmentForm() {
                         <FormField
                           key={item}
                           control={form.control}
-                          name="signsOfDehydration"
+                          name="dehydrationSigns"
                           render={({ field }) => {
                             return (
                               <FormItem
@@ -987,28 +1125,28 @@ export default function AssessmentForm() {
                                   <Checkbox
                                     checked={field.value?.includes(
                                       item as
-                                        | "Cramping"
-                                        | "Cold Peripheries"
-                                        | "Confused"
-                                        | "Dysphagia"
-                                        | "Dizziness"
-                                        | "Dry Mucosa"
-                                        | "Hypotension"
-                                        | "Poor Skin Turgor"
-                                        | "Sunken Eyes"
-                                        | "Sunken Fontanelles"
-                                        | "Syncope"
-                                        | "Tachycardia"
-                                        | "Weak",
+                                      | "Cramping"
+                                      | "Cold Peripheries"
+                                      | "Confused"
+                                      | "Dysphagia"
+                                      | "Dizziness"
+                                      | "Dry Mucosa"
+                                      | "Hypotension"
+                                      | "Poor Skin Turgor"
+                                      | "Sunken Eyes"
+                                      | "Sunken Fontanelles"
+                                      | "Syncope"
+                                      | "Tachycardia"
+                                      | "Weak",
                                     )}
                                     onCheckedChange={(checked) => {
                                       return checked
                                         ? field.onChange([...field.value, item])
                                         : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== item,
-                                            ),
-                                          );
+                                          field.value?.filter(
+                                            (value) => value !== item,
+                                          ),
+                                        );
                                     }}
                                   />
                                 </FormControl>
@@ -1034,7 +1172,7 @@ export default function AssessmentForm() {
             <AccordionContent>
               <FormField
                 control={form.control}
-                name="signsOfAcuteCoronarySyndrome"
+                name="acsSigns"
                 render={() => (
                   <FormItem>
                     {/* <div className="mb-4">
@@ -1056,7 +1194,7 @@ export default function AssessmentForm() {
                         <FormField
                           key={item}
                           control={form.control}
-                          name="signsOfAcuteCoronarySyndrome"
+                          name="acsSigns"
                           render={({ field }) => {
                             return (
                               <FormItem
@@ -1067,23 +1205,23 @@ export default function AssessmentForm() {
                                   <Checkbox
                                     checked={field.value?.includes(
                                       item as
-                                        | "Diaphoresis"
-                                        | "Chest Pain Not Increased by Deep Breathing"
-                                        | "Crushing Pain"
-                                        | "Radiating Pain"
-                                        | "Nausea"
-                                        | "Pale"
-                                        | "ECG Changes"
-                                        | "ST Elevation",
+                                      | "Diaphoresis"
+                                      | "Chest Pain Not Increased by Deep Breathing"
+                                      | "Crushing Pain"
+                                      | "Radiating Pain"
+                                      | "Nausea"
+                                      | "Pale"
+                                      | "ECG Changes"
+                                      | "ST Elevation",
                                     )}
                                     onCheckedChange={(checked) => {
                                       return checked
                                         ? field.onChange([...field.value, item])
                                         : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== item,
-                                            ),
-                                          );
+                                          field.value?.filter(
+                                            (value) => value !== item,
+                                          ),
+                                        );
                                     }}
                                   />
                                 </FormControl>

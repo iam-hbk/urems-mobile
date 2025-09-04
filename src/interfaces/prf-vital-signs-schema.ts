@@ -36,7 +36,9 @@ const VitalSignsEntrySchema = z.object({
   time: z.string(),
 });
 
-const VitalSignsSchema = z.array(VitalSignsEntrySchema);
+const VitalSignsSchema = z.object({
+  vital_signs: z.array(VitalSignsEntrySchema),
+});
 
 export type VitalSignsType = z.infer<typeof VitalSignsSchema>;
 export type VitalSignsEntryType = z.infer<typeof VitalSignsEntrySchema>;

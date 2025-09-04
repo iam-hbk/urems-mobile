@@ -1,3 +1,5 @@
+import { PRF_FORM_CASE_DETAILS } from "@/interfaces/prf-form";
+
 export interface FieldOption {
   id: string;
   value: string;
@@ -41,7 +43,9 @@ export interface SubSection {
   id: string;
   name: string;
   parentSubSectionId?: string | null; // Optional, for nested subsections
+  isRepeatable?: boolean; // Added for repeatable subsections
   fieldDefinitions: FieldDefinition[];
+  childSubSections: SubSection[] | null;
 }
 
 export interface Section {
@@ -49,7 +53,8 @@ export interface Section {
   name: string;
   isRequired: boolean;
   description?: string | null;
-  subSections: SubSection[];
+  directFields: FieldDefinition[] | null;
+  groupedSubSections: SubSection[] | null;
 }
 
 export interface FormTemplate {
@@ -98,7 +103,7 @@ export interface FormResponseSummary {
   patientId?: number | null;
   vehicleId?: number | null;
   crewId?: number | null;
-  employeeId: number; // Assuming this is always present for user filtering
+  employeeId: string; // Assuming this is always present for user filtering
   formTemplateId: string;
   isCompleted: boolean;
   createdAt: string; // Or Date
@@ -120,9 +125,36 @@ export interface FormTemplateWithResponses extends FormTemplate {
 
 export interface CreateFormResponsePayload {
   formTemplateId: string;
-  employeeId: number;
+  employeeId: string;
+  patientId?: string | null;
+  vehicleId?: string | null;
+  crewId?: string | null;
+}
+export interface CreatePRFResponsePayload {
+  formTemplateId: string;
+  employeeId: string;
+  patientId?: string | null;
+  vehicleId?: string | null;
+  crewId?: string | null;
+  caseDetails: PRF_FORM_CASE_DETAILS | null;
+}
+
+export interface FieldResponseUpdateDto {
+  fieldDefinitionId: string;
+  value: string; // Ensure this is always a string; complex objects/arrays should be JSON.stringified
+  entrySequenceNumber?: number; // Example showed 0, make it optional or default to 0
+}
+
+export interface SectionStatusUpdateDto {
+  sectionId: string;
+  isCompleted: boolean;
+}
+
+export interface FormResponseUpdateDto {
   patientId?: number | null;
   vehicleId?: number | null;
   crewId?: number | null;
-  // Any other fields required by POST /api/FormResponses, defaulting to 0 or null if optional
-} 
+  isCompleted?: boolean; // Represents the completion status of the ENTIRE form
+  fieldResponses: FieldResponseUpdateDto[];
+  sectionStatuses: SectionStatusUpdateDto[];
+}

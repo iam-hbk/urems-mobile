@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { PRF_FORM } from "@/interfaces/prf-form";
 import { User } from "@/interfaces/user";
+import { FormResponseSummary } from "@/types/form-template";
 
 interface NotesState {
   notesByPrfId: Record<string, { notes: string }>;
@@ -11,11 +11,11 @@ interface NotesState {
 
 interface StoreState extends NotesState {
   user: User | null;
-  prfForms: PRF_FORM[];
+  prfForms: FormResponseSummary[];
   setUser: (user: User) => void;
-  setPrfForms: (prfForms: PRF_FORM[]) => void;
-  addPrfForm: (prf: PRF_FORM) => void;
-  updatePrfForm: (updatedPrf: PRF_FORM) => void;
+  setPrfForms: (prfForms: FormResponseSummary[]) => void;
+  addPrfForm: (prf: FormResponseSummary) => void;
+  updatePrfForm: (updatedPrf: FormResponseSummary) => void;
 }
 
 export const useStore = create<StoreState>()(
@@ -33,7 +33,7 @@ export const useStore = create<StoreState>()(
       updatePrfForm: (updatedPrf) =>
         set((state) => ({
           prfForms: state.prfForms.map((prf) =>
-            prf.prfFormId === updatedPrf.prfFormId ? updatedPrf : prf
+            prf.id === updatedPrf.id ? updatedPrf : prf,
           ),
         })),
       updateNotes: (prfId, notes) =>
@@ -45,7 +45,8 @@ export const useStore = create<StoreState>()(
         })),
       clearNotes: (prfId) =>
         set((state) => {
-          const { [prfId]: _, ...rest } = state.notesByPrfId;
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { [prfId]: removed, ...rest } = state.notesByPrfId;
           return { notesByPrfId: rest };
         }),
     }),
@@ -56,6 +57,6 @@ export const useStore = create<StoreState>()(
         prfForms: state.prfForms,
         notesByPrfId: state.notesByPrfId,
       }),
-    }
-  )
+    },
+  ),
 );

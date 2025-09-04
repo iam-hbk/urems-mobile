@@ -1,8 +1,9 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -13,74 +14,81 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useRouter, useSearchParams } from "next/navigation";
-import { toast } from "sonner";
-import { authClient } from "@/lib/auth/client";
-import { Suspense } from "react";
+import { PasswordInput } from "@/components/ui/password-input";
+import { useLoginMutation } from "@/hooks/auth/useLogin";
+import { useSessionQuery } from "@/hooks/auth/useSession";
+import { schemaLoginForm, type LoginPayload } from "@/schema/auth";
+import Image from "next/image";
+import Link from "next/link";
+import { Loader } from "lucide-react";
 
-const loginFormSchema = z.object({
-  employeeNumber: z.string().min(1, "Employee number is required"),
-  password: z.string().min(1, "Password is required"),
-});
-
-type LoginFormValues = z.infer<typeof loginFormSchema>;
-
-const LoginForm = () => {
+export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('from') || '/';
-  
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginFormSchema),
+  const { data: session } = useSessionQuery();
+  const loginMutation = useLoginMutation();
+
+  const form = useForm<LoginPayload>({
+    resolver: zodResolver(schemaLoginForm),
     defaultValues: {
-      employeeNumber: "",
+      email: "",
       password: "",
     },
   });
 
-  async function onSubmit(data: LoginFormValues) {
-    try {
-      const session = await authClient.signIn.credentials(data);
-      if (session) {
-        toast.success("Login successful");
-        // Add a small delay to ensure the session is properly set
-        setTimeout(() => {
-          router.push(redirectTo);
-          router.refresh(); // Force a refresh to ensure new session is picked up
-        }, 100);
-      } else {
-        toast.error("Login failed");
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      toast.error("Invalid credentials");
+  const onSubmit = (values: LoginPayload) => {
+    loginMutation.mutate(values);
+  };
+
+  useEffect(() => {
+    if (session) {
+      router.replace("/dashboard");
     }
+  }, [session, router]);
+
+  // Don't render the form if a session is found
+  if (session) {
+    return null;
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-md space-y-8 rounded-lg border p-6 shadow-lg">
-        <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold">Welcome Back</h1>
-          <p className="text-gray-500">Please sign in to continue</p>
+    <div className="flex h-full items-center justify-center bg-background">
+      <div className="w-full max-w-md space-y-8 rounded-lg p-8 shadow-lg">
+        <div className="flex justify-center">
+          <Image
+            src="/urems-erp.png"
+            alt="UREMS Logo"
+            width={120}
+            height={40}
+            priority
+          />
         </div>
-        
+
+        <div className="text-center">
+          <h1 className="text-2xl font-bold tracking-tight">Welcome Back</h1>
+          <p className="text-sm text-muted-foreground">
+            Enter your credentials to access your account.
+          </p>
+        </div>
+
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="employeeNumber"
+              name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Employee Number</FormLabel>
+                  <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your employee number" {...field} />
+                    <Input
+                      placeholder="name@example.com"
+                      autoComplete="email"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
             <FormField
               control={form.control}
               name="password"
@@ -88,27 +96,37 @@ const LoginForm = () => {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="Enter your password" {...field} />
+                    <PasswordInput
+                      autoComplete="current-password"
+                      placeholder="Enter your password"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            <Button type="submit" className="w-full">
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loginMutation.isPending}
+            >
               Sign In
+              {loginMutation.isPending && (
+                <Loader className="ml-2 h-4 w-4 animate-spin" />
+              )}
             </Button>
+            <div className="text-center">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-muted-foreground transition-colors hover:text-primary"
+              >
+                Forgot your password?
+              </Link>
+            </div>
           </form>
         </Form>
       </div>
     </div>
   );
-};
-
-export default function LoginPage() {
-  return (
-    <Suspense>
-      <LoginForm />
-    </Suspense>
-  );
-} 
+}

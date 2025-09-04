@@ -4,7 +4,6 @@ import { ColumnDef } from "@tanstack/react-table";
 
 import { PRF_TABLE_SECTION_DATA } from "./schema";
 import { DataTableColumnHeader } from "./data-table-column-header";
-import { DataTableRowActions } from "./data-table-row-actions";
 import { Checkbox } from "../ui/checkbox";
 import { priorities, statuses } from "./helper-data";
 import { cn } from "@/lib/utils";
@@ -14,8 +13,8 @@ export const columns: ColumnDef<PRF_TABLE_SECTION_DATA>[] = [
   {
     id: "route",
     accessorKey: "route",
-    header: ({ column }) => null,
-    cell: ({ row }) => null,
+    header: () => null,
+    cell: () => null,
   },
   {
     id: "select",
@@ -65,7 +64,7 @@ export const columns: ColumnDef<PRF_TABLE_SECTION_DATA>[] = [
     ),
     cell: ({ row }) => {
       const priority = priorities.find(
-        (priority) => priority.value === row.getValue("priority")
+        (priority) => priority.value === row.getValue("priority"),
       );
 
       if (!priority) {
@@ -92,7 +91,7 @@ export const columns: ColumnDef<PRF_TABLE_SECTION_DATA>[] = [
     ),
     cell: ({ row }) => {
       const status = statuses.find(
-        (status) => status.value === row.getValue("status")
+        (status) => status.value === row.getValue("status"),
       );
       const isRequired = row.getValue("priority") === "required";
       const isCompleted = row.getValue("status") === "completed";
@@ -105,7 +104,7 @@ export const columns: ColumnDef<PRF_TABLE_SECTION_DATA>[] = [
         <div
           className={cn({
             "text-destructive": isRequired,
-            "dark:text-green-500 text-green-600": isCompleted,
+            "text-green-600 dark:text-green-500": isCompleted,
             "flex w-[130px] items-center": true,
           })}
         >
@@ -117,9 +116,5 @@ export const columns: ColumnDef<PRF_TABLE_SECTION_DATA>[] = [
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
     },
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => <DataTableRowActions row={row} />,
   },
 ];

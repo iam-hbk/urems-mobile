@@ -12,37 +12,44 @@ import {
   CommandItem,
   CommandShortcut,
 } from "@/components/ui/command";
-import { PRF_FORM, PRF_FORM_DATA_DISPLAY_NAMES } from "@/interfaces/prf-form";
-import { useRouter } from "next/navigation";
+import { PRF_FORM_DATA_DISPLAY_NAMES } from "@/interfaces/prf-form";
+import { useRouter, usePathname } from "next/navigation";
 import { iconMap } from "./quick-links";
-import { cn } from "@/lib/utils";
+import { useGetPRFResponseSectionStatus } from "@/hooks/prf/usePrfForms";
 
 interface CommandPaletteProps {
-  prf?: PRF_FORM;
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onOpenChangeAction: (open: boolean) => void;
 }
 
 export function CommandPalette({
-  prf,
   open,
-  onOpenChange,
+  onOpenChangeAction,
 }: CommandPaletteProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [search, setSearch] = useState("");
+
+  const prfID = pathname.split("/")[2]; // Extract prfID from /edit-prf/[prfID]/...
+
+  const {
+    data: statusData,
+    isLoading,
+    error,
+  } = useGetPRFResponseSectionStatus(prfID);
 
   // Handle CMD+K
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        onOpenChange(!open);
+        onOpenChangeAction(!open);
       }
     };
 
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
-  }, [open, onOpenChange]);
+  }, [open, onOpenChangeAction]);
 
   // Reset search when opening/closing
   useEffect(() => {
@@ -51,23 +58,23 @@ export function CommandPalette({
     }
   }, [open]);
 
-  const sections = Object.keys(PRF_FORM_DATA_DISPLAY_NAMES).map((key) => ({
-    title:
-      PRF_FORM_DATA_DISPLAY_NAMES[
-        key as keyof typeof PRF_FORM_DATA_DISPLAY_NAMES
-      ],
-    href:
-      key === "case_details"
-        ? `/edit-prf/${prf?.prfFormId}/#`
-        : `/edit-prf/${prf?.prfFormId}/${key.replace(/_/g, "-")}`,
-    icon: iconMap[key as keyof typeof iconMap],
-    keywords: [
-      key.replace(/_/g, " "),
-      PRF_FORM_DATA_DISPLAY_NAMES[
-        key as keyof typeof PRF_FORM_DATA_DISPLAY_NAMES
-      ],
-    ],
-  }));
+  const sections =
+    statusData?.sections.map((section) => {
+      const sectionKey =
+        section.sectionName as keyof typeof PRF_FORM_DATA_DISPLAY_NAMES;
+      return {
+        title: PRF_FORM_DATA_DISPLAY_NAMES[sectionKey],
+        href:
+          sectionKey === "case_details"
+            ? `/edit-prf/${prfID}/#`
+            : `/edit-prf/${prfID}/${sectionKey.replace(/_/g, "-")}`,
+        icon: iconMap[sectionKey as keyof typeof iconMap],
+        keywords: [
+          sectionKey.replace(/_/g, " "),
+          PRF_FORM_DATA_DISPLAY_NAMES[sectionKey],
+        ],
+      };
+    }) || [];
 
   const filteredSections = sections.filter((section) => {
     if (!search) return true;
@@ -77,8 +84,42 @@ export function CommandPalette({
     );
   });
 
+  if (isLoading) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChangeAction}>
+        <DialogContent
+          className="p-0 sm:max-w-[550px]"
+          aria-describedby={undefined}
+        >
+          <DialogTitle className="sr-only">Search PRF Sections</DialogTitle>
+          <div className="p-6 text-center">
+            <div className="text-sm text-gray-500">Loading sections...</div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  if (error || !statusData) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChangeAction}>
+        <DialogContent
+          className="p-0 sm:max-w-[550px]"
+          aria-describedby={undefined}
+        >
+          <DialogTitle className="sr-only">Search PRF Sections</DialogTitle>
+          <div className="p-6 text-center">
+            <div className="text-sm text-red-500">
+              Error loading sections. Please try again.
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChangeAction}>
       <DialogContent
         className="p-0 sm:max-w-[550px]"
         aria-describedby={undefined}
@@ -105,7 +146,7 @@ export function CommandPalette({
                     key={section.href}
                     onSelect={() => {
                       router.push(section.href);
-                      onOpenChange(false);
+                      onOpenChangeAction(false);
                     }}
                     className="flex items-center gap-2 px-4 py-2"
                   >

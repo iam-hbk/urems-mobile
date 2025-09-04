@@ -1,7 +1,6 @@
 "use client";
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetFooter,
@@ -10,17 +9,14 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "./ui/button";
-import { PropsWithChildren } from "react";
 import { TrendingUp } from "lucide-react";
 import { Stepper } from "./stepper";
-import { PRF_FORM } from "@/interfaces/prf-form";
 
 interface Props {
   triggerTitle: string;
-  prf: PRF_FORM;
 }
 
-const StepperView: React.FC<Props> = ({ triggerTitle, prf }) => {
+const StepperView: React.FC<Props> = ({ triggerTitle }) => {
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -36,7 +32,7 @@ const StepperView: React.FC<Props> = ({ triggerTitle, prf }) => {
             Follow the steps below to complete the form
           </SheetDescription>
         </SheetHeader>
-        <Stepper prf={prf} />
+        <Stepper />
         <SheetFooter>
           {/* <SheetClose asChild>
             <Button>Close</Button>

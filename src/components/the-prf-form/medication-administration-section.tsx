@@ -23,15 +23,17 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
-import { PRF_FORM } from "@/interfaces/prf-form";
+
+import {
+  ensurePRFResponseSectionByName,
+  useUpdatePrfResponse,
+} from "@/hooks/prf/usePrfForms";
 import { toast } from "sonner";
 import {
   MedicationAdministeredSchema,
   MedicationAdministeredType,
 } from "@/interfaces/prf-schema";
-import { useZuStandCrewStore } from "@/lib/zuStand/crew";
+
 import { CustomMedicationDialog } from "./medication/custom-medication-dialog";
 import { MedicationSelect } from "./medication/medication-select";
 import { TimePicker } from "@/components/ui/time-picker";
@@ -44,6 +46,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { useQueryClient } from "@tanstack/react-query";
+import { useGetUser } from "@/hooks/auth/useSession";
 
 export default function MedicationAdministeredForm() {
   const [customMedDialogOpen, setCustomMedDialogOpen] = React.useState(false);
@@ -59,41 +63,23 @@ export default function MedicationAdministeredForm() {
   >(undefined);
 
   const prfId = usePathname().split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId,
+  const qc = useQueryClient();
+  const { data: user } = useGetUser();
+  const updatePrfQuery = useUpdatePrfResponse(
+    prfId,
+    "medication_administration",
   );
-  const user = useStore((state) => state.user);
-  const { zsUpdateMedicationStock } = useZuStandCrewStore();
 
-  const updatePrfQuery = useUpdatePrf();
   const router = useRouter();
   const form = useForm<MedicationAdministeredType>({
     resolver: zodResolver(MedicationAdministeredSchema),
-    defaultValues: prf_from_store?.prfData?.medication_administration?.data || {
-      medications: [
-        {
-          medicine: "",
-          medicationId: undefined,
-          dose: "",
-          route: "",
-          time: {
-            value: new Date().toLocaleTimeString("en-GB", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            unknown: false,
-          },
-          hpcsa: user?.hpcsaNumber || "",
-          name: user?.name || "",
-          signature: user?.signature || "",
-        },
-      ],
-      consultation: {
-        consulted: false,
-        practitioner: "",
-        hpcsa: "",
-        summaryOfConsult: "",
-      },
+    defaultValues: async () => {
+      const medicationAdministration = await ensurePRFResponseSectionByName(
+        qc,
+        prfId,
+        "medication_administration",
+      );
+      return medicationAdministration?.data;
     },
   });
 
@@ -144,9 +130,9 @@ export default function MedicationAdministeredForm() {
         }),
         unknown: false,
       },
-      hpcsa: user?.hpcsaNumber || "",
-      name: user?.name || "",
-      signature: user?.signature || "",
+      hpcsa: "", // HPCSA number not available in current user data
+      name: user ? `${user.firstName} ${user.lastName}` : "",
+      signature: "", // Signature not available in current user data
     });
   }, [append, user]);
 
@@ -173,42 +159,36 @@ export default function MedicationAdministeredForm() {
   );
 
   function onSubmit(values: MedicationAdministeredType) {
-    // Update medication inventory
-    values.medications.forEach((medication) => {
-      if (medication.medicationId) {
-        // Only update stock if it's a medication from inventory
-        zsUpdateMedicationStock(medication.medicationId, 1); // Assuming 1 unit per administration
-      }
-    });
+    // // Update medication inventory
+    // values.medications.forEach((medication) => {
+    //   if (medication.medicationId) {
+    //     // Only update stock if it's a medication from inventory
+    //     // zsUpdateMedicationStock(medication.medicationId, 1); // Assuming 1 unit per administration
+    //   }
+    // });
 
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        ...prf_from_store?.prfData,
-        medication_administration: {
-          data: values,
-          isCompleted: true,
-          isOptional: false,
+    updatePrfQuery.mutate(
+      {
+        data: values,
+        isCompleted: true,
+        isOptional: false,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Medication Administered Information Updated", {
+            duration: 3000,
+            position: "top-right",
+          });
+          router.push(`/edit-prf/${prfId}`);
+        },
+        onError: () => {
+          toast.error("An error occurred", {
+            duration: 3000,
+            position: "top-right",
+          });
         },
       },
-      EmployeeID: prf_from_store?.EmployeeID || "2",
-    };
-
-    updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: (data) => {
-        toast.success("Medication Administered Information Updated", {
-          duration: 3000,
-          position: "top-right",
-        });
-        router.push(`/edit-prf/${data?.prfFormId}`);
-      },
-      onError: (error) => {
-        toast.error("An error occurred", {
-          duration: 3000,
-          position: "top-right",
-        });
-      },
-    });
+    );
   }
 
   return (
@@ -220,14 +200,14 @@ export default function MedicationAdministeredForm() {
     >
       <CustomMedicationDialog
         open={customMedDialogOpen}
-        onOpenChange={(open) => {
+        onOpenChangeAction={(open) => {
           setCustomMedDialogOpen(open);
           if (!open) {
             setEditingMedication(undefined);
             setActiveIndex(null);
           }
         }}
-        onSubmit={handleCustomMedication}
+        onSubmitAction={handleCustomMedication}
         initialValues={editingMedication}
       />
       <Form {...form}>
@@ -240,6 +220,7 @@ export default function MedicationAdministeredForm() {
               Medication Administered
             </h3>
           </div>
+
           <AccordionItem value="medication-administered">
             <AccordionTrigger
               className={cn({
@@ -346,7 +327,7 @@ export default function MedicationAdministeredForm() {
                     <FormField
                       control={form.control}
                       name={`medications.${index}.time`}
-                      render={({ field }) => (
+                      render={() => (
                         <FormItem>
                           <FormLabel>Time</FormLabel>
                           <FormControl>
@@ -457,8 +438,8 @@ export default function MedicationAdministeredForm() {
                       <FormItem>
                         <FormLabel>Practitioner Name *</FormLabel>
                         <FormControl>
-                          <Input 
-                            {...field} 
+                          <Input
+                            {...field}
                             placeholder="Enter practitioner's name"
                             required
                           />
@@ -474,8 +455,8 @@ export default function MedicationAdministeredForm() {
                       <FormItem>
                         <FormLabel>HPCSA Number *</FormLabel>
                         <FormControl>
-                          <Input 
-                            {...field} 
+                          <Input
+                            {...field}
                             placeholder="Enter HPCSA number"
                             required
                           />
@@ -491,7 +472,7 @@ export default function MedicationAdministeredForm() {
                       <FormItem>
                         <FormLabel>Summary of Consultation *</FormLabel>
                         <FormControl>
-                          <Textarea 
+                          <Textarea
                             {...field}
                             placeholder="Enter consultation summary"
                             className="min-h-[120px]"

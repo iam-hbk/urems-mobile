@@ -1,74 +1,56 @@
-import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { Session } from '@/lib/auth/config';
-import { EmployeeData } from '@/app/profile/page';
-
-// Mock user for testing
-const MOCK_USER: EmployeeData = {
-  employeeNumber: 2,
-  employeeType: {
-    employeeTypeId: 1,
-    typeDescription: "Emergency Medical Technician"
-  },
-  person: {
-    personId: 1,
-    firstName: "John",
-    secondName: "",
-    lastName: "Doe",
-    dateOfBirth: new Date('1990-01-01').toISOString(),
-    initials: "JD",
-    gender: "Male",
-    personContactDetails: [{
-      isPrimary: true,
-      contactDetails: {
-        cellNumber: "1234567890",
-        email: "john@example.com",
-        telephoneNumber: "",
-        contactDetailsType: 1,
-        contactDetailsTypeNavigation: {
-          typeDescription: "Primary"
-        }
-      }
-    }],
-    personIdentifications: []
-  },
-  assignedVehicle: null
-};
+import { NextResponse } from 'next/server'
+import { API_BASE_URL } from '@/lib/wretch'
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const body = await request.json()
     
-    // In a real app, you would validate credentials here
-    // For now, just check if employeeNumber matches our mock user
-    if (body.employeeNumber !== MOCK_USER.employeeNumber.toString()) {
+    // Call the backend login endpoint
+    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
       return NextResponse.json(
-        { error: 'Invalid credentials' },
-        { status: 401 }
-      );
+        { error: errorData },
+        { status: response.status }
+      )
     }
 
-    // Create session
-    const session: Session = {
-      user: MOCK_USER,
-      expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
-    };
-
-    const response = NextResponse.json(session);
-
-    // Set session cookie
-    response.cookies.set('auth_session', JSON.stringify(session), {
+    const loginData = await response.json()
+    
+    // Create the response
+    const response_ = NextResponse.json(loginData)
+    
+    // Set the user ID as a cookie (this is what the frontend needs)
+    response_.cookies.set('sidbf-sodfb-tfugyihu-cvug-tyvubin-yfvgubhivgb', loginData.userId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      expires: new Date(session.expires),
-    });
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 24 // 24 hours
+    })
+    
+    // The backend should be setting the access token as an http-only cookie
+    // We need to forward any cookies from the backend response
+    const setCookieHeaders = response.headers.getSetCookie()
+    if (setCookieHeaders && setCookieHeaders.length > 0) {
+      // Forward all Set-Cookie headers from the backend
+      setCookieHeaders.forEach(cookieHeader => {
+        response_.headers.append('set-cookie', cookieHeader)
+      })
+    }
 
-    return response;
+    return response_
   } catch (error) {
+    console.error('Login error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
-    );
+    )
   }
 } 

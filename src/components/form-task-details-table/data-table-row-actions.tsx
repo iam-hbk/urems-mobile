@@ -1,33 +1,30 @@
 "use client";
 
-import { Row } from "@tanstack/react-table";
+// import { Row } from "@tanstack/react-table";
 
-import { prfDataSchema } from "./schema";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
 import { Ellipsis } from "lucide-react";
+import { Row } from "@tanstack/react-table";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
+  responseId: string;
 }
 
-export function DataTableRowActions<TData>({
-  row,
-}: DataTableRowActionsProps<TData>) {
-  const task = prfDataSchema.parse(row.original);
-
+export function DataTableRowActions<TData>(
+  {
+    // row,
+    // responseId,
+  }: DataTableRowActionsProps<TData>,
+) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -42,7 +39,6 @@ export function DataTableRowActions<TData>({
       <DropdownMenuContent align="end" className="w-[160px]">
         <DropdownMenuItem>Edit</DropdownMenuItem>
         <DropdownMenuItem>Make a copy</DropdownMenuItem>
-        <DropdownMenuItem>Favorite</DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
           Delete

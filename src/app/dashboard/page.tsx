@@ -1,104 +1,28 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import { TabsContent } from "@/components/ui/tabs";
-import { 
-  Ambulance, 
-  Clipboard, 
-  FileText, 
+import {
+  Ambulance,
+  Clipboard,
+  FileText,
   AlertTriangle,
-  CheckCircle2,
-  Clock,
-  Users
+  Clock
 } from "lucide-react";
-
-const todoData = [
-  { name: "Completed", value: 5, color: "#4ade80" },
-  { name: "Pending", value: 3, color: "#f87171" },
-  { name: "In Progress", value: 2, color: "#60a5fa" },
-];
-
-const crewMembers = [
-  {
-    name: "Dr. Sarah Johnson",
-    role: "Lead Paramedic",
-    hpcaNumber: "HP12345",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=frank",
-    status: "On Duty"
-  },
-  {
-    name: "James Wilson",
-    role: "EMT",
-    hpcaNumber: "HP67890",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=paul",
-    status: "On Duty"
-  },
-  {
-    name: "Maria Garcia",
-    role: "Emergency Nurse",
-    hpcaNumber: "HP11223",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=mike",
-    status: "Break"
-  }
-];
-
-const inventoryItems = [
-  {
-    name: "Oxygen Tanks",
-    current: 2,
-    required: 5,
-    priority: "High",
-    status: "Critical"
-  },
-  {
-    name: "Morphine",
-    current: 8,
-    required: 10,
-    priority: "Medium",
-    status: "Warning"
-  },
-  {
-    name: "Bandages",
-    current: 45,
-    required: 50,
-    priority: "Low",
-    status: "Good"
-  }
-];
-
-const activeCases = [
-  {
-    id: "PRF-2024-001",
-    patient: "John Doe",
-    status: "In Progress",
-    priority: "High",
-    timeElapsed: "45m"
-  },
-  {
-    id: "PRF-2024-002",
-    patient: "Jane Smith",
-    status: "Pending",
-    priority: "Medium",
-    timeElapsed: "15m"
-  }
-];
+import CrewStatusSection from "@/components/crew/CrewStatusSection";
+import CrewMembersSection from "@/components/crew/CrewMembersSection";
+import { activeCases, inventoryItems, todoData } from "@/utils/constant";
 
 export default function DashboardPage() {
+
+
+
   return (
     <div className="container mx-auto p-6">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">Welcome to Romeo 1</h1>
-        <div className="flex items-center gap-4">
-          <Badge variant="outline" className="px-4 py-2">
-            <Clock className="w-4 h-4 mr-2" />
-            Shift: 07:00 - 19:00
-          </Badge>
-          <Badge variant="outline" className="px-4 py-2">
-            <Users className="w-4 h-4 mr-2" />
-            Crew: 3/3
-          </Badge>
-        </div>
+      <div className="flex items-center justify-between mb-8 sm:flex-row sm:gap-y-0 gap-y-[1rem] flex-col">
+        <h1 className="text-3xl font-bold">Welcome</h1>
+        <CrewStatusSection />
       </div>
 
       <div className="grid grid-cols-3 gap-6">
@@ -180,7 +104,7 @@ export default function DashboardPage() {
                     <span className="font-medium">{item.name}</span>
                     <Badge variant={
                       item.status === "Critical" ? "destructive" :
-                      item.status === "Warning" ? "secondary" : "default"
+                        item.status === "Warning" ? "secondary" : "default"
                     }>
                       {item.status}
                     </Badge>
@@ -212,7 +136,7 @@ export default function DashboardPage() {
                     <span className="font-medium">{case_.id}</span>
                     <Badge variant={
                       case_.priority === "High" ? "destructive" :
-                      case_.priority === "Medium" ? "secondary" : "default"
+                        case_.priority === "Medium" ? "secondary" : "default"
                     }>
                       {case_.priority}
                     </Badge>
@@ -231,35 +155,8 @@ export default function DashboardPage() {
         </Card>
 
         {/* Crew Members */}
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5" />
-              Crew Members
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-6">
-              {crewMembers.map((member, index) => (
-                <div key={index} className="flex items-center gap-4 border rounded-lg p-4">
-                  <Avatar className="w-12 h-12">
-                    <AvatarImage src={member.avatar} />
-                    <AvatarFallback>{member.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="font-medium">{member.name}</div>
-                    <div className="text-sm text-gray-500">{member.role}</div>
-                    <div className="text-sm text-gray-500">HPCA: {member.hpcaNumber}</div>
-                    <Badge variant={member.status === "On Duty" ? "default" : "secondary"} className="mt-2">
-                      {member.status}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <CrewMembersSection />
       </div>
-    </div>
+    </div >
   );
 } 

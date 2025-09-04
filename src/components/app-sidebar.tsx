@@ -8,7 +8,6 @@ import {
   Users,
   Settings,
   LogOut,
-  Menu,
   HelpCircle,
   User2,
 } from "lucide-react";
@@ -23,17 +22,14 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   SidebarFooter,
   useSidebar,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { Button } from "./ui/button";
-import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+
+import { useLogoutMutation } from "@/hooks/auth/useLogout";
 
 // This is our navigation data structure
 const navigationData = {
@@ -43,7 +39,7 @@ const navigationData = {
       items: [
         {
           title: "Dashboard",
-          url: "/",
+          url: "/dashboard",
           icon: Home,
         },
         {
@@ -92,26 +88,11 @@ const navigationData = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { zsEmployee, zsClearemployee } = useZuStandEmployeeStore();
-  const router = useRouter();
-  const { state,isMobile } = useSidebar();
+  const logoutMutation = useLogoutMutation();
+  const { state, isMobile } = useSidebar();
 
-  const handleLogout = async () => {
-    try {
-      const response = await fetch("/api/auth/logout", {
-        method: "POST",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to logout");
-      }
-
-      zsClearemployee();
-      toast.success("Logged out successfully");
-      router.push("/login");
-    } catch (error) {
-      toast.error("Failed to logout. Please try again.");
-    }
+  const handleLogout = () => {
+    logoutMutation.mutate();
   };
 
   return (
@@ -119,18 +100,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader
         className={cn(
           "flex h-[60px] flex-row items-center justify-between",
-          state === "collapsed" && !isMobile && "justify-center"
+          state === "collapsed" && !isMobile && "justify-center",
         )}
       >
         <span
           className={cn(
-            "ml-3 font-semibold whitespace-nowrap",
-            state === "collapsed" && !isMobile && "hidden"
+            "ml-3 whitespace-nowrap font-semibold",
+            state === "collapsed" && !isMobile && "hidden",
           )}
         >
           UREMS PRF
         </span>
-        
       </SidebarHeader>
       <SidebarContent>
         {navigationData.mainMenu.map((section) => (
@@ -153,10 +133,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroup>
         ))}
       </SidebarContent>
-      <SidebarFooter className="px-4 py-2">
+      <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={handleLogout}>
+            <SidebarMenuButton variant={"destructive"} onClick={handleLogout}>
               <LogOut className="h-5 w-5" />
               <span>Logout</span>
             </SidebarMenuButton>

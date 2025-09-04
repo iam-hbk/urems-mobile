@@ -32,50 +32,38 @@ import { X } from "lucide-react";
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { CalendarDate, DateValue, today } from "@internationalized/date";
 import { RangeValue } from "@react-types/shared";
-import { PRF_FORM } from "@/interfaces/prf-form";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
+import { FormResponseSummary } from "@/types/form-template";
 
 interface DataTableProps {
-  columns: ColumnDef<PRF_FORM>[];
-  data: PRF_FORM[];
+  columns: ColumnDef<FormResponseSummary>[];
+  data: FormResponseSummary[];
 }
 
 // Custom filter function for date ranges
-const dateRangeFilter: FilterFn<any> = (row, columnId, filterValue: RangeValue<DateValue>) => {
+export const dateRangeFilter: FilterFn<FormResponseSummary> = (
+  row,
+  columnId,
+  filterValue: RangeValue<DateValue>,
+) => {
   if (!filterValue?.start || !filterValue?.end) return true;
-  
+
   const rowDate = new Date(row.getValue(columnId));
   const startDate = new Date(filterValue.start.toString());
   const endDate = new Date(filterValue.end.toString());
-  
+
   return rowDate >= startDate && rowDate <= endDate;
 };
 
-export function DataTable({
-  columns,
-  data,
-}: DataTableProps) {
-  const router = useRouter();
+export function DataTable({ columns, data }: DataTableProps) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    [],
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [dateRange, setDateRange] = React.useState<RangeValue<DateValue>>();
-
-  const handleDateRangeChange = React.useCallback((value: RangeValue<DateValue> | null) => {
-    if (value) {
-      setDateRange(value);
-      // Apply date filter
-      const dateColumn = table.getColumn("createdAt");
-      if (dateColumn) {
-        dateColumn.setFilterValue(value);
-      }
-    }
-  }, []);
-
   const table = useReactTable({
     data,
     columns,
@@ -101,33 +89,40 @@ export function DataTable({
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
 
+  const handleDateRangeChange = React.useCallback(
+    (value: RangeValue<DateValue> | null) => {
+      if (value) {
+        setDateRange(value);
+        // Apply date filter
+        const dateColumn = table.getColumn("createdAt");
+        if (dateColumn) {
+          dateColumn.setFilterValue(value);
+        }
+      }
+    },
+    [table],
+  );
+
   // Apply initial date filter
   React.useEffect(() => {
     const dateColumn = table.getColumn("createdAt");
     if (dateColumn) {
       dateColumn.setFilterValue(dateRange);
     }
-  }, []);
+  }, [dateRange, table]);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
         <Input
           placeholder="Filter by PRF Number..."
-          value={(table.getColumn("prfFormId")?.getFilterValue() as string) ?? ""}
+          value={(table.getColumn("id")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("prfFormId")?.setFilterValue(event.target.value)
+            table.getColumn("id")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
-        {/* <Input
-          placeholder="Filter by Employee..."
-          value={(table.getColumn("prfData.case_details.employeeId")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("prfData.case_details.employeeId")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        /> */}
+
         <DatePickerWithRange
           value={dateRange}
           onChange={handleDateRangeChange}
@@ -138,8 +133,16 @@ export function DataTable({
             onClick={() => {
               table.resetColumnFilters();
               setDateRange({
-                start: new CalendarDate(today("UTC").year, today("UTC").month, today("UTC").day).subtract({ weeks: 1 }),
-                end: new CalendarDate(today("UTC").year, today("UTC").month, today("UTC").day)
+                start: new CalendarDate(
+                  today("UTC").year,
+                  today("UTC").month,
+                  today("UTC").day,
+                ).subtract({ weeks: 1 }),
+                end: new CalendarDate(
+                  today("UTC").year,
+                  today("UTC").month,
+                  today("UTC").day,
+                ),
               });
             }}
             className="h-8 px-2 lg:px-3"
@@ -161,7 +164,7 @@ export function DataTable({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -175,16 +178,12 @@ export function DataTable({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  onClick={() => {
-                    router.push(`/edit-prf/${row.original.prfFormId}`);
-                  }}
-                  className="cursor-pointer"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
@@ -206,4 +205,4 @@ export function DataTable({
       <DataTablePagination table={table} />
     </div>
   );
-} 
+}

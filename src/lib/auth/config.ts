@@ -1,15 +1,17 @@
-import { EmployeeData } from "@/app/profile/page";
+import { UserData } from './dal'
 
-export type Session = {
-  user: EmployeeData;
+export type TypeSession = {
+  user: UserData;
   expires: string;
 };
 
 export type AuthConfig = {
   baseUrl: string;
   apiPath: string;
-  session?: Session;
+  session?: TypeSession;
 };
+
+export const UserTokenCookieName = 'access_token';
 
 export const authConfig: AuthConfig = {
   baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',

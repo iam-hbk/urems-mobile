@@ -17,77 +17,99 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
-import { PRF_FORM } from "@/interfaces/prf-form";
+import {
+  ensurePRFResponseSectionByName,
+  useUpdatePrfResponse,
+} from "@/hooks/prf/usePrfForms";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
-// import { z } from "zod";
 import {
   MechanismOfInjurySchema,
   MechanismOfInjuryType,
 } from "@/interfaces/prf-schema";
 import { Switch } from "../ui/switch";
-import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
+import { useQueryClient } from "@tanstack/react-query";
+import { Loader } from "lucide-react";
 
 export default function MechanismOfInjuryForm() {
   const prfId = usePathname().split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId,
-  );
+  const qc = useQueryClient();
 
-  const updatePrfQuery = useUpdatePrf();
+  const updatePrfQuery = useUpdatePrfResponse(prfId, "mechanism_of_injury");
   const router = useRouter();
-
-  const { zsEmployee } = useZuStandEmployeeStore();
 
   const form = useForm<MechanismOfInjuryType>({
     resolver: zodResolver(MechanismOfInjurySchema),
-    values: prf_from_store?.prfData?.mechanism_of_injury?.data,
-    defaultValues: prf_from_store?.prfData?.mechanism_of_injury?.data || {
-      burns: { duration: "", occurred: undefined },
+    mode: "all",
+    defaultValues: async () => {
+      const section = await ensurePRFResponseSectionByName(
+        qc,
+        prfId,
+        "mechanism_of_injury",
+      );
+      return {
+        ...section.data,
+        extractionMethod:
+          section.data.extractionMethod &&
+            section.data.extractionMethod.length > 0
+            ? section.data.extractionMethod
+            : undefined,
+        helmetRemoval:
+          section.data.helmetRemoval && section.data.helmetRemoval.length > 0
+            ? section.data.helmetRemoval
+            : undefined,
+        burns: {
+          ...section.data.burns,
+          duration: section.data.burns?.duration || "",
+          type:
+            section.data.burns?.type && section.data.burns.type.length > 0
+              ? section.data.burns.type
+              : undefined,
+          bsa:
+            section.data.burns?.bsa && section.data.burns.bsa.length > 0
+              ? section.data.burns.bsa
+              : undefined,
+        },
+        vehicleType: {
+          ...section.data.vehicleType,
+          vehicleTypesSelection:
+            section.data.vehicleType?.vehicleTypesSelection &&
+              section.data.vehicleType.vehicleTypesSelection.length > 0
+              ? section.data.vehicleType.vehicleTypesSelection
+              : undefined,
+        },
+        speed: section.data.speed || undefined,
+        personType: section.data.personType || undefined,
+        drowning: {
+          ...section.data.drowning,
+          duration: section.data.drowning?.duration || undefined,
+        },
+        entrapment: {
+          ...section.data.entrapment,
+          duration: section.data.entrapment?.duration || undefined,
+        },
+      };
     },
   });
 
-  // console.log('this is the form vlaues ....', form.getValues())
-
   function onSubmit(values: MechanismOfInjuryType) {
-    if (!zsEmployee) {
-      toast.error("No Employee Information Found", {
-        duration: 3000,
-        position: "top-right",
-      });
-      return;
-    }
-    // console.log("saving form", values);
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        ...prf_from_store?.prfData,
-        mechanism_of_injury: {
-          data: values,
-          isCompleted: true,
-          isOptional: false,
+    updatePrfQuery.mutate(
+      { data: values, isCompleted: true },
+      {
+        onSuccess: () => {
+          toast.success("Mechanism of Injury Information Updated", {
+            duration: 3000,
+            position: "top-right",
+          });
+          router.push(`/edit-prf/${prfId}`);
+        },
+        onError: () => {
+          toast.error("An error occurred", {
+            duration: 3000,
+            position: "top-right",
+          });
         },
       },
-      EmployeeID: zsEmployee?.employeeNumber.toString(),
-    };
-
-    updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: (data) => {
-        toast.success("Mechanism of Injury Information Updated", {
-          duration: 3000,
-          position: "top-right",
-        });
-        router.push(`/edit-prf/${data?.prfFormId}`);
-      },
-      onError: (error) => {
-        toast.error("An error occurred", {
-          duration: 3000,
-          position: "top-right",
-        });
-      },
-    });
+    );
   }
 
   return (
@@ -716,7 +738,12 @@ export default function MechanismOfInjuryForm() {
                 <FormControl>
                   <Switch
                     checked={field.value}
-                    onCheckedChange={field.onChange}
+                    onCheckedChange={(checked) => {
+                      if (!checked) {
+                        form.setValue("entrapment.duration", undefined);
+                      }
+                      field.onChange(checked);
+                    }}
                   />
                 </FormControl>
               </FormItem>
@@ -1123,10 +1150,14 @@ export default function MechanismOfInjuryForm() {
           type="submit"
           disabled={!form.formState.isDirty}
           className="w-full self-end sm:w-auto"
+          onClick={() => {
+            // console.log("form values", form.getValues());
+            // console.log("form errors", form.formState.errors);
+          }}
         >
           {form.formState.isSubmitting || updatePrfQuery.isPending ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving
+              <Loader className="mr-2 h-4 w-4 animate-spin" /> Saving
             </>
           ) : (
             "Save Mechanism of Injury"

@@ -24,65 +24,38 @@ import {
 import { Accordion } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { Loader2, Plus, Trash2, AlertCircle } from "lucide-react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
-import { PRF_FORM } from "@/interfaces/prf-form";
 import { toast } from "sonner";
 import { IntravenousTherapySchema } from "@/interfaces/prf-schema";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { TimePicker } from "@/components/ui/time-picker";
 import { useZuStandCrewStore } from "@/lib/zuStand/crew";
+import {
+  ensurePRFResponseSectionByName,
+  useUpdatePrfResponse,
+} from "@/hooks/prf/usePrfForms";
+import { useQueryClient } from "@tanstack/react-query";
 
 export type IntravenousTherapyType = z.infer<typeof IntravenousTherapySchema>;
 
 export default function IntravenousTherapyForm() {
   const prfId = usePathname().split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId,
-  );
-  const { zsVehicle, zsUpdateFluidStock } = useZuStandCrewStore();
+  const qc = useQueryClient();
+  // Using this store until we connect backend stock and inventory
+  const { zsVehicle } = useZuStandCrewStore();
 
-  const updatePrfQuery = useUpdatePrf();
+  const updatePrfQuery = useUpdatePrfResponse(prfId, "intravenous_therapy");
   const router = useRouter();
   const form = useForm<IntravenousTherapyType>({
     resolver: zodResolver(IntravenousTherapySchema),
-    values: prf_from_store?.prfData?.intravenous_therapy?.data,
-    defaultValues: prf_from_store?.prfData?.intravenous_therapy?.data || {
-      therapyDetails: [
-        {
-          fluid: "",
-          fluidId: undefined,
-          volume: 0,
-          admin: "10dropper",
-          rate: "",
-          time: {
-            value: new Date().toLocaleTimeString("en-GB", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            unknown: false,
-          },
-          jelco: "20G",
-          site: "Right Antecubital",
-          volumeAdministered: 0,
-        },
-      ],
-      motivationForIV: {
-        drugRoute: false,
-        fluidBolus: false,
-        p1Unstable: false,
-        p1Stable: false,
-      },
-      weight: "",
-      weightMeasurementType: "estimated",
+    defaultValues: async () => {
+      const intravenousTherapy = await ensurePRFResponseSectionByName(
+        qc,
+        prfId,
+        "intravenous_therapy",
+      );
+      return intravenousTherapy?.data;
     },
   });
 
@@ -93,35 +66,31 @@ export default function IntravenousTherapyForm() {
 
   function onSubmit(values: IntravenousTherapyType) {
     // Update vehicle inventory for each therapy detail
-    values.therapyDetails.forEach((therapy) => {
-      if (therapy.fluidId) {
-        // Only update stock if it's a fluid from inventory
-        zsUpdateFluidStock(therapy.fluidId, Math.ceil(therapy.volumeAdministered / therapy.volume));
-      }
-    });
+    // values.therapyDetails.forEach((therapy) => {
+    //   if (therapy.fluidId) {
+    //     // Only update stock if it's a fluid from inventory
+    //     zsUpdateFluidStock(
+    //       therapy.fluidId,
+    //       Math.ceil(therapy.volumeAdministered / therapy.volume),
+    //     );
+    //   }
+    // });
 
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        ...prf_from_store?.prfData,
-        intravenous_therapy: {
-          data: values,
-          isCompleted: true,
-          isOptional: false,
-        },
-      },
-      EmployeeID: prf_from_store?.EmployeeID || "2",
+    const prfUpdateValue = {
+      data: values,
+      isCompleted: true,
+      isOptional: false,
     };
 
     updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         toast.success("Intravenous Therapy Information Updated", {
           duration: 3000,
           position: "top-right",
         });
-        router.push(`/edit-prf/${data?.prfFormId}`);
+        router.push(`/edit-prf/${prfId}`);
       },
-      onError: (error) => {
+      onError: () => {
         toast.error("An error occurred", {
           duration: 3000,
           position: "top-right",
@@ -318,32 +287,63 @@ export default function IntravenousTherapyForm() {
                           <FormLabel>IV Fluid Type</FormLabel>
                           <Select
                             onValueChange={(value) => {
-                              const selectedFluid = zsVehicle?.inventory.fluids.find(
-                                (f) => f.id === value
-                              );
+                              const selectedFluid =
+                                zsVehicle?.inventory.fluids.find(
+                                  (f) => f.id === value,
+                                );
                               if (selectedFluid) {
-                                form.setValue(`therapyDetails.${index}.fluid`, selectedFluid.name);
-                                form.setValue(`therapyDetails.${index}.fluidId`, selectedFluid.id);
-                                form.setValue(`therapyDetails.${index}.volume`, selectedFluid.volume);
+                                form.setValue(
+                                  `therapyDetails.${index}.fluid`,
+                                  selectedFluid.name,
+                                );
+                                form.setValue(
+                                  `therapyDetails.${index}.fluidId`,
+                                  selectedFluid.id,
+                                );
+                                form.setValue(
+                                  `therapyDetails.${index}.volume`,
+                                  selectedFluid.volume,
+                                );
                               } else if (value === "custom") {
                                 // Handle custom fluid entry
-                                const customFluid = window.prompt("Enter custom fluid name:");
+                                const customFluid = window.prompt(
+                                  "Enter custom fluid name:",
+                                );
                                 if (customFluid) {
-                                  form.setValue(`therapyDetails.${index}.fluid`, customFluid);
-                                  form.setValue(`therapyDetails.${index}.fluidId`, undefined);
+                                  form.setValue(
+                                    `therapyDetails.${index}.fluid`,
+                                    customFluid,
+                                  );
+                                  form.setValue(
+                                    `therapyDetails.${index}.fluidId`,
+                                    undefined,
+                                  );
                                   // Let user input volume for custom fluid
-                                  const customVolume = window.prompt("Enter fluid volume (ml):");
-                                  form.setValue(`therapyDetails.${index}.volume`, Number(customVolume) || 0);
+                                  const customVolume = window.prompt(
+                                    "Enter fluid volume (ml):",
+                                  );
+                                  form.setValue(
+                                    `therapyDetails.${index}.volume`,
+                                    Number(customVolume) || 0,
+                                  );
                                 }
                               }
                             }}
-                            value={field.value ? (zsVehicle?.inventory.fluids.find(f => f.name === field.value)?.id || "custom") : ""}
+                            value={
+                              field.value
+                                ? zsVehicle?.inventory.fluids.find(
+                                  (f) => f.name === field.value,
+                                )?.id || "custom"
+                                : ""
+                            }
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Select fluid type" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="custom">Custom Fluid</SelectItem>
+                              <SelectItem value="custom">
+                                Custom Fluid
+                              </SelectItem>
                               {zsVehicle?.inventory.fluids.map((fluid) => (
                                 <SelectItem key={fluid.id} value={fluid.id}>
                                   {fluid.name} ({fluid.currentStock} in stock)
@@ -367,7 +367,9 @@ export default function IntravenousTherapyForm() {
                             <Input
                               {...field}
                               type="number"
-                              onChange={(e) => field.onChange(Number(e.target.value))}
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
                               value={field.value}
                             />
                           </FormControl>
@@ -383,17 +385,32 @@ export default function IntravenousTherapyForm() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Administration Set</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Select admin set" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="10dropper">10 Dropper</SelectItem>
-                              <SelectItem value="20dropper">20 Dropper</SelectItem>
-                              <SelectItem value="60dropper">60 Dropper</SelectItem>
-                              <SelectItem value="extensionSet">Extension Set</SelectItem>
-                              <SelectItem value="buretteSet">Burette Set</SelectItem>
-                              <SelectItem value="bloodAdminSet">Blood Admin Set</SelectItem>
+                              <SelectItem value="10dropper">
+                                10 Dropper
+                              </SelectItem>
+                              <SelectItem value="20dropper">
+                                20 Dropper
+                              </SelectItem>
+                              <SelectItem value="60dropper">
+                                60 Dropper
+                              </SelectItem>
+                              <SelectItem value="extensionSet">
+                                Extension Set
+                              </SelectItem>
+                              <SelectItem value="buretteSet">
+                                Burette Set
+                              </SelectItem>
+                              <SelectItem value="bloodAdminSet">
+                                Blood Admin Set
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -420,7 +437,7 @@ export default function IntravenousTherapyForm() {
                     <FormField
                       control={form.control}
                       name={`therapyDetails.${index}.time`}
-                      render={({ field }) => (
+                      render={() => (
                         <FormItem>
                           <FormLabel>Time</FormLabel>
                           <FormControl>
@@ -442,16 +459,21 @@ export default function IntravenousTherapyForm() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Jelco Size</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Select jelco size" />
                             </SelectTrigger>
                             <SelectContent>
-                              {["14G", "16G", "18G", "20G", "22G", "24G"].map((size) => (
-                                <SelectItem key={size} value={size}>
-                                  {size}
-                                </SelectItem>
-                              ))}
+                              {["14G", "16G", "18G", "20G", "22G", "24G"].map(
+                                (size) => (
+                                  <SelectItem key={size} value={size}>
+                                    {size}
+                                  </SelectItem>
+                                ),
+                              )}
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -466,7 +488,10 @@ export default function IntravenousTherapyForm() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Insertion Site</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Select insertion site" />
                             </SelectTrigger>
@@ -482,7 +507,7 @@ export default function IntravenousTherapyForm() {
                                 "Left Foot",
                                 "Right External Jugular",
                                 "Left External Jugular",
-                                "Scalp"
+                                "Scalp",
                               ].map((site) => (
                                 <SelectItem key={site} value={site}>
                                   {site}
@@ -506,7 +531,9 @@ export default function IntravenousTherapyForm() {
                             <Input
                               {...field}
                               type="number"
-                              onChange={(e) => field.onChange(Number(e.target.value))}
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
                               value={field.value}
                             />
                           </FormControl>
@@ -524,6 +551,9 @@ export default function IntravenousTherapyForm() {
             type="submit"
             disabled={!form.formState.isDirty}
             className="self-end"
+            onClick={() => {
+              // console.log("form.getValues() 🚀", form.getValues());
+            }}
           >
             {form.formState.isSubmitting || updatePrfQuery.isPending ? (
               <>

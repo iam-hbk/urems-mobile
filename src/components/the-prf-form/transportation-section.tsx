@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
@@ -24,38 +24,31 @@ import { cn } from "@/lib/utils";
 import { Loader2, UserRoundPlus, X } from "lucide-react";
 import { TransportationSchema } from "@/interfaces/prf-schema";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
-import { PRF_FORM } from "@/interfaces/prf-form";
+import {
+  ensurePRFResponseSectionByName,
+  useUpdatePrfResponse,
+} from "@/hooks/prf/usePrfForms";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import AddressAutoComplete from "../AddressAutoComplete";
-import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
 
 export type TransportationType = z.infer<typeof TransportationSchema>;
 
-type TransportationFormProps = {
-  initialData?: TransportationType;
-};
-
-const TransportationForm: React.FC<TransportationFormProps> = ({
-  initialData,
-}) => {
+const TransportationForm: React.FC = () => {
   const prfId = usePathname().split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId,
-  );
-  const { zsEmployee } = useZuStandEmployeeStore();
+  const qc = useQueryClient();
 
-  const updatePrfQuery = useUpdatePrf();
+  const updatePrfQuery = useUpdatePrfResponse(prfId, "transportation");
   const router = useRouter();
   const form = useForm<TransportationType>({
     resolver: zodResolver(TransportationSchema),
-    values: prf_from_store?.prfData?.transportation?.data,
-    defaultValues: prf_from_store?.prfData?.transportation?.data || {
-      fromSuburbTown: "",
-      by: "",
-      to: "",
-      crewDetails: [],
+    defaultValues: async () => {
+      const section = await ensurePRFResponseSectionByName(
+        qc,
+        prfId,
+        "transportation",
+      );
+      return section.data;
     },
   });
 
@@ -65,77 +58,42 @@ const TransportationForm: React.FC<TransportationFormProps> = ({
   });
 
   function onSubmit(values: TransportationType) {
-
-    if (!zsEmployee) {
-      toast.error("No Employee Information Found", {
-        duration: 3000,
-        position: "top-right",
-      });
-      return;
-    }
-
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        ...prf_from_store?.prfData,
-        transportation: {
-          data: values,
-          isCompleted: true,
-          isOptional: false,
+    updatePrfQuery.mutate(
+      { data: values, isCompleted: true },
+      {
+        onSuccess: () => {
+          toast.success("Transportation Information Updated", {
+            duration: 3000,
+            position: "top-right",
+          });
+          router.push(`/edit-prf/${prfId}`);
+        },
+        onError: () => {
+          toast.error("An error occurred", {
+            duration: 3000,
+            position: "top-right",
+          });
         },
       },
-      EmployeeID: zsEmployee?.employeeNumber.toString(),
-    };
-
-    updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: (data) => {
-        toast.success("Incident Information Updated", {
-          duration: 3000,
-          position: "top-right",
-        });
-        router.push(`/edit-prf/${data?.prfFormId}`);
-      },
-      onError: (error) => {
-        toast.error("An error occurred", {
-          duration: 3000,
-          position: "top-right",
-        });
-      },
-    });
+    );
   }
 
   // Add this function to handle form errors
-  const onError = (errors: any) => {
-    const errorMessages = Object.entries(errors)
-      .map(([_, error]: [string, any]) => error?.message)
+  const onError = (errors: unknown) => {
+    const errorMessages = Object.entries(
+      errors as Record<string, { message: string }>,
+    )
+      .map(([, error]: [string, { message: string }]) => error?.message)
       .filter(Boolean);
-    
-    const errorMessage = errorMessages[0] || "Please fill in all required fields";
-    
+
+    const errorMessage =
+      errorMessages[0] || "Please fill in all required fields";
+
     toast.error(errorMessage, {
       duration: 3000,
       position: "top-right",
     });
   };
-
-  // useEffect(() => {
-  // add current user to the list of crew by default. 
-  // run this only once, because there is only one logged in user
-  // console.log("employee here...", zsEmployee)
-  if (zsEmployee && zsEmployee.employeeNumber && fields.length === 0) {
-    // since i don't know what is the HPCSANo, by default, i'll just add 1 of the fields
-    const initialSurname: string = `${zsEmployee.person.initials} ${zsEmployee.person.lastName}`
-    const hpcsano: string = `${zsEmployee.person.initials}-${zsEmployee.employeeNumber}`
-    // don't add twice 
-    if (!fields.some((fields) => fields.HPCSANo === hpcsano)) {
-      append({ initialAndSurname: initialSurname, HPCSANo: hpcsano })
-    }
-
-    // const { data, error } = useGetCrewEmployeeID(zsEmployee?.employeeNumber.toString());
-    // console.log("crew information...", data)
-  }
-  // }, [])
-
 
   return (
     <Accordion

@@ -2,11 +2,9 @@ import { z } from "zod";
 import {
   PRFFormSchema,
   TransportationSchema,
-  IncidentInformationSchema,
   PRFFormDataSchema,
   SecondarySurveySchema,
   CaseDetailsSchema,
-  PatientDetailsSchema,
 } from "./prf-schema";
 import { PrimarySurveySchema } from "./prf-primary-survey-schema";
 
@@ -18,7 +16,7 @@ export type PRF_FORM_TRANSPORTATION = z.infer<typeof TransportationSchema>;
 export type PRF_FORM_CASE_DETAILS = z.infer<typeof CaseDetailsSchema>;
 export type PRF_FORM_PRIMARY_SURVEY = z.infer<typeof PrimarySurveySchema>;
 export type PRF_FORM_SECONDARY_SURVEY = z.infer<typeof SecondarySurveySchema>;
-
+export type PRF_FORM_RESPONSE_METADATA = Omit<PRF_FORM, "prfData">;
 // Create a mapping of the PRF_FORM_DATA keys to their respective Display Names
 export const sectionDescriptions = [
   "Case Details",
@@ -28,9 +26,9 @@ export const sectionDescriptions = [
   "Primary Survey",
   "Secondary Survey",
   "Vital Signs",
-  "History Taking",
+  // "History Taking",
   // "Physical Exam",
-  "Interventions",
+  // "Interventions",
   "Medication Administration",
   "Patient Handover",
   "Notes",
@@ -55,9 +53,9 @@ export const PRF_FORM_DATA_DISPLAY_NAMES: Record<
   primary_survey: "Primary Survey",
   secondary_survey: "Secondary Survey",
   vital_signs: "Vital Signs",
-  history_taking: "History Taking",
+  // history_taking: "History Taking",
   // physical_exam: "Physical Exam",
-  interventions: "Interventions",
+  // interventions: "Interventions",
   medication_administration: "Medication Administration",
   patient_handover: "Patient Handover",
   notes: "Notes",
@@ -71,3 +69,51 @@ export const PRF_FORM_DATA_DISPLAY_NAMES: Record<
   past_medical_history: "Past Medical History",
   inventory: "Inventory",
 };
+
+// ------------------------------------------------------------
+// ------------------------------------------------------------
+// Form Response Status
+// ------------------------------------------------------------
+
+// Define the allowed section names as constants
+export const SectionNames = {
+  patient_details: "patient_details",
+  diagnosis: "diagnosis",
+  primary_survey: "primary_survey",
+  patient_handover: "patient_handover",
+  past_medical_history: "past_medical_history",
+  case_details: "case_details",
+  injuries: "injuries",
+  notes: "notes",
+  respiratory_distress: "respiratory_distress",
+  intravenous_therapy: "intravenous_therapy",
+  transportation: "transportation",
+  assessments: "assessments",
+  procedures: "procedures",
+  mechanism_of_injury: "mechanism_of_injury",
+  inventory: "inventory",
+  incident_information: "incident_information",
+  secondary_survey: "secondary_survey",
+  medication_administration: "medication_administration",
+  vital_signs: "vital_signs",
+} as const;
+
+// Union type of all possible section names
+export type SectionName = (typeof SectionNames)[keyof typeof SectionNames];
+
+// Section type
+export interface FormResponseSectionStatus {
+  sectionId: string;
+  sectionName: SectionName;
+  isCompleted: boolean;
+  updatedAt: string; // could be Date if you parse it
+  isRequired: boolean;
+}
+
+// Main form response type
+export interface PRFormResponseStatus {
+  formResponseId: string;
+  sections: FormResponseSectionStatus[];
+  totalSections: number;
+  completedSections: number;
+}

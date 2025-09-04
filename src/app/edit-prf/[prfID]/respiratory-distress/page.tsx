@@ -1,4 +1,4 @@
-import RespiratoryDistressAssessmentForm from "@/components/the-prf-form/respiratory-destress-section";
+import RespiratoryDistressAssessmentForm from "@/components/the-prf-form/respiratory-distress-section";
 import React from "react";
 function PatientDetails() {
   return (

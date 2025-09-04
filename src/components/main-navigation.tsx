@@ -3,9 +3,6 @@ import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { useZuStandEmployeeStore } from "@/lib/zuStand/employee";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 
 export function NavigationBar({
   children,

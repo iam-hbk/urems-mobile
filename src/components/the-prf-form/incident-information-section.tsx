@@ -3,7 +3,7 @@
 import React from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { SubmitErrorHandler, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import {
   Accordion,
   AccordionContent,
@@ -24,11 +24,16 @@ import {
 import { cn } from "@/lib/utils";
 import { IncidentInformationSchema } from "@/interfaces/prf-schema";
 import { PRF_FORM } from "@/interfaces/prf-form";
-import { useUpdatePrf } from "@/hooks/prf/useUpdatePrf";
+import {
+  ensurePRFResponseSectionByName,
+  useUpdatePrfResponse,
+} from "@/hooks/prf/usePrfForms";
 import { usePathname, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
+
 import { toast } from "sonner";
-import AddressAutoComplete from "@/components/AddressAutoComplete";
+import { AddressInput } from "@/components/address-input";
+import { useQueryClient } from "@tanstack/react-query";
+import { Loader } from "lucide-react";
 
 export type IncidentInformationType = z.infer<typeof IncidentInformationSchema>;
 
@@ -36,68 +41,75 @@ type IncidentInformationFormProps = {
   initialData?: PRF_FORM;
 };
 
-const IncidentInformationForm = ({ }: IncidentInformationFormProps) => {
+const IncidentInformationForm = ({}: IncidentInformationFormProps) => {
   const prfId = usePathname().split("/")[2];
-  const prf_from_store = useStore((state) => state.prfForms).find(
-    (prf) => prf.prfFormId == prfId,
-  );
+  const qc = useQueryClient();
 
-  const updatePrfQuery = useUpdatePrf();
+  const updatePrfQuery = useUpdatePrfResponse(prfId, "incident_information");
   const router = useRouter();
   const form = useForm<IncidentInformationType>({
     resolver: zodResolver(IncidentInformationSchema),
-    defaultValues: {
-      sceneAddress:
-        prf_from_store?.prfData.incident_information?.data.sceneAddress || "",
-      dispatchInfo:
-        prf_from_store?.prfData.incident_information?.data.dispatchInfo || "",
-      onArrival:
-        prf_from_store?.prfData.incident_information?.data.onArrival || "",
-      chiefComplaint:
-        prf_from_store?.prfData.incident_information?.data.chiefComplaint || "",
+    mode: "all",
+    defaultValues: async () => {
+      const section = await ensurePRFResponseSectionByName(
+        qc,
+        prfId,
+        "incident_information",
+      );
+      return {
+        sceneAddress: section.data.sceneAddress || "",
+        dispatchInfo: section.data.dispatchInfo || "",
+        onArrival: section.data.onArrival || "",
+        chiefComplaint: section.data.chiefComplaint || "",
+      };
     },
   });
 
   function onSubmit(values: IncidentInformationType) {
-    const prfUpdateValue: PRF_FORM = {
-      prfFormId: prfId,
-      prfData: {
-        incident_information: {
-          data: values,
-          isCompleted: true,
-          isOptional: false,
+    updatePrfQuery.mutate(
+      {
+        data: values,
+        isCompleted: true,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Incident Information Updated", {
+            duration: 3000,
+            position: "top-right",
+          });
+          router.push(`/edit-prf/${prfId}`);
         },
-        ...prf_from_store?.prfData,
+        onError: () => {
+          toast.error("An error occurred", {
+            duration: 3000,
+            position: "top-right",
+          });
+        },
       },
-      EmployeeID: prf_from_store?.EmployeeID || "2",
-    };
-
-    updatePrfQuery.mutate(prfUpdateValue, {
-      onSuccess: (data) => {
-        toast.success("Incident Information Updated", {
-          duration: 3000,
-          position: "top-right",
-        });
-        router.push(`/edit-prf/${data?.prfFormId}`);
-      },
-      onError: (error) => {
-        toast.error("An error occurred", {
-          duration: 3000,
-          position: "top-right",
-        });
-      },
-    });
+    );
   }
 
   // Add this function to handle form errors
-  const onError = (errors: any) => {
-    const errorMessages = Object.entries(errors)
-      .map(([_, error]: [string, any]) => error?.message)
-      .filter(Boolean);
-    
-    const errorMessage = errorMessages[0] || "Please fill in all required fields";
-    
-    toast.error(errorMessage, {
+  const onError: SubmitErrorHandler<IncidentInformationType> = (errors) => {
+    const extractFirstMessage = (err: unknown): string | null => {
+      if (!err) return null;
+      if (typeof err === "object") {
+        if ("message" in (err as Record<string, unknown>)) {
+          const maybe = (err as { message?: unknown }).message;
+          if (typeof maybe === "string") return maybe;
+        }
+        for (const value of Object.values(err as Record<string, unknown>)) {
+          const found = extractFirstMessage(value);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+
+    const firstMessage =
+      extractFirstMessage(errors) || "Please fill in all required fields";
+
+    toast.error(firstMessage, {
       duration: 3000,
       position: "top-right",
     });
@@ -135,10 +147,14 @@ const IncidentInformationForm = ({ }: IncidentInformationFormProps) => {
               </h4>
             </AccordionTrigger>
             <AccordionContent className="grid gap-3 px-4 sm:grid-cols-2 lg:grid-cols-3">
-              <AddressAutoComplete
+              <AddressInput
                 name="sceneAddress"
+                control={form.control}
                 label="Scene Address"
                 placeholder="Scene Address"
+                disabled={updatePrfQuery.isPending}
+                className="col-span-full"
+                useFullAddressAsValueOnly={true}
               />
               <FormField
                 control={form.control}
@@ -183,11 +199,19 @@ const IncidentInformationForm = ({ }: IncidentInformationFormProps) => {
           </AccordionItem>
           {/* Submit form */}
           <Button
-            disabled={form.formState.isDirty === false}
+            disabled={
+              form.formState.isDirty === false || updatePrfQuery.isPending
+            }
             type="submit"
             className="self-end"
           >
-            Save
+            {form.formState.isSubmitting || updatePrfQuery.isPending ? (
+              <>
+                <Loader className="mr-2 h-4 w-4 animate-spin" /> Saving
+              </>
+            ) : (
+              "Save"
+            )}
           </Button>
         </form>
       </Form>
